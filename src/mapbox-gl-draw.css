@@ -1,0 +1,111 @@
+
+/* Override default control style */
+.mapbox-gl-draw_ctrl-bottom-left,
+.mapbox-gl-draw_ctrl-top-left {
+  margin-left:0;
+  border-radius:0 4px 4px 0;
+}
+.mapbox-gl-draw_ctrl-top-right,
+.mapbox-gl-draw_ctrl-bottom-right {
+  margin-right:0;
+  border-radius:4px 0 0 4px;
+}
+
+.mapbox-gl-draw_ctrl-draw-btn {
+  border-color:rgba(0,0,0,0.9);
+  color:rgba(255,255,255,0.5);
+  width:30px;
+  height:30px;
+}
+
+.mapbox-gl-draw_ctrl-draw-btn.active,
+.mapbox-gl-draw_ctrl-draw-btn.active:hover {
+  background-color:rgb(0 0 0/5%);
+}
+.mapbox-gl-draw_ctrl-draw-btn {
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.mapbox-gl-draw_point {
+  background-image: url('data:image/svg+xml;utf8,%3Csvg xmlns="http://www.w3.org/2000/svg" width="20" height="20">%3Cpath d="m10 2c-3.3 0-6 2.7-6 6s6 9 6 9 6-5.7 6-9-2.7-6-6-6zm0 2c2.1 0 3.8 1.7 3.8 3.8 0 1.5-1.8 3.9-2.9 5.2h-1.7c-1.1-1.4-2.9-3.8-2.9-5.2-.1-2.1 1.6-3.8 3.7-3.8z"/>%3C/svg>');
+}
+.mapbox-gl-draw_polygon {
+  background-image: url('data:image/svg+xml;utf8,%3Csvg xmlns="http://www.w3.org/2000/svg" width="20" height="20">%3Cpath d="m15 12.3v-4.6c.6-.3 1-1 1-1.7 0-1.1-.9-2-2-2-.7 0-1.4.4-1.7 1h-4.6c-.3-.6-1-1-1.7-1-1.1 0-2 .9-2 2 0 .7.4 1.4 1 1.7v4.6c-.6.3-1 1-1 1.7 0 1.1.9 2 2 2 .7 0 1.4-.4 1.7-1h4.6c.3.6 1 1 1.7 1 1.1 0 2-.9 2-2 0-.7-.4-1.4-1-1.7zm-8-.3v-4l1-1h4l1 1v4l-1 1h-4z"/>%3C/svg>');
+}
+.mapbox-gl-draw_line {
+  background-image: url('data:image/svg+xml;utf8,%3Csvg xmlns="http://www.w3.org/2000/svg" width="20" height="20">%3Cpath d="m13.5 3.5c-1.4 0-2.5 1.1-2.5 2.5 0 .3 0 .6.2.9l-3.8 3.8c-.3-.1-.6-.2-.9-.2-1.4 0-2.5 1.1-2.5 2.5s1.1 2.5 2.5 2.5 2.5-1.1 2.5-2.5c0-.3 0-.6-.2-.9l3.8-3.8c.3.1.6.2.9.2 1.4 0 2.5-1.1 2.5-2.5s-1.1-2.5-2.5-2.5z"/>%3C/svg>');
+}
+.mapbox-gl-draw_trash {
+  background-image: url('data:image/svg+xml;utf8,%3Csvg xmlns="http://www.w3.org/2000/svg" width="20" height="20">%3Cpath d="M10,3.4 c-0.8,0-1.5,0.5-1.8,1.2H5l-1,1v1h12v-1l-1-1h-3.2C11.5,3.9,10.8,3.4,10,3.4z M5,8v7c0,1,1,2,2,2h6c1,0,2-1,2-2V8h-2v5.5h-1.5V8h-3 v5.5H7V8H5z"/>%3C/svg>');
+}
+.mapbox-gl-draw_uncombine {
+  background-image: url('data:image/svg+xml;utf8,%3Csvg xmlns="http://www.w3.org/2000/svg" width="20" height="20">%3Cpath d="m12 2c-.3 0-.5.1-.7.3l-1 1c-.4.4-.4 1 0 1.4l1 1c.4.4 1 .4 1.4 0l1-1c.4-.4.4-1 0-1.4l-1-1c-.2-.2-.4-.3-.7-.3zm4 4c-.3 0-.5.1-.7.3l-1 1c-.4.4-.4 1 0 1.4l1 1c.4.4 1 .4 1.4 0l1-1c.4-.4.4-1 0-1.4l-1-1c-.2-.2-.4-.3-.7-.3zm-7 1c-1 0-1 1-.5 1.5.3.3 1 1 1 1l-1 1s-.5.5 0 1 1 0 1 0l1-1 1 1c.5.5 1.5.5 1.5-.5v-4zm-5 3c-.3 0-.5.1-.7.3l-1 1c-.4.4-.4 1 0 1.4l4.9 4.9c.4.4 1 .4 1.4 0l1-1c.4-.4.4-1 0-1.4l-4.9-4.9c-.1-.2-.4-.3-.7-.3z"/>%3C/svg>');
+}
+.mapbox-gl-draw_combine {
+  background-image: url('data:image/svg+xml;utf8,%3Csvg xmlns="http://www.w3.org/2000/svg" width="20" height="20">%3Cpath d="M12.1,2c-0.3,0-0.5,0.1-0.7,0.3l-1,1c-0.4,0.4-0.4,1,0,1.4l4.9,4.9c0.4,0.4,1,0.4,1.4,0l1-1 c0.4-0.4,0.4-1,0-1.4l-4.9-4.9C12.6,2.1,12.3,2,12.1,2z M8,8C7,8,7,9,7.5,9.5c0.3,0.3,1,1,1,1l-1,1c0,0-0.5,0.5,0,1s1,0,1,0l1-1l1,1 C11,13,12,13,12,12V8H8z M4,10c-0.3,0-0.5,0.1-0.7,0.3l-1,1c-0.4,0.4-0.4,1,0,1.4l1,1c0.4,0.4,1,0.4,1.4,0l1-1c0.4-0.4,0.4-1,0-1.4 l-1-1C4.5,10.1,4.3,10,4,10z M8,14c-0.3,0-0.5,0.1-0.7,0.3l-1,1c-0.4,0.4-0.4,1,0,1.4l1,1c0.4,0.4,1,0.4,1.4,0l1-1 c0.4-0.4,0.4-1,0-1.4l-1-1C8.5,14.1,8.3,14,8,14z"/>%3C/svg>');
+}
+
+.mapbox-gl-draw_undo {
+  background-image: url('data:image/svg+xml;utf8,<svg  viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" width="22" height="22"><path d="M496.8448 397.2096c-172.6464 0-322.8672 199.5776-325.3248 376.9344 0 14.1312 11.5712 18.1248 22.528 0C249.856 674.6112 340.992 623.0016 460.4928 623.0016h41.3696v118.1696c0 35.328 26.0096 59.4944 55.7056 35.7376l273.2032-219.2384c29.696-23.7568 29.696-62.6688 0.1024-86.4256L555.52 249.7536c-29.5936-23.8592-53.6576-6.3488-53.6576 35.5328V397.312h-5.0176v-0.1024z m0 0" p-id="2100"></path></svg>');
+}
+
+.mapbox-gl-draw_redo {
+  background-image: url('data:image/svg+xml;utf8,<svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" width="22" height="22"><path d="M529.3 381.5h-4.9l-0.6-110.3c0-40.9-33.9-57-62.8-33.7L192.1 453.8c-28.9 23.2-28.9 61.2 0.1 84.4L459 752.3c28.9 23.2 68.7-0.4 68.7-34.9V602h26.1c116.7 0 205.7 50.4 260.2 147.7 10.7 17.7 22 13.8 22 0-2.4-173.3-143-368.1-311.6-368.1h4.9z m-5-0.1"></path></svg>');
+}
+
+.mapbox-gl-draw_draw-center {
+  background-image: url('data:image/svg+xml;utf8,<svg viewBox="0 0 1092 1024" xmlns="http://www.w3.org/2000/svg" width="14" height="14"><path d="M887.466667 0L0 819.2v204.8h204.8L1092.266667 204.8z" p-id="1708"></path><path d="M887.466667 887.466667m-136.533334 0a136.533333 136.533333 0 1 0 273.066667 0 136.533333 136.533333 0 1 0-273.066667 0Z"></path></svg>');
+}
+
+.mapbox-gl-draw_finish {
+  background-image: url('data:image/svg+xml;utf8,<svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" width="16" height="16"><path d="M512 62C264.5 62 62 264.5 62 512s202.5 450 450 450 450-202.5 450-450S759.5 62 512 62z m275 320L479.5 684.5c-2.5 2.5-2.5 5-5 7.5l-15 15c-7.5 7.5-17.5 12.5-20 7.5L289.5 562c-2.5-2.5 0-12.5 7.5-20l15-15c7.5-7.5 17.5-12.5 20-7.5l110 115L742 342c7.5-7.5 20-7.5 30 0l15 15c7.5 5 7.5 17.5 0 25z"></path></svg>');
+}
+
+.mapbox-gl-draw_cancel {
+  background-image: url('data:image/svg+xml;utf8,<svg viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg" width="16" height="16"><path d="M510.975159 63.556525c-245.951645 0-447.184809 201.233164-447.184809 447.184809 0 245.952668 201.233164 447.184809 447.184809 447.184809 245.952668 0 447.185832-201.232141 447.185832-447.184809C958.160991 264.789689 756.926804 63.556525 510.975159 63.556525zM734.568586 671.731958l-62.60178 62.60178L510.975159 573.34209 349.984534 734.333738 287.382754 671.731958l160.990624-160.990624L287.382754 349.749686l62.60178-62.60178L510.975159 448.139553l160.991648-160.991648 62.60178 62.60178L573.576939 510.741333 734.568586 671.731958z"></path></svg>');
+}
+.mapboxgl-map.mouse-pointer .mapboxgl-canvas-container.mapboxgl-interactive {
+  cursor: pointer;
+}
+.mapboxgl-map.mouse-move .mapboxgl-canvas-container.mapboxgl-interactive {
+  cursor: move;
+}
+.mapboxgl-map.mouse-add .mapboxgl-canvas-container.mapboxgl-interactive {
+  cursor: crosshair;
+}
+.mapboxgl-map.mouse-move.mode-direct_select .mapboxgl-canvas-container.mapboxgl-interactive {
+  cursor: grab;
+  cursor: -moz-grab;
+  cursor: -webkit-grab;
+}
+.mapboxgl-map.mode-direct_select.feature-vertex.mouse-move .mapboxgl-canvas-container.mapboxgl-interactive {
+  cursor: move;
+}
+.mapboxgl-map.mode-direct_select.feature-midpoint.mouse-pointer .mapboxgl-canvas-container.mapboxgl-interactive {
+  cursor: cell;
+}
+.mapboxgl-map.mode-direct_select.feature-feature.mouse-move .mapboxgl-canvas-container.mapboxgl-interactive {
+  cursor: move;
+}
+.mapboxgl-map.mode-static.mouse-pointer  .mapboxgl-canvas-container.mapboxgl-interactive {
+  cursor: grab;
+  cursor: -moz-grab;
+  cursor: -webkit-grab;
+}
+.mapbox-gl-draw_boxselect {
+    pointer-events: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 0;
+    height: 0;
+    background: rgba(0,0,0,.1);
+    border: 2px dotted #fff;
+    opacity: 0.5;
+}
+
+.mapbox-gl-draw-measure {
+  color: #fff;
+  text-shadow: 0 1px #000, 1px 0 #000, -1px 0 #000, 0 -1px #000;
+}
