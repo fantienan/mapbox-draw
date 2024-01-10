@@ -5335,7 +5335,7 @@ DirectSelect.onClick = function(state, e) {
   }
   if (isInactiveFeature(e)) {
     // extend start
-    this.afterRender(function () { return mapFireClickOrOnTab(this$1$1, {e: e, type: 'clickInactive'}); });
+    this.afterRender(function () { return mapFireClickOrOnTab(this$1$1, {e: e, type: 'clickInactiveFeature'}); });
     // extend end
     return this.clickInactive(state, e);
   }
@@ -5367,7 +5367,7 @@ DirectSelect.onTap = function(state, e) {
   }
   if (isInactiveFeature(e)) {
     // extend start
-    this.afterRender(function () { return mapFireClickOrOnTab(this$1$1, {e: e, type:'clickInactive'}); });
+    this.afterRender(function () { return mapFireClickOrOnTab(this$1$1, {e: e, type:'clickInactiveFeature'}); });
     // extend end
     return this.clickInactive(state, e);
   }

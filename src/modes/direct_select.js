@@ -279,7 +279,7 @@ DirectSelect.onClick = function(state, e) {
   }
   if (isInactiveFeature(e)) {
     // extend start
-    this.afterRender(() => mapFireClickOrOnTab(this, {e, type: 'clickInactive'}));
+    this.afterRender(() => mapFireClickOrOnTab(this, {e, type: 'clickInactiveFeature'}));
     // extend end
     return this.clickInactive(state, e);
   }
@@ -309,7 +309,7 @@ DirectSelect.onTap = function(state, e) {
   }
   if (isInactiveFeature(e)) {
     // extend start
-    this.afterRender(() => mapFireClickOrOnTab(this, {e, type:'clickInactive'}));
+    this.afterRender(() => mapFireClickOrOnTab(this, {e, type:'clickInactiveFeature'}));
     // extend end
     return this.clickInactive(state, e);
   }

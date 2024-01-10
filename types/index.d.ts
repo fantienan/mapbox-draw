@@ -32,7 +32,18 @@ declare namespace MapboxDraw {
         | 'draw.uncombine'
         | 'draw.modechange'
         | 'draw.actionable'
-        | 'draw.selectionchange';
+        | 'draw.selectionchange'
+        // extend start;
+        | "draw.redoUndo"
+        | "draw.clickOnVertex"
+        | "draw.onMidpoint"
+        | "draw.dragVertex"
+        | "draw.clickOrTab"
+        | "draw.drag"
+        | 'draw.clearSelectedCoordinates'
+        | 'draw.addPoint'
+        | 'draw.onAdd'
+        // extend end
 
     interface DrawModes {
         DRAW_LINE_STRING: 'draw_line_string';
@@ -193,6 +204,82 @@ declare namespace MapboxDraw {
         type: 'draw.actionable';
     }
 
+    interface DrawActionableEvent extends DrawEvent {
+        actions: DrawActionableState;
+        type: 'draw.actionable';
+    }
+
+    // extend start
+    interface DrawExtendEventData {
+        draw: MapboxDraw, 
+        mode: Modes, 
+        state: Record<string, any>
+        e: MapMouseEvent | MapTouchEvent 
+    }
+
+    interface DrawAddEventData extends DrawExtendEventData {
+        controlContainer: HTMLElement
+    }
+
+    interface DrawOnAddEvent extends DrawEvent {
+        data: DrawAddEventData;
+        type: 'draw.onAdd';
+    }
+
+    interface DrawClickOnVertexEvent extends DrawEvent {
+        data: DrawExtendEventData; 
+        type: 'draw.clickOnVertex';
+    }
+
+    interface DrawOnMidpointEvent extends DrawEvent {
+        data: DrawExtendEventData; 
+        type: 'draw.onMidpoint';
+    }
+
+    interface DrawDragVertexEvent extends DrawEvent {
+        data: DrawExtendEventData; 
+        type: 'draw.dragVertex';
+    }
+
+    interface DrawClickOrTabEventData extends DrawExtendEventData {
+        type: 'clickNoTarget' | 'clickInactiveFeature' | 'clickActiveFeature' | 'null'
+    }
+    interface DrawClickOrTabEvent extends DrawEvent {
+        data: DrawClickOrTabEventData; 
+        type: 'draw.clickOrTab';
+    }
+
+    interface DrawDragEventData extends DrawExtendEventDate {
+        type: 'dragVertex' | 'dragFeature' | 'null'
+    }
+
+    interface DrawDragEvent extends DrawEvent {
+        data: DrawExtendEventData; 
+        type: 'draw.drag';
+    }
+
+    interface DrawClearSelectedCoordinatesEvent extends DrawEvent {
+        data: DrawExtendEventData; 
+        type: 'draw.clearSelectedCoordinates';
+    }
+
+    interface DrawAddPointEvent extends DrawEvent {
+        data: DrawExtendEventData;
+        type: 'draw.addPoint';
+    }
+
+    interface DrawRedoUndoEventData extends Omit<DrawExtendEventData, 'e'> {
+        type: 'redo' | 'undo'
+        redoStack: number[][]
+        undoStack: number[][]
+    }
+
+    interface DrawUndoEvent extends DrawEvent {
+        data: DrawRedoUndoEventData;
+        type: 'draw.redoUndo';
+    }
+
+    // extend end
     interface DrawCustomModeThis {
         map: mapboxgl.Map;
 
@@ -305,6 +392,14 @@ declare namespace MapboxDraw {
             ATTRIBUTION: 'mapboxgl-ctrl-attrib';
             ACTIVE_BUTTON: 'active';
             BOX_SELECT: 'mapbox-gl-draw_boxselect';
+            /** extend start */
+            CONTROL_BUTTON_UNDO: 'mapbox-gl-draw_undo',
+            CONTROL_BUTTON_REDO: 'mapbox-gl-draw_redo',
+            CONTROL_BUTTON_FINISH: 'mapbox-gl-draw_finish',
+            CONTROL_BUTTON_CANCEL: 'mapbox-gl-draw_cancel',
+            CONTROL_BUTTON_DRAW_CENTER: 'mapbox-gl-draw_draw-center',
+            MEASURE_MARKER: 'mapbox-gl-draw-measure'
+            /** extend end */
         };
 
         readonly sources: {
@@ -347,6 +442,7 @@ declare namespace MapboxDraw {
             STATIC: 'static';
         };
 
+
         readonly events: {
             CREATE: 'draw.create';
             DELETE: 'draw.delete';
@@ -357,6 +453,17 @@ declare namespace MapboxDraw {
             RENDER: 'draw.render';
             COMBINE_FEATURES: 'draw.combine';
             UNCOMBINE_FEATURES: 'draw.uncombine';
+            // extend start
+            REDO_UNDO: "draw.redoUndo",
+            CLICK_ON_VERTEX: "draw.clickOnVertex",
+            ON_MIDPOINT: "draw.onMidpoint",
+            DRAG_VERTEX: "draw.dragVertex",
+            CLICK_OR_TAB: "draw.clickOrTab",
+            DRAG: "draw.drag",
+            CLEAR_SELECTED_COORDINATES: 'draw.clearSelectedCoordinates',
+            ADD_POINT: 'draw.addPoint',
+            ADD: 'draw.onAdd',
+            // extend end
         };
 
         readonly updateActions: {
