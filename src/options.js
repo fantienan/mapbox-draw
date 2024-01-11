@@ -16,6 +16,7 @@ const defaultOptions = {
   modes,
   controls: {},
   userProperties: false
+
 };
 
 const showControls = {

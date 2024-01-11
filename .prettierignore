@@ -1,0 +1,12 @@
+node_modules
+example/node_modules
+example/public
+src/**/*.png
+bench
+build
+cloudformation
+debug
+dist
+docs
+src/**/*.svg
+test
