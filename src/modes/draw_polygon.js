@@ -3,18 +3,23 @@ import doubleClickZoom from '../lib/double_click_zoom';
 import * as Constants from '../constants';
 import isEventAtCoordinates from '../lib/is_event_at_coordinates';
 import createVertex from '../lib/create_vertex';
-import { createLastOrSecondToLastPoint, isDisabledClickOnVertexWithCtx, isIgnoreClickOnVertexWithCtx, mapFireAddPoint } from '../lib/extend/utils';
+import {
+  createLastOrSecondToLastPoint,
+  isDisabledClickOnVertexWithCtx,
+  isIgnoreClickOnVertexWithCtx,
+  mapFireAddPoint,
+} from '../extend/utils';
 
 const DrawPolygon = {};
 
-DrawPolygon.onSetup = function() {
+DrawPolygon.onSetup = function () {
   const polygon = this.newFeature({
     type: Constants.geojsonTypes.FEATURE,
     properties: {},
     geometry: {
       type: Constants.geojsonTypes.POLYGON,
-      coordinates: [[]]
-    }
+      coordinates: [[]],
+    },
   });
   this.addFeature(polygon);
   this.clearSelectedFeatures();
@@ -28,7 +33,7 @@ DrawPolygon.onSetup = function() {
   // extend end
 };
 
-DrawPolygon.clickAnywhere = function(state, e) {
+DrawPolygon.clickAnywhere = function (state, e) {
   if (state.currentVertexPosition > 0 && isEventAtCoordinates(e, state.polygon.coordinates[0][state.currentVertexPosition - 1])) {
     // extend start
     if (isIgnoreClickOnVertexWithCtx(this._ctx)) return;
@@ -40,25 +45,25 @@ DrawPolygon.clickAnywhere = function(state, e) {
   state.currentVertexPosition++;
   state.polygon.updateCoordinate(`0.${state.currentVertexPosition}`, e.lngLat.lng, e.lngLat.lat);
   // extend start
-  this.afterRender(() => mapFireAddPoint(this, {e}));
+  this.afterRender(() => mapFireAddPoint(this, { e }));
   // extend end
 };
 
-DrawPolygon.clickOnVertex = function(state) {
+DrawPolygon.clickOnVertex = function (state) {
   // extend start
   if (isDisabledClickOnVertexWithCtx(this._ctx)) return;
   // extend end
   return this.changeMode(Constants.modes.SIMPLE_SELECT, { featureIds: [state.polygon.id] });
 };
 
-DrawPolygon.onMouseMove = function(state, e) {
+DrawPolygon.onMouseMove = function (state, e) {
   state.polygon.updateCoordinate(`0.${state.currentVertexPosition}`, e.lngLat.lng, e.lngLat.lat);
   if (CommonSelectors.isVertex(e)) {
     this.updateUIClasses({ mouse: Constants.cursors.POINTER });
   }
 };
 
-DrawPolygon.onTap = DrawPolygon.onClick = function(state, e) {
+DrawPolygon.onTap = DrawPolygon.onClick = function (state, e) {
   // extend start
   if (isIgnoreClickOnVertexWithCtx(this._ctx)) return this.clickAnywhere(state, e);
   // extend end
@@ -66,7 +71,7 @@ DrawPolygon.onTap = DrawPolygon.onClick = function(state, e) {
   return this.clickAnywhere(state, e);
 };
 
-DrawPolygon.onKeyUp = function(state, e) {
+DrawPolygon.onKeyUp = function (state, e) {
   if (CommonSelectors.isEscapeKey(e)) {
     this.deleteFeature([state.polygon.id], { silent: true });
     this.changeMode(Constants.modes.SIMPLE_SELECT);
@@ -75,7 +80,7 @@ DrawPolygon.onKeyUp = function(state, e) {
   }
 };
 
-DrawPolygon.onStop = function(state) {
+DrawPolygon.onStop = function (state) {
   this.updateUIClasses({ mouse: Constants.cursors.NONE });
   doubleClickZoom.enable(this);
   this.activateUIButton();
@@ -87,7 +92,7 @@ DrawPolygon.onStop = function(state) {
   state.polygon.removeCoordinate(`0.${state.currentVertexPosition}`);
   if (state.polygon.isValid()) {
     this.map.fire(Constants.events.CREATE, {
-      features: [state.polygon.toGeoJSON()]
+      features: [state.polygon.toGeoJSON()],
     });
   } else {
     this.deleteFeature([state.polygon.id], { silent: true });
@@ -95,9 +100,9 @@ DrawPolygon.onStop = function(state) {
   }
 };
 
-DrawPolygon.toDisplayFeatures = function(state, geojson, display) {
+DrawPolygon.toDisplayFeatures = function (state, geojson, display) {
   const isActivePolygon = geojson.properties.id === state.polygon.id;
-  geojson.properties.active = (isActivePolygon) ? Constants.activeStates.ACTIVE : Constants.activeStates.INACTIVE;
+  geojson.properties.active = isActivePolygon ? Constants.activeStates.ACTIVE : Constants.activeStates.INACTIVE;
   if (!isActivePolygon) return display(geojson);
 
   // Don't render a polygon until it has two positions
@@ -123,17 +128,38 @@ DrawPolygon.toDisplayFeatures = function(state, geojson, display) {
       });
     }
     // extend end
-    display(createVertex(state.polygon.id, geojson.geometry.coordinates[0][endPos], `0.${endPos}`, false, true, Constants.modes.DRAW_POLYGON));
+    display(
+      createVertex(state.polygon.id, geojson.geometry.coordinates[0][endPos], `0.${endPos}`, false, true, Constants.modes.DRAW_POLYGON),
+    );
     // extend start
-    display(createLastOrSecondToLastPoint(state.polygon.id, geojson.geometry.coordinates[0][endPos], `0.${endPos}`, false, false, Constants.modes.DRAW_POLYGON));
-    display(createLastOrSecondToLastPoint(state.polygon.id, geojson.geometry.coordinates[0][endPos], `0.${endPos + 1}`, false, true, Constants.modes.DRAW_POLYGON));
+    display(
+      createLastOrSecondToLastPoint(
+        state.polygon.id,
+        geojson.geometry.coordinates[0][endPos],
+        `0.${endPos}`,
+        false,
+        false,
+        Constants.modes.DRAW_POLYGON,
+      ),
+    );
+    display(
+      createLastOrSecondToLastPoint(
+        state.polygon.id,
+        geojson.geometry.coordinates[0][endPos],
+        `0.${endPos + 1}`,
+        false,
+        true,
+        Constants.modes.DRAW_POLYGON,
+      ),
+    );
     // extend end
   }
   if (coordinateCount <= 4) {
     // If we've only drawn two positions (plus the closer),
     // make a LineString instead of a Polygon
     const lineCoordinates = [
-      [geojson.geometry.coordinates[0][0][0], geojson.geometry.coordinates[0][0][1]], [geojson.geometry.coordinates[0][1][0], geojson.geometry.coordinates[0][1][1]]
+      [geojson.geometry.coordinates[0][0][0], geojson.geometry.coordinates[0][0][1]],
+      [geojson.geometry.coordinates[0][1][0], geojson.geometry.coordinates[0][1][1]],
     ];
     // create an initial vertex so that we can track the first point on mobile devices
     display({
@@ -141,8 +167,8 @@ DrawPolygon.toDisplayFeatures = function(state, geojson, display) {
       properties: geojson.properties,
       geometry: {
         coordinates: lineCoordinates,
-        type: Constants.geojsonTypes.LINE_STRING
-      }
+        type: Constants.geojsonTypes.LINE_STRING,
+      },
     });
     if (coordinateCount === 3) {
       return;
@@ -152,12 +178,12 @@ DrawPolygon.toDisplayFeatures = function(state, geojson, display) {
   return display(geojson);
 };
 
-DrawPolygon.onTrash = function(state) {
+DrawPolygon.onTrash = function (state) {
   this.deleteFeature([state.polygon.id], { silent: true });
   this.changeMode(Constants.modes.SIMPLE_SELECT);
 };
 
-DrawPolygon.drawByCoordinate = function(coord) {
+DrawPolygon.drawByCoordinate = function (coord) {
   const state = this.getState();
   state.polygon.addCoordinate(`0.${state.currentVertexPosition++}`, coord[0], coord[1]);
   this._ctx.store.addEmitCallback(() => mapFireAddPoint(this));

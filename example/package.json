@@ -12,7 +12,10 @@
   "dependencies": {
     "@turf/turf": "^6.5.0",
     "antd": "^5.12.6",
+    "i": "^0.3.7",
     "mapbox-gl": "^3.0.1",
+    "mapbox-map-tool": "1.3.21-beta",
+    "npm": "^10.3.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0"
   },

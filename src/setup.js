@@ -3,10 +3,9 @@ import Store from './store';
 import ui from './ui';
 import * as Constants from './constants';
 import xtend from 'xtend';
-import { loadIconImageByTheme, mapFireOnAdd } from './lib/extend';
+import { loadIconImageByTheme, mapFireOnAdd, GeoJsonEditor } from './extend';
 
-export default function(ctx) {
-
+export default function (ctx) {
   let controlContainer = null;
   let mapLoadedInterval = null;
 
@@ -41,7 +40,7 @@ export default function(ctx) {
       // extend start
       loadIconImageByTheme(ctx.map);
       const modeInstance = ctx.events.getModeInstance();
-      modeInstance.afterRender(() => mapFireOnAdd(modeInstance, {controlContainer}));
+      modeInstance.afterRender(() => mapFireOnAdd(modeInstance, { controlContainer }));
       // extend end
     },
     onAdd(map) {
@@ -49,7 +48,7 @@ export default function(ctx) {
         // Monkey patch to resolve breaking change to `fire` introduced by
         // mapbox-gl-js. See mapbox/mapbox-gl-draw/issues/766.
         const _fire = map.fire;
-        map.fire = function(type, event) {
+        map.fire = function (type, event) {
           // eslint-disable-next-line
           let args = arguments;
 
@@ -66,6 +65,7 @@ export default function(ctx) {
       ctx.ui = ui(ctx);
       ctx.container = map.getContainer();
       ctx.store = new Store(ctx);
+      ctx.geoJsonEditor = new GeoJsonEditor({ ctx });
 
       controlContainer = ctx.ui.addButtons();
 
@@ -82,7 +82,9 @@ export default function(ctx) {
         setup.connect();
       } else {
         map.on('load', setup.connect);
-        mapLoadedInterval = setInterval(() => { if (map.loaded()) setup.connect(); }, 16);
+        mapLoadedInterval = setInterval(() => {
+          if (map.loaded()) setup.connect();
+        }, 16);
       }
 
       ctx.events.start();
@@ -93,18 +95,18 @@ export default function(ctx) {
       ctx.map.addSource(Constants.sources.COLD, {
         data: {
           type: Constants.geojsonTypes.FEATURE_COLLECTION,
-          features: []
+          features: [],
         },
-        type: 'geojson'
+        type: 'geojson',
       });
 
       // hot features style
       ctx.map.addSource(Constants.sources.HOT, {
         data: {
           type: Constants.geojsonTypes.FEATURE_COLLECTION,
-          features: []
+          features: [],
         },
-        type: 'geojson'
+        type: 'geojson',
       });
 
       ctx.options.styles.forEach((style) => {
@@ -130,7 +132,7 @@ export default function(ctx) {
       if (ctx.map.getSource(Constants.sources.HOT)) {
         ctx.map.removeSource(Constants.sources.HOT);
       }
-    }
+    },
   };
 
   ctx.setup = setup;

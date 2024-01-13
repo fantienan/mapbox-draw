@@ -5,9 +5,9 @@ import isClick from './lib/is_click';
 import isTap from './lib/is_tap';
 import * as Constants from './constants';
 import objectToMode from './modes/object_to_mode';
-import { isClickOnMissAndDoNothing } from './lib/extend/utils';
+import { isClickOnMissAndDoNothing } from './extend/utils';
 
-export default function(ctx) {
+export default function (ctx) {
   const modes = Object.keys(ctx.options.modes).reduce((m, k) => {
     m[k] = objectToMode(ctx.options.modes[k]);
     return m;
@@ -19,11 +19,13 @@ export default function(ctx) {
   let currentModeName = null;
   let currentMode = null;
 
-  events.drag = function(event, isDrag) {
-    if (isDrag({
-      point: event.point,
-      time: new Date().getTime()
-    })) {
+  events.drag = function (event, isDrag) {
+    if (
+      isDrag({
+        point: event.point,
+        time: new Date().getTime(),
+      })
+    ) {
       ctx.ui.queueMapClasses({ mouse: Constants.cursors.DRAG });
       currentMode.drag(event);
     } else {
@@ -31,15 +33,15 @@ export default function(ctx) {
     }
   };
 
-  events.mousedrag = function(event) {
-    events.drag(event, endInfo => !isClick(mouseDownInfo, endInfo));
+  events.mousedrag = function (event) {
+    events.drag(event, (endInfo) => !isClick(mouseDownInfo, endInfo));
   };
 
-  events.touchdrag = function(event) {
-    events.drag(event, endInfo => !isTap(touchStartInfo, endInfo));
+  events.touchdrag = function (event) {
+    events.drag(event, (endInfo) => !isTap(touchStartInfo, endInfo));
   };
 
-  events.mousemove = function(event) {
+  events.mousemove = function (event) {
     const button = event.originalEvent.buttons !== undefined ? event.originalEvent.buttons : event.originalEvent.which;
     if (button === 1) {
       return events.mousedrag(event);
@@ -50,17 +52,17 @@ export default function(ctx) {
     currentMode.mousemove(event);
   };
 
-  events.mousedown = function(event) {
+  events.mousedown = function (event) {
     mouseDownInfo = {
       time: new Date().getTime(),
-      point: event.point
+      point: event.point,
     };
     const target = getFeaturesAndSetCursor(event, ctx);
     event.featureTarget = target;
     currentMode.mousedown(event);
   };
 
-  events.mouseup = function(event) {
+  events.mouseup = function (event) {
     const target = getFeaturesAndSetCursor(event, ctx);
     // extend start
     if (event._defaultPrevented) return;
@@ -71,21 +73,23 @@ export default function(ctx) {
     // mapbox end
     event.featureTarget = target;
 
-    if (isClick(mouseDownInfo, {
-      point: event.point,
-      time: new Date().getTime()
-    })) {
+    if (
+      isClick(mouseDownInfo, {
+        point: event.point,
+        time: new Date().getTime(),
+      })
+    ) {
       currentMode.click(event);
     } else {
       currentMode.mouseup(event);
     }
   };
 
-  events.mouseout = function(event) {
+  events.mouseout = function (event) {
     currentMode.mouseout(event);
   };
 
-  events.touchstart = function(event) {
+  events.touchstart = function (event) {
     // Prevent emulated mouse events because we will fully handle the touch here.
     // This does not stop the touch events from propogating to mapbox though.
     try {
@@ -100,14 +104,14 @@ export default function(ctx) {
 
     touchStartInfo = {
       time: new Date().getTime(),
-      point: event.point
+      point: event.point,
     };
     const target = featuresAt.touch(event, null, ctx)[0];
     event.featureTarget = target;
     currentMode.touchstart(event);
   };
 
-  events.touchmove = function(event) {
+  events.touchmove = function (event) {
     try {
       event.originalEvent.preventDefault();
     } catch (e) {
@@ -122,7 +126,7 @@ export default function(ctx) {
     return events.touchdrag(event);
   };
 
-  events.touchend = function(event) {
+  events.touchend = function (event) {
     try {
       event.originalEvent.preventDefault();
     } catch (e) {
@@ -136,16 +140,18 @@ export default function(ctx) {
     const target = featuresAt.touch(event, null, ctx)[0];
 
     // extend start
-    if (event._defaultPrevented)  return;
+    if (event._defaultPrevented) return;
     if (!target) {
       if (isClickOnMissAndDoNothing(ctx)) return;
     }
     // extend end
     event.featureTarget = target;
-    if (isTap(touchStartInfo, {
-      time: new Date().getTime(),
-      point: event.point
-    })) {
+    if (
+      isTap(touchStartInfo, {
+        time: new Date().getTime(),
+        point: event.point,
+      })
+    ) {
       currentMode.tap(event);
     } else {
       currentMode.touchend(event);
@@ -154,9 +160,9 @@ export default function(ctx) {
 
   // 8 - Backspace
   // 46 - Delete
-  const isKeyModeValid = code => !(code === 8 || code === 46 || (code >= 48 && code <= 57));
+  const isKeyModeValid = (code) => !(code === 8 || code === 46 || (code >= 48 && code <= 57));
 
-  events.keydown = function(event) {
+  events.keydown = function (event) {
     const isMapElement = (event.srcElement || event.target).classList.contains('mapboxgl-canvas');
     if (!isMapElement) return; // we only handle events on the map
 
@@ -174,20 +180,20 @@ export default function(ctx) {
     }
   };
 
-  events.keyup = function(event) {
+  events.keyup = function (event) {
     if (isKeyModeValid(event.keyCode)) {
       currentMode.keyup(event);
     }
   };
 
-  events.zoomend = function() {
+  events.zoomend = function () {
     ctx.store.changeZoom();
   };
 
-  events.data = function(event) {
+  events.data = function (event) {
     if (event.dataType === 'style') {
       const { setup, map, options, store } = ctx;
-      const hasLayers = options.styles.some(style => map.getLayer(style.id));
+      const hasLayers = options.styles.some((style) => map.getLayer(style.id));
       if (!hasLayers) {
         setup.addLayers();
         store.setDirty();
@@ -207,7 +213,7 @@ export default function(ctx) {
     currentMode = setupModeHandler(mode, ctx);
 
     if (!eventOptions.silent) {
-      ctx.map.fire(Constants.events.MODE_CHANGE, { mode: modename});
+      ctx.map.fire(Constants.events.MODE_CHANGE, { mode: modename });
     }
 
     ctx.store.setDirty();
@@ -217,7 +223,7 @@ export default function(ctx) {
   const actionState = {
     trash: false,
     combineFeatures: false,
-    uncombineFeatures: false
+    uncombineFeatures: false,
   };
 
   function actionable(actions) {
@@ -315,7 +321,7 @@ export default function(ctx) {
     },
     setMeasureOptions(options) {
       currentMode.setMeasureOptions(options);
-    }
+    },
     // extend end
   };
 

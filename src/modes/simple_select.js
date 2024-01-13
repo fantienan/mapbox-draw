@@ -5,11 +5,17 @@ import StringSet from '../lib/string_set';
 import doubleClickZoom from '../lib/double_click_zoom';
 import moveFeatures from '../lib/move_features';
 import * as Constants from '../constants';
-import { isClickNotthingNoChangeMode, isDisabledDragVertexWithSimpleSelectMode, isStopPropagationClickActiveFeature, mapFireByClickOnVertex, mapFireClickOrOnTab } from '../lib/extend/utils';
+import {
+  isClickNotthingNoChangeMode,
+  isDisabledDragVertexWithSimpleSelectMode,
+  isStopPropagationClickActiveFeature,
+  mapFireByClickOnVertex,
+  mapFireClickOrOnTab,
+} from '../extend/utils';
 
 const SimpleSelect = {};
 
-SimpleSelect.onSetup = function(opts) {
+SimpleSelect.onSetup = function (opts) {
   // turn the opts into state.
   const state = {
     dragMoveLocation: null,
@@ -19,16 +25,16 @@ SimpleSelect.onSetup = function(opts) {
     canBoxSelect: false,
     dragMoving: false,
     canDragMove: false,
-    initiallySelectedFeatureIds: opts.featureIds || []
+    initiallySelectedFeatureIds: opts.featureIds || [],
   };
 
-  this.setSelected(state.initiallySelectedFeatureIds.filter(id => this.getFeature(id) !== undefined));
+  this.setSelected(state.initiallySelectedFeatureIds.filter((id) => this.getFeature(id) !== undefined));
   this.fireActionable();
 
   this.setActionableState({
     combineFeatures: true,
     uncombineFeatures: true,
-    trash: true
+    trash: true,
   });
 
   // extend start
@@ -36,19 +42,17 @@ SimpleSelect.onSetup = function(opts) {
   // extend end
 };
 
-SimpleSelect.fireUpdate = function() {
+SimpleSelect.fireUpdate = function () {
   this.map.fire(Constants.events.UPDATE, {
     action: Constants.updateActions.MOVE,
-    features: this.getSelected().map(f => f.toGeoJSON())
+    features: this.getSelected().map((f) => f.toGeoJSON()),
   });
 };
 
-SimpleSelect.fireActionable = function() {
+SimpleSelect.fireActionable = function () {
   const selectedFeatures = this.getSelected();
 
-  const multiFeatures = selectedFeatures.filter(
-    feature => this.isInstanceOf('MultiFeature', feature)
-  );
+  const multiFeatures = selectedFeatures.filter((feature) => this.isInstanceOf('MultiFeature', feature));
 
   let combineFeatures = false;
 
@@ -66,14 +70,17 @@ SimpleSelect.fireActionable = function() {
   const trash = selectedFeatures.length > 0;
 
   this.setActionableState({
-    combineFeatures, uncombineFeatures, trash
+    combineFeatures,
+    uncombineFeatures,
+    trash,
   });
 };
 
-SimpleSelect.getUniqueIds = function(allFeatures) {
+SimpleSelect.getUniqueIds = function (allFeatures) {
   if (!allFeatures.length) return [];
-  const ids = allFeatures.map(s => s.properties.id)
-    .filter(id => id !== undefined)
+  const ids = allFeatures
+    .map((s) => s.properties.id)
+    .filter((id) => id !== undefined)
     .reduce((memo, id) => {
       memo.add(id);
       return memo;
@@ -82,7 +89,7 @@ SimpleSelect.getUniqueIds = function(allFeatures) {
   return ids.values();
 };
 
-SimpleSelect.stopExtendedInteractions = function(state) {
+SimpleSelect.stopExtendedInteractions = function (state) {
   if (state.boxSelectElement) {
     if (state.boxSelectElement.parentNode) state.boxSelectElement.parentNode.removeChild(state.boxSelectElement);
     state.boxSelectElement = null;
@@ -96,12 +103,12 @@ SimpleSelect.stopExtendedInteractions = function(state) {
   state.canDragMove = false;
 };
 
-SimpleSelect.onStop = function() {
+SimpleSelect.onStop = function () {
   doubleClickZoom.enable(this);
   this.destroy();
 };
 
-SimpleSelect.onMouseMove = function(state, e) {
+SimpleSelect.onMouseMove = function (state, e) {
   const isFeature = CommonSelectors.isFeature(e);
   if (isFeature && state.dragMoving) this.fireUpdate();
 
@@ -116,7 +123,7 @@ SimpleSelect.onMouseMove = function(state, e) {
   return true;
 };
 
-SimpleSelect.onMouseOut = function(state) {
+SimpleSelect.onMouseOut = function (state) {
   // As soon as you mouse leaves the canvas, update the feature
   if (state.dragMoving) return this.fireUpdate();
 
@@ -124,7 +131,7 @@ SimpleSelect.onMouseOut = function(state) {
   return true;
 };
 
-SimpleSelect.onTap = SimpleSelect.onClick = function(state, e) {
+SimpleSelect.onTap = SimpleSelect.onClick = function (state, e) {
   // Click (with or without shift) on no feature
 
   // extend start
@@ -132,8 +139,8 @@ SimpleSelect.onTap = SimpleSelect.onClick = function(state, e) {
   // extend end
   if (CommonSelectors.noTarget(e)) {
     // extend start
-    mapFireClickOrOnTab(this, {e, type: 'clickNoTarget'});
-    if (isClickNotthingNoChangeMode(this._ctx, e))  return;
+    mapFireClickOrOnTab(this, { e, type: 'clickNoTarget' });
+    if (isClickNotthingNoChangeMode(this._ctx, e)) return;
     // extend end
     return this.clickAnywhere(state, e); // also tap
   }
@@ -146,26 +153,26 @@ SimpleSelect.clickAnywhere = function (state) {
   const wasSelected = this.getSelectedIds();
   if (wasSelected.length) {
     this.clearSelectedFeatures();
-    wasSelected.forEach(id => this.doRender(id));
+    wasSelected.forEach((id) => this.doRender(id));
   }
   doubleClickZoom.enable(this);
   this.stopExtendedInteractions(state);
 };
 
-SimpleSelect.clickOnVertex = function(state, e) {
+SimpleSelect.clickOnVertex = function (state, e) {
   // Enter direct select mode
   this.changeMode(Constants.modes.DIRECT_SELECT, {
     featureId: e.featureTarget.properties.parent,
     coordPath: e.featureTarget.properties.coord_path,
-    startPos: e.lngLat
+    startPos: e.lngLat,
   });
   // extend start
-  this.afterRender(() => mapFireByClickOnVertex(this, {e}));
+  this.afterRender(() => mapFireByClickOnVertex(this, { e }));
   // extend end
   this.updateUIClasses({ mouse: Constants.cursors.MOVE });
 };
 
-SimpleSelect.startOnActiveFeature = function(state, e) {
+SimpleSelect.startOnActiveFeature = function (state, e) {
   // Stop any already-underway extended interactions
   this.stopExtendedInteractions(state);
 
@@ -180,7 +187,7 @@ SimpleSelect.startOnActiveFeature = function(state, e) {
   state.dragMoveLocation = e.lngLat;
 };
 
-SimpleSelect.clickOnFeature = function(state, e) {
+SimpleSelect.clickOnFeature = function (state, e) {
   // Stop everything
   doubleClickZoom.disable(this);
   this.stopExtendedInteractions(state);
@@ -194,7 +201,7 @@ SimpleSelect.clickOnFeature = function(state, e) {
   if (!isShiftClick && isFeatureSelected && this.getFeature(featureId).type !== Constants.geojsonTypes.POINT) {
     // Enter direct select mode
     return this.changeMode(Constants.modes.DIRECT_SELECT, {
-      featureId
+      featureId,
     });
   }
 
@@ -206,15 +213,15 @@ SimpleSelect.clickOnFeature = function(state, e) {
     if (selectedFeatureIds.length === 1) {
       doubleClickZoom.enable(this);
     }
-  // Shift-click on an unselected feature
+    // Shift-click on an unselected feature
   } else if (!isFeatureSelected && isShiftClick) {
     // Add it to the selection
     this.select(featureId);
     this.updateUIClasses({ mouse: Constants.cursors.MOVE });
-  // Click (without shift) on an unselected feature
+    // Click (without shift) on an unselected feature
   } else if (!isFeatureSelected && !isShiftClick) {
     // Make it the only selected feature
-    selectedFeatureIds.forEach(id => this.doRender(id));
+    selectedFeatureIds.forEach((id) => this.doRender(id));
     this.setSelected(featureId);
     this.updateUIClasses({ mouse: Constants.cursors.MOVE });
   }
@@ -223,12 +230,12 @@ SimpleSelect.clickOnFeature = function(state, e) {
   this.doRender(featureId);
 };
 
-SimpleSelect.onMouseDown = function(state, e) {
+SimpleSelect.onMouseDown = function (state, e) {
   if (CommonSelectors.isActiveFeature(e)) return this.startOnActiveFeature(state, e);
   if (this.drawConfig.boxSelect && CommonSelectors.isShiftMousedown(e)) return this.startBoxSelect(state, e);
 };
 
-SimpleSelect.startBoxSelect = function(state, e) {
+SimpleSelect.startBoxSelect = function (state, e) {
   this.stopExtendedInteractions(state);
   this.map.dragPan.disable();
   // Enable box select
@@ -236,11 +243,11 @@ SimpleSelect.startBoxSelect = function(state, e) {
   state.canBoxSelect = true;
 };
 
-SimpleSelect.onTouchStart = function(state, e) {
+SimpleSelect.onTouchStart = function (state, e) {
   if (CommonSelectors.isActiveFeature(e)) return this.startOnActiveFeature(state, e);
 };
 
-SimpleSelect.onDrag = function(state, e) {
+SimpleSelect.onDrag = function (state, e) {
   // extend start
   if (isDisabledDragVertexWithSimpleSelectMode(this._ctx)) return;
   // extend end
@@ -248,7 +255,7 @@ SimpleSelect.onDrag = function(state, e) {
   if (this.drawConfig.boxSelect && state.canBoxSelect) return this.whileBoxSelect(state, e);
 };
 
-SimpleSelect.whileBoxSelect = function(state, e) {
+SimpleSelect.whileBoxSelect = function (state, e) {
   state.boxSelecting = true;
   this.updateUIClasses({ mouse: Constants.cursors.ADD });
 
@@ -272,9 +279,9 @@ SimpleSelect.whileBoxSelect = function(state, e) {
   state.boxSelectElement.style.height = `${maxY - minY}px`;
 };
 
-SimpleSelect.dragMove = function(state, e) {
+SimpleSelect.dragMove = function (state, e) {
   // extend start
-  if (state.dragMoving === false) this._reodUndoAdd({dragMoveLocation: state.dragMoveLocation});
+  if (state.dragMoving === false) this._reodUndoAdd({ dragMoveLocation: state.dragMoveLocation });
   // extend end
   // Dragging when drag move is enabled
   state.dragMoving = true;
@@ -282,7 +289,7 @@ SimpleSelect.dragMove = function(state, e) {
 
   const delta = {
     lng: e.lngLat.lng - state.dragMoveLocation.lng,
-    lat: e.lngLat.lat - state.dragMoveLocation.lat
+    lat: e.lngLat.lat - state.dragMoveLocation.lat,
   };
 
   moveFeatures(this.getSelected(), delta, this);
@@ -290,49 +297,44 @@ SimpleSelect.dragMove = function(state, e) {
   state.dragMoveLocation = e.lngLat;
 };
 
-SimpleSelect.onTouchEnd = SimpleSelect.onMouseUp = function(state, e) {
+SimpleSelect.onTouchEnd = SimpleSelect.onMouseUp = function (state, e) {
   // End any extended interactions
   if (state.dragMoving) {
     this.fireUpdate();
   } else if (state.boxSelecting) {
-    const bbox = [
-      state.boxSelectStartLocation,
-      mouseEventPoint(e.originalEvent, this.map.getContainer())
-    ];
+    const bbox = [state.boxSelectStartLocation, mouseEventPoint(e.originalEvent, this.map.getContainer())];
     const featuresInBox = this.featuresAt(null, bbox, 'click');
-    const idsToSelect = this.getUniqueIds(featuresInBox)
-      .filter(id => !this.isSelected(id));
+    const idsToSelect = this.getUniqueIds(featuresInBox).filter((id) => !this.isSelected(id));
 
     if (idsToSelect.length) {
       this.select(idsToSelect);
-      idsToSelect.forEach(id => this.doRender(id));
+      idsToSelect.forEach((id) => this.doRender(id));
       this.updateUIClasses({ mouse: Constants.cursors.MOVE });
     }
   }
   this.stopExtendedInteractions(state);
 };
 
-SimpleSelect.toDisplayFeatures = function(state, geojson, display) {
-  geojson.properties.active = (this.isSelected(geojson.properties.id)) ?
-    Constants.activeStates.ACTIVE : Constants.activeStates.INACTIVE;
+SimpleSelect.toDisplayFeatures = function (state, geojson, display) {
+  geojson.properties.active = this.isSelected(geojson.properties.id) ? Constants.activeStates.ACTIVE : Constants.activeStates.INACTIVE;
   display(geojson);
   this.fireActionable();
-  if (geojson.properties.active !== Constants.activeStates.ACTIVE ||
-    geojson.geometry.type === Constants.geojsonTypes.POINT) return;
+  if (geojson.properties.active !== Constants.activeStates.ACTIVE || geojson.geometry.type === Constants.geojsonTypes.POINT) return;
   createSupplementaryPoints(geojson, undefined, undefined, Constants.modes.SIMPLE_SELECT).forEach(display);
 };
 
-SimpleSelect.onTrash = function() {
+SimpleSelect.onTrash = function () {
   this.deleteFeature(this.getSelectedIds());
   this.fireActionable();
 };
 
-SimpleSelect.onCombineFeatures = function() {
+SimpleSelect.onCombineFeatures = function () {
   const selectedFeatures = this.getSelected();
 
   if (selectedFeatures.length === 0 || selectedFeatures.length < 2) return;
 
-  const coordinates = [], featuresCombined = [];
+  const coordinates = [],
+    featuresCombined = [];
   const featureType = selectedFeatures[0].type.replace('Multi', '');
 
   for (let i = 0; i < selectedFeatures.length; i++) {
@@ -358,8 +360,8 @@ SimpleSelect.onCombineFeatures = function() {
       properties: featuresCombined[0].properties,
       geometry: {
         type: `Multi${featureType}`,
-        coordinates
-      }
+        coordinates,
+      },
     });
 
     this.addFeature(multiFeature);
@@ -368,13 +370,13 @@ SimpleSelect.onCombineFeatures = function() {
 
     this.map.fire(Constants.events.COMBINE_FEATURES, {
       createdFeatures: [multiFeature.toGeoJSON()],
-      deletedFeatures: featuresCombined
+      deletedFeatures: featuresCombined,
     });
   }
   this.fireActionable();
 };
 
-SimpleSelect.onUncombineFeatures = function() {
+SimpleSelect.onUncombineFeatures = function () {
   const selectedFeatures = this.getSelected();
   if (selectedFeatures.length === 0) return;
 
@@ -399,41 +401,41 @@ SimpleSelect.onUncombineFeatures = function() {
   if (createdFeatures.length > 1) {
     this.map.fire(Constants.events.UNCOMBINE_FEATURES, {
       createdFeatures,
-      deletedFeatures: featuresUncombined
+      deletedFeatures: featuresUncombined,
     });
   }
   this.fireActionable();
 };
 // extend start
-SimpleSelect._reodUndoAdd = function(item) {
+SimpleSelect._reodUndoAdd = function (item) {
   this.redoUndo.undoStack.push(JSON.parse(JSON.stringify(item)));
-  this.afterRender(() => this.redoUndo.fireChange({type: 'add'}));
+  this.afterRender(() => this.redoUndo.fireChange({ type: 'add' }));
 };
-SimpleSelect._redoOrUndo = function(type) {
+SimpleSelect._redoOrUndo = function (type) {
   if (!type) return;
   const item = this.redoUndo[`${type}Stack`].pop();
   if (item) {
     const state = this.getState();
-    const stack = JSON.parse(JSON.stringify({dragMoveLocation: state.dragMoveLocation}));
+    const stack = JSON.parse(JSON.stringify({ dragMoveLocation: state.dragMoveLocation }));
     this.redoUndo[type === 'undo' ? 'redoStack' : 'undoStack'].push(stack);
     const delta = {
       lng: item.dragMoveLocation.lng - state.dragMoveLocation.lng,
-      lat: item.dragMoveLocation.lat - state.dragMoveLocation.lat
+      lat: item.dragMoveLocation.lat - state.dragMoveLocation.lat,
     };
     state.dragMoveLocation = item.dragMoveLocation;
     const features = this.getSelected();
     moveFeatures(features, delta, this);
-    features.forEach(feature => feature.execMeasure());
-    this.afterRender(() => this.redoUndo.fireChange({type}));
+    features.forEach((feature) => feature.execMeasure());
+    this.afterRender(() => this.redoUndo.fireChange({ type }));
     this._ctx.store.render();
   }
 };
 
-SimpleSelect.undo = function() {
+SimpleSelect.undo = function () {
   this._redoOrUndo('undo');
 };
 
-SimpleSelect.redo = function() {
+SimpleSelect.redo = function () {
   this._redoOrUndo('redo');
 };
 

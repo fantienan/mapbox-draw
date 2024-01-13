@@ -1,6 +1,6 @@
-import xtend from "xtend";
-import { mapFireRedoUndo } from "./utils";
-import * as Constants from "../../constants";
+import xtend from 'xtend';
+import { mapFireRedoUndo } from './utils';
+import * as Constants from '../constants';
 
 export class RedoUndo {
   constructor(options) {
@@ -25,9 +25,8 @@ export class RedoUndo {
   _drawAddPointEvent() {
     this.undoStack = [];
     this.redoStack = [];
-    this.fireChange({type: 'clear'});
+    this.fireChange({ type: 'clear' });
   }
-
 
   _fireChangeAndRender(eventData) {
     this._modeInstance.afterRender(() => this.fireChange(eventData), true);
@@ -45,8 +44,8 @@ export class RedoUndo {
     }
     const e = xtend(eventData, { undoStack, redoStack: this.redoStack });
     this._ctx.ui.setDisableButtons((buttonStatus) => {
-      buttonStatus.undo = {disabled: e.undoStack.length === 0};
-      buttonStatus.redo = {disabled: e.redoStack.length === 0};
+      buttonStatus.undo = { disabled: e.undoStack.length === 0 };
+      buttonStatus.redo = { disabled: e.redoStack.length === 0 };
       return buttonStatus;
     });
 
@@ -66,7 +65,7 @@ export class RedoUndo {
     if (coord) {
       state.currentVertexPosition--;
       this.redoStack.push(coord);
-      this._fireChangeAndRender({type: 'undo'});
+      this._fireChangeAndRender({ type: 'undo' });
     }
   }
 
@@ -79,7 +78,7 @@ export class RedoUndo {
     } else if (state.polygon) {
       state.polygon.addCoordinate(`0.${state.currentVertexPosition++}`, coord[0], coord[1]);
     }
-    this._fireChangeAndRender({type: 'redo'});
+    this._fireChangeAndRender({ type: 'redo' });
   }
 
   destroy() {

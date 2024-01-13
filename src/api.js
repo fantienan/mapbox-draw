@@ -18,16 +18,15 @@ const featureTypes = {
   Point,
   MultiPolygon: MultiFeature,
   MultiLineString: MultiFeature,
-  MultiPoint: MultiFeature
+  MultiPoint: MultiFeature,
 };
 
-export default function(ctx, api) {
-
+export default function (ctx, api) {
   api.modes = Constants.modes;
 
-  api.getFeatureIdsAt = function(point) {
+  api.getFeatureIdsAt = function (point) {
     const features = featuresAt.click({ point }, null, ctx);
-    return features.map(feature => feature.properties.id);
+    return features.map((feature) => feature.properties.id);
   };
 
   api.getSelectedIds = function () {
@@ -37,26 +36,33 @@ export default function(ctx, api) {
   api.getSelected = function () {
     return {
       type: Constants.geojsonTypes.FEATURE_COLLECTION,
-      features: ctx.store.getSelectedIds().map(id => ctx.store.get(id)).map(feature => feature.toGeoJSON())
+      features: ctx.store
+        .getSelectedIds()
+        .map((id) => ctx.store.get(id))
+        .map((feature) => feature.toGeoJSON()),
     };
   };
 
   api.getSelectedPoints = function () {
     return {
       type: Constants.geojsonTypes.FEATURE_COLLECTION,
-      features: ctx.store.getSelectedCoordinates().map(coordinate => ({
+      features: ctx.store.getSelectedCoordinates().map((coordinate) => ({
         type: Constants.geojsonTypes.FEATURE,
         properties: {},
         geometry: {
           type: Constants.geojsonTypes.POINT,
-          coordinates: coordinate.coordinates
-        }
-      }))
+          coordinates: coordinate.coordinates,
+        },
+      })),
     };
   };
 
-  api.set = function(featureCollection) {
-    if (featureCollection.type === undefined || featureCollection.type !== Constants.geojsonTypes.FEATURE_COLLECTION || !Array.isArray(featureCollection.features)) {
+  api.set = function (featureCollection) {
+    if (
+      featureCollection.type === undefined ||
+      featureCollection.type !== Constants.geojsonTypes.FEATURE_COLLECTION ||
+      !Array.isArray(featureCollection.features)
+    ) {
       throw new Error('Invalid FeatureCollection');
     }
     const renderBatch = ctx.store.createRenderBatch();
@@ -64,7 +70,7 @@ export default function(ctx, api) {
     const newIds = api.add(featureCollection);
     const newIdsLookup = new StringSet(newIds);
 
-    toDelete = toDelete.filter(id => !newIdsLookup.has(id));
+    toDelete = toDelete.filter((id) => !newIdsLookup.has(id));
     if (toDelete.length) {
       api.delete(toDelete);
     }
@@ -106,7 +112,6 @@ export default function(ctx, api) {
     return ids;
   };
 
-
   api.get = function (id) {
     const feature = ctx.store.get(id);
     if (feature) {
@@ -114,14 +119,14 @@ export default function(ctx, api) {
     }
   };
 
-  api.getAll = function() {
+  api.getAll = function () {
     return {
       type: Constants.geojsonTypes.FEATURE_COLLECTION,
-      features: ctx.store.getAll().map(feature => feature.toGeoJSON())
+      features: ctx.store.getAll().map((feature) => feature.toGeoJSON()),
     };
   };
 
-  api.delete = function(featureIds) {
+  api.delete = function (featureIds) {
     ctx.store.delete(featureIds, { silent: true });
     // If we were in direct select mode and our selected feature no longer exists
     // (because it was deleted), we need to get out of that mode.
@@ -134,7 +139,7 @@ export default function(ctx, api) {
     return api;
   };
 
-  api.deleteAll = function() {
+  api.deleteAll = function () {
     ctx.store.delete(ctx.store.getAllIds(), { silent: true });
     // If we were in direct select mode, now our selected feature no longer exists,
     // so escape that mode.
@@ -147,10 +152,10 @@ export default function(ctx, api) {
     return api;
   };
 
-  api.changeMode = function(mode, modeOptions = {}) {
+  api.changeMode = function (mode, modeOptions = {}) {
     // Avoid changing modes just to re-select what's already selected
     if (mode === Constants.modes.SIMPLE_SELECT && api.getMode() === Constants.modes.SIMPLE_SELECT) {
-      if (stringSetsAreEqual((modeOptions.featureIds || []), ctx.store.getSelectedIds())) return api;
+      if (stringSetsAreEqual(modeOptions.featureIds || [], ctx.store.getSelectedIds())) return api;
       // And if we are changing the selection within simple_select mode, just change the selection,
       // instead of stopping and re-starting the mode
       ctx.store.setSelected(modeOptions.featureIds, { silent: true });
@@ -158,8 +163,11 @@ export default function(ctx, api) {
       return api;
     }
 
-    if (mode === Constants.modes.DIRECT_SELECT && api.getMode() === Constants.modes.DIRECT_SELECT &&
-      modeOptions.featureId === ctx.store.getSelectedIds()[0]) {
+    if (
+      mode === Constants.modes.DIRECT_SELECT &&
+      api.getMode() === Constants.modes.DIRECT_SELECT &&
+      modeOptions.featureId === ctx.store.getSelectedIds()[0]
+    ) {
       return api;
     }
 
@@ -167,59 +175,59 @@ export default function(ctx, api) {
     return api;
   };
 
-  api.getMode = function() {
+  api.getMode = function () {
     return ctx.events.getMode();
   };
 
-  api.trash = function() {
+  api.trash = function () {
     ctx.events.trash({ silent: true });
     return api;
   };
 
-  api.combineFeatures = function() {
+  api.combineFeatures = function () {
     ctx.events.combineFeatures({ silent: true });
     return api;
   };
 
-  api.uncombineFeatures = function() {
+  api.uncombineFeatures = function () {
     ctx.events.uncombineFeatures({ silent: true });
     return api;
   };
 
-  api.setFeatureProperty = function(featureId, property, value) {
+  api.setFeatureProperty = function (featureId, property, value) {
     ctx.store.setFeatureProperty(featureId, property, value);
     return api;
   };
 
-  api.getFeatureTypeById = function(id) {
+  api.getFeatureTypeById = function (id) {
     return ctx.store.get(id);
   };
   // extend start
-  api.undo = function() {
+  api.undo = function () {
     ctx.events.undo();
     return api;
   };
-  api.redo = function() {
+  api.redo = function () {
     ctx.events.redo();
     return api;
   };
-  api.finish = function(m) {
+  api.finish = function (m) {
     ctx.events.finish(m);
     return api;
   };
-  api.cancel = function(m) {
+  api.cancel = function (m) {
     ctx.events.cancel(m);
     return api;
   };
-  api.drawByCenter = function() {
+  api.drawByCenter = function () {
     ctx.events.drawByCoordinate(ctx.map.getCenter().toArray());
     return api;
   };
-  api.drawByCoordinate = function(coord) {
+  api.drawByCoordinate = function (coord) {
     ctx.events.drawByCoordinate(coord);
     return api;
   };
-  api.setStyle = function(styles) {
+  api.setStyle = function (styles) {
     ctx.options.styles.forEach((style) => {
       if (ctx.map.getLayer(style.id)) ctx.map.removeLayer(style.id);
     });
@@ -230,12 +238,15 @@ export default function(ctx, api) {
     });
     return api;
   };
-  api.edit = function(geojson) {
+  api.edit = function (geojson) {
     const ids = api.add(geojson);
     const type = geojson.type;
-    const feature = type === Constants.geojsonTypes.FEATURE ?
-      geojson : Constants.GEOMETRYS.includes(type) ?
-        { type: Constants.geojsonTypes.FEATURE, properties: {}, geometry: geojson } : null;
+    const feature =
+      type === Constants.geojsonTypes.FEATURE
+        ? geojson
+        : Constants.GEOMETRYS.includes(type)
+        ? { type: Constants.geojsonTypes.FEATURE, properties: {}, geometry: geojson }
+        : null;
     if (!feature) {
       console.warn('only support edit feature or geometry');
       return api;
@@ -247,8 +258,12 @@ export default function(ctx, api) {
     }
     return api;
   };
-  api.setMeasureOptions = function(options) {
+  api.setMeasureOptions = function (options) {
     ctx.events.setMeasureOptions(options);
+    return api;
+  };
+  api.setGeoJsonEditorOptions = function (options) {
+    ctx.geoJsonEditor.setOptions(options);
     return api;
   };
   // extend end

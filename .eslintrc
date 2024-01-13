@@ -18,8 +18,11 @@
     "no-duplicate-imports": "off",
     "import/no-duplicates": "error",
     "import/no-commonjs": "error",
-
-    "indent": [2,2],
+    "indent": [
+      2,
+      2,
+      4
+    ],
     "array-bracket-spacing": "off",
     "block-scoped-var": "error",
     "consistent-return": "off",
@@ -37,7 +40,17 @@
     "space-before-function-paren": "off",
     "template-curly-spacing": "error",
     "camelcase": 0,
-    "no-console": ["error", { "allow": ["warn", "error"] }]
+    "no-console": [
+      "error",
+      {
+        "allow": [
+          "warn",
+          "error"
+        ]
+      }
+    ],
+    "arrow-parens": "off",
+    "operator-linebreak": "off"
   },
   "env": {
     "es6": true,

@@ -1,10 +1,10 @@
-import * as Constants from '../../constants';
+import * as Constants from '../constants';
 import * as images from './images';
 
 function getEventData(modeInstance, eventData) {
   const draw = modeInstance.getCtx().api;
-  const data = {...eventData, draw, mode: draw.getMode(), state: modeInstance.getState() };
-  return {data};
+  const data = { ...eventData, draw, mode: draw.getMode(), state: modeInstance.getState() };
+  return { data };
 }
 
 export function mapFireOnAdd(modeInstance, eventData) {
@@ -63,12 +63,12 @@ export function createLastOrSecondToLastPoint(parentId, coordinates, path, selec
       parent: parentId,
       coord_path: path,
       active: selected ? Constants.activeStates.ACTIVE : Constants.activeStates.INACTIVE,
-      mode
+      mode,
     },
     geometry: {
       type: Constants.geojsonTypes.POINT,
-      coordinates
-    }
+      coordinates,
+    },
   };
 }
 
@@ -92,7 +92,12 @@ export function isStopPropagationClickActiveFeature(ctx, e) {
   try {
     if (ctx.options.disableSelect) return true;
     const className = ctx.options.stopPropagationClickActiveFeatureHandlerClassName;
-    return e.originalEvent.target && typeof e.originalEvent.target.className === 'string' && className && e.originalEvent.target.className.includes(className);
+    return (
+      e.originalEvent.target &&
+      typeof e.originalEvent.target.className === 'string' &&
+      className &&
+      e.originalEvent.target.className.includes(className)
+    );
   } catch (e) {
     return false;
   }
@@ -137,7 +142,7 @@ function loadIconImage(map, iconImage) {
       if (error) {
         reject(error);
       } else if (!map.hasImage(iconImage.id)) {
-        resolve({...iconImage, image});
+        resolve({ ...iconImage, image });
       }
     });
   });
@@ -149,14 +154,16 @@ export function batchLoadImages(map, iconImages) {
     iconImages.forEach((iconImage) => {
       promises.push(loadIconImage(map, iconImage));
     });
-    Promise.all(promises).then((res) => {
-      res.forEach((iconImage) => {
-        map.addImage(iconImage.id, iconImage.image);
+    Promise.all(promises)
+      .then((res) => {
+        res.forEach((iconImage) => {
+          map.addImage(iconImage.id, iconImage.image);
+        });
+        resolve(res);
+      })
+      .catch((error) => {
+        reject(error);
       });
-      resolve(res);
-    }).catch((error) => {
-      reject(error);
-    });
   });
 }
 
@@ -164,5 +171,5 @@ export function loadIconImageByTheme(map) {
   const icon2 = { url: images.icon1, id: 'gl-draw-icon1' };
   const icon1 = { url: images.icon2, id: 'gl-draw-icon2' };
   const icon3 = { url: images.icon3, id: 'gl-draw-icon3' };
-  batchLoadImages(map, [{...icon1}, {...icon2}, {...icon3}]);
+  batchLoadImages(map, [{ ...icon1 }, { ...icon2 }, { ...icon3 }]);
 }

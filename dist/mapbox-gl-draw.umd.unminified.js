@@ -592,7 +592,7 @@ var icon3 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADMAAABRCAYAAAB/nZ57A
 function getEventData(modeInstance, eventData) {
   var draw = modeInstance.getCtx().api;
   var data = Object.assign({}, eventData, {draw: draw, mode: draw.getMode(), state: modeInstance.getState()});
-  return {data: data};
+  return { data: data };
 }
 
 function mapFireOnAdd(modeInstance, eventData) {
@@ -651,12 +651,12 @@ function createLastOrSecondToLastPoint(parentId, coordinates, path, selected, is
       parent: parentId,
       coord_path: path,
       active: selected ? activeStates.ACTIVE : activeStates.INACTIVE,
-      mode: mode
+      mode: mode,
     },
     geometry: {
       type: geojsonTypes.POINT,
-      coordinates: coordinates
-    }
+      coordinates: coordinates,
+    },
   };
 }
 
@@ -680,7 +680,12 @@ function isStopPropagationClickActiveFeature(ctx, e) {
   try {
     if (ctx.options.disableSelect) { return true; }
     var className = ctx.options.stopPropagationClickActiveFeatureHandlerClassName;
-    return e.originalEvent.target && typeof e.originalEvent.target.className === 'string' && className && e.originalEvent.target.className.includes(className);
+    return (
+      e.originalEvent.target &&
+      typeof e.originalEvent.target.className === 'string' &&
+      className &&
+      e.originalEvent.target.className.includes(className)
+    );
   } catch (e$1) {
     return false;
   }
@@ -737,14 +742,16 @@ function batchLoadImages(map, iconImages) {
     iconImages.forEach(function (iconImage) {
       promises.push(loadIconImage(map, iconImage));
     });
-    Promise.all(promises).then(function (res) {
-      res.forEach(function (iconImage) {
-        map.addImage(iconImage.id, iconImage.image);
+    Promise.all(promises)
+      .then(function (res) {
+        res.forEach(function (iconImage) {
+          map.addImage(iconImage.id, iconImage.image);
+        });
+        resolve(res);
+      })
+      .catch(function (error) {
+        reject(error);
       });
-      resolve(res);
-    }).catch(function (error) {
-      reject(error);
-    });
   });
 }
 
@@ -760,9 +767,7 @@ function getFeatureAtAndSetCursors(event, ctx) {
   var classes = { mouse: cursors.NONE };
 
   if (features[0]) {
-
-    classes.mouse = (features[0].properties.active === activeStates.ACTIVE) ?
-      cursors.MOVE : cursors.POINTER;
+    classes.mouse = features[0].properties.active === activeStates.ACTIVE ? cursors.MOVE : cursors.POINTER;
     classes.feature = features[0].properties.meta;
     // extend start
     isDisabledDragVertexUi(ctx, features[0], classes);
@@ -934,9 +939,8 @@ RedoUndo.prototype._unbindEvent = function _unbindEvent () {
 RedoUndo.prototype._drawAddPointEvent = function _drawAddPointEvent () {
   this.undoStack = [];
   this.redoStack = [];
-  this.fireChange({type: 'clear'});
+  this.fireChange({ type: 'clear' });
 };
-
 
 RedoUndo.prototype._fireChangeAndRender = function _fireChangeAndRender (eventData) {
     var this$1$1 = this;
@@ -956,8 +960,8 @@ RedoUndo.prototype.fireChange = function fireChange (eventData) {
   }
   var e = xtend(eventData, { undoStack: undoStack, redoStack: this.redoStack });
   this._ctx.ui.setDisableButtons(function (buttonStatus) {
-    buttonStatus.undo = {disabled: e.undoStack.length === 0};
-    buttonStatus.redo = {disabled: e.redoStack.length === 0};
+    buttonStatus.undo = { disabled: e.undoStack.length === 0 };
+    buttonStatus.redo = { disabled: e.redoStack.length === 0 };
     return buttonStatus;
   });
 
@@ -979,7 +983,7 @@ RedoUndo.prototype.undo = function undo () {
   if (coord) {
     state.currentVertexPosition--;
     this.redoStack.push(coord);
-    this._fireChangeAndRender({type: 'undo'});
+    this._fireChangeAndRender({ type: 'undo' });
   }
 };
 
@@ -992,7 +996,7 @@ RedoUndo.prototype.redo = function redo () {
   } else if (state.polygon) {
     state.polygon.addCoordinate(("0." + (state.currentVertexPosition++)), coord[0], coord[1]);
   }
-  this._fireChangeAndRender({type: 'redo'});
+  this._fireChangeAndRender({ type: 'redo' });
 };
 
 RedoUndo.prototype.destroy = function destroy () {
@@ -1000,6 +1004,848 @@ RedoUndo.prototype.destroy = function destroy () {
   this.undoStack = [];
   this.redoStack = [];
 };
+
+var theme1 = [
+  {
+    id: "gl-draw-polygon-fill-inactive",
+    type: 'fill',
+    filter: ['all', ['==', 'active', 'false'], ['==', '$type', 'Polygon'], ['!=', 'mode', 'static']],
+    paint: {
+      'fill-color':  '#E1361B',
+      'fill-outline-color':  '#E1361B',
+      'fill-opacity': 0.1,
+    },
+  },
+  {
+    id: "gl-draw-polygon-fill-active",
+    type: 'fill',
+    filter: ['all', ['==', 'active', 'true'], ['==', '$type', 'Polygon']],
+    paint: {
+      'fill-color':  '#E1361B',
+      'fill-outline-color':  '#E1361B',
+      'fill-opacity': 0.1,
+    },
+  },
+  {
+    id: "gl-draw-polygon-midpoint",
+    type: 'circle',
+    filter: ['all', ['==', '$type', 'Point'], ['==', 'meta', 'midpoint']],
+    paint: {
+      'circle-radius': 3,
+      'circle-color':  '#E1361B',
+    },
+  },
+  {
+    id: "gl-draw-polygon-stroke-inactive",
+    type: 'line',
+    filter: ['all', ['==', 'active', 'false'], ['==', '$type', 'Polygon'], ['!=', 'mode', 'static']],
+    layout: {
+      'line-cap': 'round',
+      'line-join': 'round',
+    },
+    paint: {
+      'line-color':  '#E1361B',
+      'line-width': 2,
+    },
+  },
+  {
+    id: "gl-draw-polygon-stroke-active",
+    type: 'line',
+    filter: ['all', ['==', 'active', 'true'], ['==', '$type', 'Polygon']],
+    layout: {
+      'line-cap': 'round',
+      'line-join': 'round',
+    },
+    paint: {
+      'line-color':  '#E1361B',
+      'line-width': 2,
+    },
+  },
+  {
+    id: "gl-draw-line-inactive",
+    type: 'line',
+    filter: ['all', ['==', 'active', 'false'], ['==', '$type', 'LineString'], ['!=', 'mode', 'static']],
+    layout: {
+      'line-cap': 'round',
+      'line-join': 'round',
+    },
+    paint: {
+      'line-color':  '#E1361B',
+      'line-width': 2,
+    },
+  },
+  {
+    id: "gl-draw-line-active",
+    type: 'line',
+    filter: ['all', ['==', '$type', 'LineString'], ['==', 'active', 'true']],
+    layout: {
+      'line-cap': 'round',
+      'line-join': 'round',
+    },
+    paint: {
+      'line-color':  '#E1361B',
+      'line-width': 2,
+    },
+  },
+
+  {
+    id: "gl-draw-polygon-and-line-vertex-stroke-ringlike-inactive",
+    type: 'circle',
+    filter: ['all', ['==', 'meta', 'vertex'], ['==', '$type', 'Point'], ['!=', 'mode', 'static']],
+    paint: {
+      'circle-radius': 8,
+      'circle-color':  '#E1361B',
+    },
+  },
+  {
+    id: "gl-draw-polygon-and-line-vertex-stroke-inactive",
+    type: 'circle',
+    filter: ['all', ['==', 'meta', 'vertex'], ['==', '$type', 'Point'], ['!=', 'mode', 'static']],
+    paint: {
+      'circle-radius': 6,
+      'circle-color': '#fff',
+    },
+  },
+  {
+    id: "gl-draw-polygon-and-line-vertex-inactive",
+    type: 'circle',
+    filter: ['all', ['==', 'meta', 'vertex'], ['==', '$type', 'Point'], ['!=', 'mode', 'static']],
+    paint: {
+      'circle-radius': 4,
+      'circle-color':  '#E1361B',
+    },
+  },
+  {
+    id: "gl-draw-point-point-stroke-inactive",
+    type: 'circle',
+    filter: ['all', ['==', 'active', 'false'], ['==', '$type', 'Point'], ['==', 'meta', 'feature'], ['!=', 'mode', 'static']],
+    paint: {
+      'circle-radius': 5,
+      'circle-opacity': 1,
+      'circle-color': '#fff',
+    },
+  },
+  {
+    id: "gl-draw-point-inactive",
+    type: 'circle',
+    filter: ['all', ['==', 'active', 'false'], ['==', '$type', 'Point'], ['==', 'meta', 'feature'], ['!=', 'mode', 'static']],
+    paint: {
+      'circle-radius': 5,
+      'circle-color':  '#E1361B',
+    },
+  },
+  {
+    id: "gl-draw-point-stroke-ringlike-active",
+    type: 'circle',
+    filter: ['all', ['==', '$type', 'Point'], ['==', 'active', 'true'], ['!=', 'meta', 'midpoint'], ['!has', 'user__edit-point']],
+    paint: {
+      'circle-radius': 9,
+      'circle-color':  '#E1361B',
+    },
+  },
+  {
+    id: "gl-draw-point-stroke-active",
+    type: 'circle',
+    filter: ['all', ['==', '$type', 'Point'], ['==', 'active', 'true'], ['!=', 'meta', 'midpoint'], ['!has', 'user__edit-point']],
+    paint: {
+      'circle-radius': 7,
+      'circle-color': '#fff',
+    },
+  },
+  {
+    id: "gl-draw-point-active",
+    type: 'circle',
+    filter: ['all', ['==', '$type', 'Point'], ['!=', 'meta', 'midpoint'], ['==', 'active', 'true'], ['!has', 'user__edit-point']],
+    paint: {
+      'circle-radius': 5,
+      'circle-color':  '#E1361B',
+    },
+  },
+  {
+    id: "gl-draw-polygon-fill-static",
+    type: 'fill',
+    filter: ['all', ['==', 'mode', 'static'], ['==', '$type', 'Polygon']],
+    paint: {
+      'fill-color': '#404040',
+      'fill-outline-color': '#404040',
+      'fill-opacity': 0.1,
+    },
+  },
+  {
+    id: "gl-draw-polygon-stroke-static",
+    type: 'line',
+    filter: ['all', ['==', 'mode', 'static'], ['==', '$type', 'Polygon']],
+    layout: {
+      'line-cap': 'round',
+      'line-join': 'round',
+    },
+    paint: {
+      'line-color': '#404040',
+      'line-width': 2,
+    },
+  },
+  {
+    id: "gl-draw-line-static",
+    type: 'line',
+    filter: ['all', ['==', 'mode', 'static'], ['==', '$type', 'LineString']],
+    layout: {
+      'line-cap': 'round',
+      'line-join': 'round',
+    },
+    paint: {
+      'line-color': '#404040',
+      'line-width': 2,
+    },
+  },
+  {
+    id: "gl-draw-point-static",
+    type: 'circle',
+    filter: ['all', ['==', 'mode', 'static'], ['==', '$type', 'Point']],
+    paint: {
+      'circle-radius': 5,
+      'circle-color': '#404040',
+    },
+  },
+  {
+    id: "gl-draw-point-active-symbol",
+    type: 'symbol',
+    filter: ['all', ['==', '$type', 'Point'], ['!=', 'meta', 'midpoint'], ['==', 'active', 'true'], ['==', 'user__edit-point', 'true']],
+    layout: {
+      'icon-anchor': ['coalesce', ['get', 'user__edit-point-icon-anchor'], 'bottom'],
+      'icon-image': ['coalesce', ['get', 'user__edit-point-icon-image'], 'gl-draw-icon2'],
+      // 'icon-anchor': 'bottom',
+      'icon-allow-overlap': true, // 允许图标重叠
+      'text-ignore-placement': true, // 忽略文字的碰撞
+      'icon-ignore-placement': true, // 忽略图标的碰撞
+      'icon-size': ['coalesce', ['get', 'user__edit-point-icon-size'], 1],
+      'icon-offset': ['coalesce', ['get', 'user__edit-point-icon-offset'], [0, 4]],
+    },
+  },
+  {
+    id: "gl-draw-line-second-to-last-point-symbol",
+    type: 'symbol',
+    filter: [
+      'all',
+      ['==', 'meta', 'second_to_last_point'],
+      ['==', '$type', 'Point'],
+      ['any', ['==', 'mode', 'draw_line_string'], ['==', 'mode', 'draw_polygon']] ],
+    layout: {
+      'icon-anchor': 'bottom',
+      'icon-image': 'gl-draw-icon2',
+      'icon-allow-overlap': true, // 允许图标重叠
+      'text-ignore-placement': true, // 忽略文字的碰撞
+      'icon-ignore-placement': true, // 忽略图标的碰撞
+      'icon-size': 0.7
+    },
+  }
+];
+
+var theme2 = [
+  {
+    "id": "gl-draw-polygon-fill-inactive",
+    "type": "fill",
+    "filter": [
+      "all",
+      [
+        "==",
+        "active",
+        "false"
+      ],
+      [
+        "==",
+        "$type",
+        "Polygon"
+      ],
+      [
+        "!=",
+        "mode",
+        "static"
+      ]
+    ],
+    "paint": {
+      "fill-color": "#E1361B",
+      "fill-outline-color": "#E1361B",
+      "fill-opacity": 0.1
+    }
+  },
+  {
+    "id": "gl-draw-polygon-fill-active",
+    "type": "fill",
+    "filter": [
+      "all",
+      [
+        "==",
+        "active",
+        "true"
+      ],
+      [
+        "==",
+        "$type",
+        "Polygon"
+      ]
+    ],
+    "paint": {
+      "fill-color": "#E1361B",
+      "fill-outline-color": "#E1361B",
+      "fill-opacity": 0.1
+    }
+  },
+  {
+    "id": "gl-draw-polygon-midpoint",
+    "type": "circle",
+    "filter": [
+      "all",
+      [
+        "==",
+        "$type",
+        "Point"
+      ],
+      [
+        "==",
+        "meta",
+        "midpoint"
+      ]
+    ],
+    "paint": {
+      "circle-radius": 3,
+      "circle-color": "#E1361B"
+    }
+  },
+  {
+    "id": "gl-draw-polygon-stroke-inactive",
+    "type": "line",
+    "filter": [
+      "all",
+      [
+        "==",
+        "active",
+        "false"
+      ],
+      [
+        "==",
+        "$type",
+        "Polygon"
+      ],
+      [
+        "!=",
+        "mode",
+        "static"
+      ]
+    ],
+    "layout": {
+      "line-cap": "round",
+      "line-join": "round"
+    },
+    "paint": {
+      "line-color": "#E1361B",
+      "line-width": 2
+    }
+  },
+  {
+    "id": "gl-draw-polygon-stroke-active",
+    "type": "line",
+    "filter": [
+      "all",
+      [
+        "==",
+        "active",
+        "true"
+      ],
+      [
+        "==",
+        "$type",
+        "Polygon"
+      ]
+    ],
+    "layout": {
+      "line-cap": "round",
+      "line-join": "round"
+    },
+    "paint": {
+      "line-color": "#FFCF56",
+      "line-width": 2,
+      "line-dasharray": [
+        4,
+        3
+      ]
+    }
+  },
+  {
+    "id": "gl-draw-line-inactive",
+    "type": "line",
+    "filter": [
+      "all",
+      [
+        "==",
+        "active",
+        "false"
+      ],
+      [
+        "==",
+        "$type",
+        "LineString"
+      ],
+      [
+        "!=",
+        "mode",
+        "static"
+      ]
+    ],
+    "layout": {
+      "line-cap": "round",
+      "line-join": "round"
+    },
+    "paint": {
+      "line-color": "#E1361B",
+      "line-width": 2
+    }
+  },
+  {
+    "id": "gl-draw-line-active",
+    "type": "line",
+    "filter": [
+      "all",
+      [
+        "==",
+        "$type",
+        "LineString"
+      ],
+      [
+        "==",
+        "active",
+        "true"
+      ]
+    ],
+    "layout": {
+      "line-cap": "round",
+      "line-join": "round"
+    },
+    "paint": {
+      "line-color": "#FFCF56",
+      "line-width": 2,
+      "line-dasharray": [
+        4,
+        3
+      ]
+    }
+  },
+  {
+    "id": "gl-draw-polygon-and-line-vertex-stroke-ringlike-symbol-inactive",
+    "type": "symbol",
+    "filter": [
+      "all",
+      [
+        "==",
+        "meta",
+        "vertex"
+      ],
+      [
+        "==",
+        "$type",
+        "Point"
+      ],
+      [
+        "!=",
+        "mode",
+        "static"
+      ]
+    ],
+    "layout": {
+      "icon-anchor": "bottom",
+      "icon-image": "gl-draw-icon3",
+      "icon-size": 0.45,
+      "icon-offset": [
+        0,
+        16
+      ],
+      "icon-allow-overlap": true,
+      "text-ignore-placement": true,
+      "icon-ignore-placement": true
+    }
+  },
+  {
+    "id": "gl-draw-polygon-and-line-vertex-stroke-symbol-inactive",
+    "type": "symbol",
+    "filter": [
+      "all",
+      [
+        "==",
+        "meta",
+        "vertex"
+      ],
+      [
+        "==",
+        "$type",
+        "Point"
+      ],
+      [
+        "!=",
+        "mode",
+        "static"
+      ]
+    ],
+    "layout": {
+      "icon-anchor": "bottom",
+      "icon-image": "gl-draw-icon3",
+      "icon-size": 0.45,
+      "icon-offset": [
+        0,
+        16
+      ],
+      "icon-allow-overlap": true,
+      "text-ignore-placement": true,
+      "icon-ignore-placement": true
+    }
+  },
+
+  {
+    "id": "gl-draw-polygon-and-line-vertex-symbol-inactive",
+    "type": "symbol",
+    "filter": [
+      "all",
+      [
+        "==",
+        "meta",
+        "vertex"
+      ],
+      [
+        "==",
+        "$type",
+        "Point"
+      ],
+      [
+        "!=",
+        "mode",
+        "static"
+      ]
+    ],
+    "layout": {
+      "icon-anchor": "bottom",
+      "icon-image": "gl-draw-icon3",
+      "icon-size": 0.45,
+      "icon-offset": [
+        0,
+        16
+      ],
+      "icon-allow-overlap": true,
+      "text-ignore-placement": true,
+      "icon-ignore-placement": true
+    }
+  },
+  {
+    "id": "gl-draw-point-point-stroke-inactive",
+    "type": "circle",
+    "filter": [
+      "all",
+      [
+        "==",
+        "active",
+        "false"
+      ],
+      [
+        "==",
+        "$type",
+        "Point"
+      ],
+      [
+        "==",
+        "meta",
+        "feature"
+      ],
+      [
+        "!=",
+        "mode",
+        "static"
+      ]
+    ],
+    "paint": {
+      "circle-radius": 5,
+      "circle-opacity": 1,
+      "circle-color": "#fff"
+    }
+  },
+  {
+    "id": "gl-draw-point-inactive",
+    "type": "circle",
+    "filter": [
+      "all",
+      [
+        "==",
+        "active",
+        "false"
+      ],
+      [
+        "==",
+        "$type",
+        "Point"
+      ],
+      [
+        "==",
+        "meta",
+        "feature"
+      ],
+      [
+        "!=",
+        "mode",
+        "static"
+      ]
+    ],
+    "paint": {
+      "circle-radius": 5,
+      "circle-color": "#E1361B"
+    }
+  },
+  {
+    "id": "gl-draw-point-stroke-ringlike-active",
+    "type": "circle",
+    "filter": [
+      "all",
+      [
+        "==",
+        "$type",
+        "Point"
+      ],
+      [
+        "==",
+        "active",
+        "true"
+      ],
+      [
+        "!=",
+        "meta",
+        "midpoint"
+      ],
+      [
+        "!has",
+        "user__edit-point"
+      ]
+    ],
+    "paint": {
+      "circle-radius": 9,
+      "circle-color": "#E1361B"
+    }
+  },
+  {
+    "id": "gl-draw-point-stroke-active",
+    "type": "circle",
+    "filter": [
+      "all",
+      [
+        "==",
+        "$type",
+        "Point"
+      ],
+      [
+        "==",
+        "active",
+        "true"
+      ],
+      [
+        "!=",
+        "meta",
+        "midpoint"
+      ],
+      [
+        "!has",
+        "user__edit-point"
+      ]
+    ],
+    "paint": {
+      "circle-radius": 7,
+      "circle-color": "#fff"
+    }
+  },
+  {
+    "id": "gl-draw-point-active",
+    "type": "circle",
+    "filter": [
+      "all",
+      [
+        "==",
+        "$type",
+        "Point"
+      ],
+      [
+        "!=",
+        "meta",
+        "midpoint"
+      ],
+      [
+        "==",
+        "active",
+        "true"
+      ],
+      [
+        "!has",
+        "user__edit-point"
+      ]
+    ],
+    "paint": {
+      "circle-radius": 5,
+      "circle-color": "#E1361B"
+    }
+  },
+  {
+    "id": "gl-draw-polygon-fill-static",
+    "type": "fill",
+    "filter": [
+      "all",
+      [
+        "==",
+        "mode",
+        "static"
+      ],
+      [
+        "==",
+        "$type",
+        "Polygon"
+      ]
+    ],
+    "paint": {
+      "fill-color": "#404040",
+      "fill-outline-color": "#404040",
+      "fill-opacity": 0.1
+    }
+  },
+  {
+    "id": "gl-draw-polygon-stroke-static",
+    "type": "line",
+    "filter": [
+      "all",
+      [
+        "==",
+        "mode",
+        "static"
+      ],
+      [
+        "==",
+        "$type",
+        "Polygon"
+      ]
+    ],
+    "layout": {
+      "line-cap": "round",
+      "line-join": "round"
+    },
+    "paint": {
+      "line-color": "#404040",
+      "line-width": 2
+    }
+  },
+  {
+    "id": "gl-draw-line-static",
+    "type": "line",
+    "filter": [
+      "all",
+      [
+        "==",
+        "mode",
+        "static"
+      ],
+      [
+        "==",
+        "$type",
+        "LineString"
+      ]
+    ],
+    "layout": {
+      "line-cap": "round",
+      "line-join": "round"
+    },
+    "paint": {
+      "line-color": "#404040",
+      "line-width": 2
+    }
+  },
+  {
+    "id": "gl-draw-point-static",
+    "type": "circle",
+    "filter": [
+      "all",
+      [
+        "==",
+        "mode",
+        "static"
+      ],
+      [
+        "==",
+        "$type",
+        "Point"
+      ]
+    ],
+    "paint": {
+      "circle-radius": 5,
+      "circle-color": "#404040"
+    }
+  },
+  {
+    "id": "gl-draw-point-symbol-active",
+    "type": "symbol",
+    "filter": [
+      "all",
+      [
+        "==",
+        "$type",
+        "Point"
+      ],
+      [
+        "!=",
+        "meta",
+        "midpoint"
+      ],
+      [
+        "==",
+        "active",
+        "true"
+      ],
+      [
+        "==",
+        "user__edit-point",
+        "true"
+      ]
+    ],
+    "layout": {
+      "icon-anchor": [
+        "coalesce",
+        [
+          "get",
+          "user__edit-point-icon-anchor"
+        ],
+        "bottom"
+      ],
+      "icon-image": [
+        "coalesce",
+        [
+          "get",
+          "user__edit-point-icon-image"
+        ],
+        "_edit-point-icon-image"
+      ],
+      "icon-allow-overlap": true,
+      "text-ignore-placement": true,
+      "icon-ignore-placement": true,
+      "icon-size": [
+        "coalesce",
+        [
+          "get",
+          "user__edit-point-icon-size"
+        ],
+        1
+      ],
+      "icon-offset": [
+        "coalesce",
+        [
+          "get",
+          "user__edit-point-icon-offset"
+        ],
+        [
+          0,
+          4
+        ]
+      ]
+    }
+  }
+];
 
 var getDefaultOptions = function () { return ({
   unit: {line: 'meters', area: 'meters'},
@@ -1035,58 +1881,83 @@ Measure.prototype.delete = function delete$1 () {
   this.cancel();
 };
 
-var Feature = function(ctx, geojson) {
+// https://juejin.cn/post/7091102537821995016
+// https://blog.csdn.net/weixin_45653970/article/details/106241700
+
+var LineCut = function LineCut(options) {
+  this._ctx = options.ctx;
+};
+
+var PolygonCut = function PolygonCut(options) {
+  this._ctx = options.ctx;
+};
+
+// 参考https://nebula.gl/geojson-editor/
+
+var GeoJsonEditor = function GeoJsonEditor(options) {
+  this.lineSplit = new LineCut({ ctx: options.ctx });
+  this.polygonSplit = new PolygonCut({ ctx: options.ctx });
+  debugger;
+};
+
+GeoJsonEditor.prototype.setOptions = function setOptions (options) {
+  this.options = xtend(this.options, options);
+};
+
+var Feature = function (ctx, geojson) {
   this.ctx = ctx;
   this.properties = geojson.properties || {};
   this.coordinates = geojson.geometry.coordinates;
   this.id = geojson.id || hat$1();
   this.type = geojson.geometry.type;
   // extend start
-  this.measure = new Measure({ctx: ctx});
+  this.measure = new Measure({ ctx: ctx });
   // extend end
 };
 
-Feature.prototype.changed = function() {
+Feature.prototype.changed = function () {
   this.ctx.store.featureChanged(this.id);
 };
 
-Feature.prototype.incomingCoords = function(coords) {
+Feature.prototype.incomingCoords = function (coords) {
   this.setCoordinates(coords);
 };
 
-Feature.prototype.setCoordinates = function(coords) {
+Feature.prototype.setCoordinates = function (coords) {
   this.coordinates = coords;
   this.changed();
   return this;
 };
 
-Feature.prototype.getCoordinates = function() {
+Feature.prototype.getCoordinates = function () {
   return JSON.parse(JSON.stringify(this.coordinates));
 };
 
-Feature.prototype.setProperty = function(property, value) {
+Feature.prototype.setProperty = function (property, value) {
   this.properties[property] = value;
 };
 
-Feature.prototype.toGeoJSON = function() {
-  return JSON.parse(JSON.stringify({
-    id: this.id,
-    type: geojsonTypes.FEATURE,
-    properties: this.properties,
-    geometry: {
-      coordinates: this.getCoordinates(),
-      type: this.type
-    }
-  }));
+Feature.prototype.toGeoJSON = function () {
+  return JSON.parse(
+    JSON.stringify({
+      id: this.id,
+      type: geojsonTypes.FEATURE,
+      properties: this.properties,
+      geometry: {
+        coordinates: this.getCoordinates(),
+        type: this.type,
+      },
+    })
+  );
 };
 
-Feature.prototype.internal = function(mode) {
+Feature.prototype.internal = function (mode) {
   var properties = {
     id: this.id,
     meta: meta.FEATURE,
     'meta:type': this.type,
     active: activeStates.INACTIVE,
-    mode: mode
+    mode: mode,
   };
 
   if (this.ctx.options.userProperties) {
@@ -1100,21 +1971,21 @@ Feature.prototype.internal = function(mode) {
     properties: properties,
     geometry: {
       coordinates: this.getCoordinates(),
-      type: this.type
-    }
+      type: this.type,
+    },
   };
 };
 
 // extend start
-Feature.prototype.delete = function() {
+Feature.prototype.delete = function () {
   this.measure.delete();
   return this;
 };
-Feature.prototype.move = function() {
+Feature.prototype.move = function () {
   this.execMeasure();
   return this;
 };
-Feature.prototype.execMeasure = function() {
+Feature.prototype.execMeasure = function () {
   throw new Error('execMeasure method must be implemented');
 };
 
@@ -1395,7 +2266,7 @@ function ModeInterface(ctx) {
   // extend start
   this._state = {};
   this.feature = null;
-  this.redoUndo = new RedoUndo({ctx: ctx, modeInstance: this});
+  this.redoUndo = new RedoUndo({ ctx: ctx, modeInstance: this });
   // extend end
 }
 
@@ -1404,7 +2275,7 @@ function ModeInterface(ctx) {
  * @name this.setSelected
  * @param {DrawFeature[]} - whats selected as a [DrawFeature](https://github.com/mapbox/mapbox-gl-draw/blob/main/src/feature_types/feature.js)
  */
-ModeInterface.prototype.setSelected = function(features) {
+ModeInterface.prototype.setSelected = function (features) {
   return this._ctx.store.setSelected(features);
 };
 
@@ -1413,7 +2284,7 @@ ModeInterface.prototype.setSelected = function(features) {
  * @name this.setSelectedCoordinates
  * @param {Object[]} coords - a array of {coord_path: 'string', feature_id: 'string'}
  */
-ModeInterface.prototype.setSelectedCoordinates = function(coords) {
+ModeInterface.prototype.setSelectedCoordinates = function (coords) {
   var this$1$1 = this;
 
   this._ctx.store.setSelectedCoordinates(coords);
@@ -1431,7 +2302,7 @@ ModeInterface.prototype.setSelectedCoordinates = function(coords) {
  * @name this.getSelected
  * @returns {DrawFeature[]}
  */
-ModeInterface.prototype.getSelected = function() {
+ModeInterface.prototype.getSelected = function () {
   return this._ctx.store.getSelected();
 };
 
@@ -1440,7 +2311,7 @@ ModeInterface.prototype.getSelected = function() {
  * @name this.getSelectedIds
  * @returns {String[]}
  */
-ModeInterface.prototype.getSelectedIds = function() {
+ModeInterface.prototype.getSelectedIds = function () {
   return this._ctx.store.getSelectedIds();
 };
 
@@ -1450,7 +2321,7 @@ ModeInterface.prototype.getSelectedIds = function() {
  * @param {String} id - a feature id
  * @returns {Boolean}
  */
-ModeInterface.prototype.isSelected = function(id) {
+ModeInterface.prototype.isSelected = function (id) {
   return this._ctx.store.isSelected(id);
 };
 
@@ -1460,7 +2331,7 @@ ModeInterface.prototype.isSelected = function(id) {
  * @param {String} id - a feature id
  * @returns {DrawFeature}
  */
-ModeInterface.prototype.getFeature = function(id) {
+ModeInterface.prototype.getFeature = function (id) {
   return this._ctx.store.get(id);
 };
 
@@ -1469,7 +2340,7 @@ ModeInterface.prototype.getFeature = function(id) {
  * @name this.select
  * @param {String} id
  */
-ModeInterface.prototype.select = function(id) {
+ModeInterface.prototype.select = function (id) {
   return this._ctx.store.select(id);
 };
 
@@ -1478,7 +2349,7 @@ ModeInterface.prototype.select = function(id) {
  * @name this.delete
  * @param {String} id
  */
-ModeInterface.prototype.deselect = function(id) {
+ModeInterface.prototype.deselect = function (id) {
   return this._ctx.store.deselect(id);
 };
 
@@ -1487,7 +2358,7 @@ ModeInterface.prototype.deselect = function(id) {
  * @name this.deleteFeature
  * @param {String} id - a feature id
  */
-ModeInterface.prototype.deleteFeature = function(id, opts) {
+ModeInterface.prototype.deleteFeature = function (id, opts) {
   if ( opts === void 0 ) opts = {};
 
   return this._ctx.store.delete(id, opts);
@@ -1499,21 +2370,21 @@ ModeInterface.prototype.deleteFeature = function(id, opts) {
  * @name this.addFeature
  * @param {DrawFeature} feature - the feature to add
  */
-ModeInterface.prototype.addFeature = function(feature) {
+ModeInterface.prototype.addFeature = function (feature) {
   return this._ctx.store.add(feature);
 };
 
 /**
  * Clear all selected features
  */
-ModeInterface.prototype.clearSelectedFeatures = function() {
+ModeInterface.prototype.clearSelectedFeatures = function () {
   return this._ctx.store.clearSelected();
 };
 
 /**
  * Clear all selected coordinates
  */
-ModeInterface.prototype.clearSelectedCoordinates = function() {
+ModeInterface.prototype.clearSelectedCoordinates = function () {
   return this._ctx.store.clearSelectedCoordinates();
 };
 
@@ -1523,13 +2394,13 @@ ModeInterface.prototype.clearSelectedCoordinates = function() {
  * @name this.setActionableState
  * @param {Object} actions
  */
-ModeInterface.prototype.setActionableState = function(actions) {
+ModeInterface.prototype.setActionableState = function (actions) {
   if ( actions === void 0 ) actions = {};
 
   var newSet = {
     trash: actions.trash || false,
     combineFeatures: actions.combineFeatures || false,
-    uncombineFeatures: actions.uncombineFeatures || false
+    uncombineFeatures: actions.uncombineFeatures || false,
   };
   return this._ctx.events.actionable(newSet);
 };
@@ -1541,7 +2412,7 @@ ModeInterface.prototype.setActionableState = function(actions) {
  * @param {Object} opts - the options object to pass to the new mode
  * @param {Object} eventOpts - used to control what kind of events are emitted.
  */
-ModeInterface.prototype.changeMode = function(mode, opts, eventOpts) {
+ModeInterface.prototype.changeMode = function (mode, opts, eventOpts) {
   if ( opts === void 0 ) opts = {};
   if ( eventOpts === void 0 ) eventOpts = {};
 
@@ -1553,7 +2424,7 @@ ModeInterface.prototype.changeMode = function(mode, opts, eventOpts) {
  * @name this.updateUIClasses
  * @param {Object} opts
  */
-ModeInterface.prototype.updateUIClasses = function(opts) {
+ModeInterface.prototype.updateUIClasses = function (opts) {
   return this._ctx.ui.queueMapClasses(opts);
 };
 
@@ -1562,7 +2433,7 @@ ModeInterface.prototype.updateUIClasses = function(opts) {
  * @name this.activateUIButton
  * @param {String?} name - name of the button to make active, leave as undefined to set buttons to be inactive
  */
-ModeInterface.prototype.activateUIButton = function(name) {
+ModeInterface.prototype.activateUIButton = function (name) {
   return this._ctx.ui.setActiveButton(name);
 };
 
@@ -1573,7 +2444,7 @@ ModeInterface.prototype.activateUIButton = function(name) {
  * @param {BBOX||NULL} bbox - the area to get features from
  * @param {String} bufferType - is this `click` or `tap` event, defaults to click
  */
-ModeInterface.prototype.featuresAt = function(event, bbox, bufferType) {
+ModeInterface.prototype.featuresAt = function (event, bbox, bufferType) {
   if ( bufferType === void 0 ) bufferType = 'click';
 
   if (bufferType !== 'click' && bufferType !== 'touch') { throw new Error('invalid buffer type'); }
@@ -1586,7 +2457,7 @@ ModeInterface.prototype.featuresAt = function(event, bbox, bufferType) {
  * @param {GeoJSONFeature} geojson
  * @returns {DrawFeature}
  */
-ModeInterface.prototype.newFeature = function(geojson) {
+ModeInterface.prototype.newFeature = function (geojson) {
   var type = geojson.geometry.type;
   if (type === geojsonTypes.POINT) {
     this.feature = new Point$2(this._ctx, geojson);
@@ -1608,7 +2479,7 @@ ModeInterface.prototype.newFeature = function(geojson) {
  * @param {Object} feature - the object that needs to be checked
  * @returns {Boolean}
  */
-ModeInterface.prototype.isInstanceOf = function(type, feature) {
+ModeInterface.prototype.isInstanceOf = function (type, feature) {
   if (type === geojsonTypes.POINT) { return feature instanceof Point$2; }
   if (type === geojsonTypes.LINE_STRING) { return feature instanceof LineString; }
   if (type === geojsonTypes.POLYGON) { return feature instanceof Polygon; }
@@ -1621,38 +2492,38 @@ ModeInterface.prototype.isInstanceOf = function(type, feature) {
  * @name this.doRender
  * @param {String} id - a feature id
  */
-ModeInterface.prototype.doRender = function(id) {
+ModeInterface.prototype.doRender = function (id) {
   return this._ctx.store.featureChanged(id);
 };
 
 // extend start
-ModeInterface.prototype.getCtx = function() {
+ModeInterface.prototype.getCtx = function () {
   return this._ctx;
 };
 
-ModeInterface.prototype.getState = function() {
+ModeInterface.prototype.getState = function () {
   return this._state;
 };
-ModeInterface.prototype.setState = function(state) {
+ModeInterface.prototype.setState = function (state) {
   this._state = state;
   return this._state;
 };
 
-ModeInterface.prototype.undo = function() {
+ModeInterface.prototype.undo = function () {
   this.redoUndo.undo();
 };
 
-ModeInterface.prototype.redo = function() {
+ModeInterface.prototype.redo = function () {
   this.redoUndo.redo();
 };
 
-ModeInterface.prototype.finish = function(mode) {
+ModeInterface.prototype.finish = function (mode) {
   if ( mode === void 0 ) mode = modes$1.SIMPLE_SELECT;
 
   if (this.isDrawing()) { this._ctx.api.changeMode(mode); }
 };
 
-ModeInterface.prototype.cancel = function(mode) {
+ModeInterface.prototype.cancel = function (mode) {
   if ( mode === void 0 ) mode = modes$1.SIMPLE_SELECT;
 
   if (this.isDrawing()) {
@@ -1662,20 +2533,19 @@ ModeInterface.prototype.cancel = function(mode) {
   }
 };
 
-ModeInterface.prototype.isDrawing = function() {
+ModeInterface.prototype.isDrawing = function () {
   return this._ctx.api.getMode().startsWith('draw');
 };
 
-ModeInterface.prototype.afterRender = function(cb, render) {
+ModeInterface.prototype.afterRender = function (cb, render) {
   this._ctx.store.afterRender(cb, render);
 };
 
-ModeInterface.prototype.setMeasureOptions = function(options) {
+ModeInterface.prototype.setMeasureOptions = function (options) {
   if (this.feature) { this.feature.measure.setOptions(options); }
-
 };
 
-ModeInterface.prototype.destroy = function() {
+ModeInterface.prototype.destroy = function () {
   this.redoUndo.destroy();
 };
 
@@ -1919,7 +2789,7 @@ function objectToMode(modeObject) {
   };
 }
 
-function events(ctx) {
+function events (ctx) {
   var modes = Object.keys(ctx.options.modes).reduce(function (m, k) {
     m[k] = objectToMode(ctx.options.modes[k]);
     return m;
@@ -1931,11 +2801,13 @@ function events(ctx) {
   var currentModeName = null;
   var currentMode = null;
 
-  events.drag = function(event, isDrag) {
-    if (isDrag({
-      point: event.point,
-      time: new Date().getTime()
-    })) {
+  events.drag = function (event, isDrag) {
+    if (
+      isDrag({
+        point: event.point,
+        time: new Date().getTime(),
+      })
+    ) {
       ctx.ui.queueMapClasses({ mouse: cursors.DRAG });
       currentMode.drag(event);
     } else {
@@ -1943,15 +2815,15 @@ function events(ctx) {
     }
   };
 
-  events.mousedrag = function(event) {
+  events.mousedrag = function (event) {
     events.drag(event, function (endInfo) { return !isClick(mouseDownInfo, endInfo); });
   };
 
-  events.touchdrag = function(event) {
+  events.touchdrag = function (event) {
     events.drag(event, function (endInfo) { return !isTap(touchStartInfo, endInfo); });
   };
 
-  events.mousemove = function(event) {
+  events.mousemove = function (event) {
     var button = event.originalEvent.buttons !== undefined ? event.originalEvent.buttons : event.originalEvent.which;
     if (button === 1) {
       return events.mousedrag(event);
@@ -1962,17 +2834,17 @@ function events(ctx) {
     currentMode.mousemove(event);
   };
 
-  events.mousedown = function(event) {
+  events.mousedown = function (event) {
     mouseDownInfo = {
       time: new Date().getTime(),
-      point: event.point
+      point: event.point,
     };
     var target = getFeatureAtAndSetCursors(event, ctx);
     event.featureTarget = target;
     currentMode.mousedown(event);
   };
 
-  events.mouseup = function(event) {
+  events.mouseup = function (event) {
     var target = getFeatureAtAndSetCursors(event, ctx);
     // extend start
     if (event._defaultPrevented) { return; }
@@ -1983,21 +2855,23 @@ function events(ctx) {
     // mapbox end
     event.featureTarget = target;
 
-    if (isClick(mouseDownInfo, {
-      point: event.point,
-      time: new Date().getTime()
-    })) {
+    if (
+      isClick(mouseDownInfo, {
+        point: event.point,
+        time: new Date().getTime(),
+      })
+    ) {
       currentMode.click(event);
     } else {
       currentMode.mouseup(event);
     }
   };
 
-  events.mouseout = function(event) {
+  events.mouseout = function (event) {
     currentMode.mouseout(event);
   };
 
-  events.touchstart = function(event) {
+  events.touchstart = function (event) {
     // Prevent emulated mouse events because we will fully handle the touch here.
     // This does not stop the touch events from propogating to mapbox though.
     try {
@@ -2012,14 +2886,14 @@ function events(ctx) {
 
     touchStartInfo = {
       time: new Date().getTime(),
-      point: event.point
+      point: event.point,
     };
     var target = featuresAt.touch(event, null, ctx)[0];
     event.featureTarget = target;
     currentMode.touchstart(event);
   };
 
-  events.touchmove = function(event) {
+  events.touchmove = function (event) {
     try {
       event.originalEvent.preventDefault();
     } catch (e) {
@@ -2034,7 +2908,7 @@ function events(ctx) {
     return events.touchdrag(event);
   };
 
-  events.touchend = function(event) {
+  events.touchend = function (event) {
     try {
       event.originalEvent.preventDefault();
     } catch (e) {
@@ -2048,16 +2922,18 @@ function events(ctx) {
     var target = featuresAt.touch(event, null, ctx)[0];
 
     // extend start
-    if (event._defaultPrevented)  { return; }
+    if (event._defaultPrevented) { return; }
     if (!target) {
       if (isClickOnMissAndDoNothing(ctx)) { return; }
     }
     // extend end
     event.featureTarget = target;
-    if (isTap(touchStartInfo, {
-      time: new Date().getTime(),
-      point: event.point
-    })) {
+    if (
+      isTap(touchStartInfo, {
+        time: new Date().getTime(),
+        point: event.point,
+      })
+    ) {
       currentMode.tap(event);
     } else {
       currentMode.touchend(event);
@@ -2068,7 +2944,7 @@ function events(ctx) {
   // 46 - Delete
   var isKeyModeValid = function (code) { return !(code === 8 || code === 46 || (code >= 48 && code <= 57)); };
 
-  events.keydown = function(event) {
+  events.keydown = function (event) {
     var isMapElement = (event.srcElement || event.target).classList.contains('mapboxgl-canvas');
     if (!isMapElement) { return; } // we only handle events on the map
 
@@ -2086,17 +2962,17 @@ function events(ctx) {
     }
   };
 
-  events.keyup = function(event) {
+  events.keyup = function (event) {
     if (isKeyModeValid(event.keyCode)) {
       currentMode.keyup(event);
     }
   };
 
-  events.zoomend = function() {
+  events.zoomend = function () {
     ctx.store.changeZoom();
   };
 
-  events.data = function(event) {
+  events.data = function (event) {
     if (event.dataType === 'style') {
       var setup = ctx.setup;
       var map = ctx.map;
@@ -2124,7 +3000,7 @@ function events(ctx) {
     currentMode = ModeHandler(mode, ctx);
 
     if (!eventOptions.silent) {
-      ctx.map.fire(events$1.MODE_CHANGE, { mode: modename});
+      ctx.map.fire(events$1.MODE_CHANGE, { mode: modename });
     }
 
     ctx.store.setDirty();
@@ -2134,7 +3010,7 @@ function events(ctx) {
   var actionState = {
     trash: false,
     combineFeatures: false,
-    uncombineFeatures: false
+    uncombineFeatures: false,
   };
 
   function actionable(actions) {
@@ -2232,7 +3108,7 @@ function events(ctx) {
     },
     setMeasureOptions: function setMeasureOptions(options) {
       currentMode.setMeasureOptions(options);
-    }
+    },
     // extend end
   };
 
@@ -2351,7 +3227,7 @@ function Store(ctx) {
   // extend end
   this.sources = {
     hot: [],
-    cold: []
+    cold: [],
   };
 
   // Deduplicate requests to render and tie them to animation frames.
@@ -2367,17 +3243,16 @@ function Store(ctx) {
   this.isDirty = false;
 }
 
-
 /**
  * Delays all rendering until the returned function is invoked
  * @return {Function} renderBatch
  */
-Store.prototype.createRenderBatch = function() {
+Store.prototype.createRenderBatch = function () {
   var this$1$1 = this;
 
   var holdRender = this.render;
   var numRenders = 0;
-  this.render = function() {
+  this.render = function () {
     numRenders++;
   };
 
@@ -2393,7 +3268,7 @@ Store.prototype.createRenderBatch = function() {
  * Sets the store's state to dirty.
  * @return {Store} this
  */
-Store.prototype.setDirty = function() {
+Store.prototype.setDirty = function () {
   this.isDirty = true;
   return this;
 };
@@ -2403,7 +3278,7 @@ Store.prototype.setDirty = function() {
  * @param {string} featureId
  * @return {Store} this
  */
-Store.prototype.featureChanged = function(featureId) {
+Store.prototype.featureChanged = function (featureId) {
   this._changedFeatureIds.add(featureId);
   return this;
 };
@@ -2412,7 +3287,7 @@ Store.prototype.featureChanged = function(featureId) {
  * Gets the ids of all features currently in changed state.
  * @return {Store} this
  */
-Store.prototype.getChangedIds = function() {
+Store.prototype.getChangedIds = function () {
   return this._changedFeatureIds.values();
 };
 
@@ -2420,7 +3295,7 @@ Store.prototype.getChangedIds = function() {
  * Sets all features to unchanged state.
  * @return {Store} this
  */
-Store.prototype.clearChangedIds = function() {
+Store.prototype.clearChangedIds = function () {
   this._changedFeatureIds.clear();
   return this;
 };
@@ -2429,7 +3304,7 @@ Store.prototype.clearChangedIds = function() {
  * Gets the ids of all features in the store.
  * @return {Store} this
  */
-Store.prototype.getAllIds = function() {
+Store.prototype.getAllIds = function () {
   return this._featureIds.values();
 };
 
@@ -2439,7 +3314,7 @@ Store.prototype.getAllIds = function() {
  *
  * @return {Store} this
  */
-Store.prototype.add = function(feature) {
+Store.prototype.add = function (feature) {
   this.featureChanged(feature.id);
   this._features[feature.id] = feature;
   this._featureIds.add(feature.id);
@@ -2456,7 +3331,7 @@ Store.prototype.add = function(feature) {
  * @param {Object} [options.silent] - If `true`, this invocation will not fire an event.
  * @return {Store} this
  */
-Store.prototype.delete = function(featureIds, options) {
+Store.prototype.delete = function (featureIds, options) {
   var this$1$1 = this;
   if ( options === void 0 ) options = {};
 
@@ -2484,7 +3359,7 @@ Store.prototype.delete = function(featureIds, options) {
  * Returns a feature in the store matching the specified value.
  * @return {Object | undefined} feature
  */
-Store.prototype.get = function(id) {
+Store.prototype.get = function (id) {
   return this._features[id];
 };
 
@@ -2492,7 +3367,7 @@ Store.prototype.get = function(id) {
  * Returns all features in the store.
  * @return {Array<Object>}
  */
-Store.prototype.getAll = function() {
+Store.prototype.getAll = function () {
   var this$1$1 = this;
 
   return Object.keys(this._features).map(function (id) { return this$1$1._features[id]; });
@@ -2505,7 +3380,7 @@ Store.prototype.getAll = function() {
  * @param {Object} [options.silent] - If `true`, this invocation will not fire an event.
  * @return {Store} this
  */
-Store.prototype.select = function(featureIds, options) {
+Store.prototype.select = function (featureIds, options) {
   var this$1$1 = this;
   if ( options === void 0 ) options = {};
 
@@ -2527,7 +3402,7 @@ Store.prototype.select = function(featureIds, options) {
  * @param {Object} [options.silent] - If `true`, this invocation will not fire an event.
  * @return {Store} this
  */
-Store.prototype.deselect = function(featureIds, options) {
+Store.prototype.deselect = function (featureIds, options) {
   var this$1$1 = this;
   if ( options === void 0 ) options = {};
 
@@ -2549,7 +3424,7 @@ Store.prototype.deselect = function(featureIds, options) {
  * @param {Object} [options.silent] - If `true`, this invocation will not fire an event.
  * @return {Store} this
  */
-Store.prototype.clearSelected = function(options) {
+Store.prototype.clearSelected = function (options) {
   if ( options === void 0 ) options = {};
 
   this.deselect(this._selectedFeatureIds.values(), { silent: options.silent });
@@ -2564,17 +3439,23 @@ Store.prototype.clearSelected = function(options) {
  * @param {Object} [options.silent] - If `true`, this invocation will not fire an event.
  * @return {Store} this
  */
-Store.prototype.setSelected = function(featureIds, options) {
+Store.prototype.setSelected = function (featureIds, options) {
   var this$1$1 = this;
   if ( options === void 0 ) options = {};
 
   featureIds = toDenseArray(featureIds);
 
   // Deselect any features not in the new selection
-  this.deselect(this._selectedFeatureIds.values().filter(function (id) { return featureIds.indexOf(id) === -1; }), { silent: options.silent });
+  this.deselect(
+    this._selectedFeatureIds.values().filter(function (id) { return featureIds.indexOf(id) === -1; }),
+    { silent: options.silent }
+  );
 
   // Select any features in the new selection that were not already selected
-  this.select(featureIds.filter(function (id) { return !this$1$1._selectedFeatureIds.has(id); }), { silent: options.silent });
+  this.select(
+    featureIds.filter(function (id) { return !this$1$1._selectedFeatureIds.has(id); }),
+    { silent: options.silent }
+  );
 
   return this;
 };
@@ -2584,7 +3465,7 @@ Store.prototype.setSelected = function(featureIds, options) {
  * @param {Array<Array<string>>} coordinates
  * @return {Store} this
  */
-Store.prototype.setSelectedCoordinates = function(coordinates) {
+Store.prototype.setSelectedCoordinates = function (coordinates) {
   this._selectedCoordinates = coordinates;
   this._emitSelectionChange = true;
   return this;
@@ -2595,7 +3476,7 @@ Store.prototype.setSelectedCoordinates = function(coordinates) {
  * @param {Object} [options]
  * @return {Store} this
  */
-Store.prototype.clearSelectedCoordinates = function() {
+Store.prototype.clearSelectedCoordinates = function () {
   this._selectedCoordinates = [];
   this._emitSelectionChange = true;
   // extend start
@@ -2608,7 +3489,7 @@ Store.prototype.clearSelectedCoordinates = function() {
  * Returns the ids of features in the current selection.
  * @return {Array<string>} Selected feature ids.
  */
-Store.prototype.getSelectedIds = function() {
+Store.prototype.getSelectedIds = function () {
   return this._selectedFeatureIds.values();
 };
 
@@ -2616,7 +3497,7 @@ Store.prototype.getSelectedIds = function() {
  * Returns features in the current selection.
  * @return {Array<Object>} Selected features.
  */
-Store.prototype.getSelected = function() {
+Store.prototype.getSelected = function () {
   var this$1$1 = this;
 
   return this._selectedFeatureIds.values().map(function (id) { return this$1$1.get(id); });
@@ -2626,13 +3507,13 @@ Store.prototype.getSelected = function() {
  * Returns selected coordinates in the currently selected feature.
  * @return {Array<Object>} Selected coordinates.
  */
-Store.prototype.getSelectedCoordinates = function() {
+Store.prototype.getSelectedCoordinates = function () {
   var this$1$1 = this;
 
   var selected = this._selectedCoordinates.map(function (coordinate) {
     var feature = this$1$1.get(coordinate.feature_id);
     return {
-      coordinates: feature.getCoordinate(coordinate.coord_path)
+      coordinates: feature.getCoordinate(coordinate.coord_path),
     };
   });
   return selected;
@@ -2643,7 +3524,7 @@ Store.prototype.getSelectedCoordinates = function() {
  * @param {string} featureId
  * @return {boolean} `true` if the feature is selected, `false` if not.
  */
-Store.prototype.isSelected = function(featureId) {
+Store.prototype.isSelected = function (featureId) {
   return this._selectedFeatureIds.has(featureId);
 };
 
@@ -2652,8 +3533,8 @@ Store.prototype.isSelected = function(featureId) {
  * @param {string} featureId
  * @param {string} property property
  * @param {string} property value
-*/
-Store.prototype.setFeatureProperty = function(featureId, property, value) {
+ */
+Store.prototype.setFeatureProperty = function (featureId, property, value) {
   this.get(featureId).setProperty(property, value);
   this.featureChanged(featureId);
 };
@@ -2668,8 +3549,8 @@ function refreshSelectedCoordinates(store, options) {
 
 /**
  * Stores the initial config for a map, so that we can set it again after we're done.
-*/
-Store.prototype.storeMapConfig = function() {
+ */
+Store.prototype.storeMapConfig = function () {
   var this$1$1 = this;
 
   interactions.forEach(function (interaction) {
@@ -2682,8 +3563,8 @@ Store.prototype.storeMapConfig = function() {
 
 /**
  * Restores the initial config for a map, ensuring all is well.
-*/
-Store.prototype.restoreMapConfig = function() {
+ */
+Store.prototype.restoreMapConfig = function () {
   var this$1$1 = this;
 
   Object.keys(this._mapInitialConfig).forEach(function (key) {
@@ -2701,8 +3582,8 @@ Store.prototype.restoreMapConfig = function() {
  * @param {string} interaction
  * @return {boolean} `true` if the interaction is enabled, `false` if not.
  * Defaults to `true`. (Todo: include defaults.)
-*/
-Store.prototype.getInitialConfigValue = function(interaction) {
+ */
+Store.prototype.getInitialConfigValue = function (interaction) {
   if (this._mapInitialConfig[interaction] !== undefined) {
     return this._mapInitialConfig[interaction];
   } else {
@@ -2713,13 +3594,13 @@ Store.prototype.getInitialConfigValue = function(interaction) {
 };
 
 // extend start
-Store.prototype.emitCallbacks = function(e) {
+Store.prototype.emitCallbacks = function (e) {
   while (this._emitCallbacks.length > 0) {
     this._emitCallbacks.shift()(e);
   }
 };
 
-Store.prototype.afterRender = function(cb, render) {
+Store.prototype.afterRender = function (cb, render) {
   if (typeof cb === 'function') { this._emitCallbacks.push(cb); }
   if (render) { this.render(); }
 };
@@ -2994,8 +3875,7 @@ function ui(ctx) {
   };
 }
 
-function runSetup(ctx) {
-
+function runSetup (ctx) {
   var controlContainer = null;
   var mapLoadedInterval = null;
 
@@ -3030,7 +3910,7 @@ function runSetup(ctx) {
       // extend start
       loadIconImageByTheme(ctx.map);
       var modeInstance = ctx.events.getModeInstance();
-      modeInstance.afterRender(function () { return mapFireOnAdd(modeInstance, {controlContainer: controlContainer}); });
+      modeInstance.afterRender(function () { return mapFireOnAdd(modeInstance, { controlContainer: controlContainer }); });
       // extend end
     },
     onAdd: function onAdd(map) {
@@ -3038,7 +3918,7 @@ function runSetup(ctx) {
         // Monkey patch to resolve breaking change to `fire` introduced by
         // mapbox-gl-js. See mapbox/mapbox-gl-draw/issues/766.
         var _fire = map.fire;
-        map.fire = function(type, event) {
+        map.fire = function (type, event) {
           // eslint-disable-next-line
           var args = arguments;
 
@@ -3055,6 +3935,7 @@ function runSetup(ctx) {
       ctx.ui = ui(ctx);
       ctx.container = map.getContainer();
       ctx.store = new Store(ctx);
+      ctx.geoJsonEditor = new GeoJsonEditor({ ctx: ctx });
 
       controlContainer = ctx.ui.addButtons();
 
@@ -3071,7 +3952,9 @@ function runSetup(ctx) {
         setup.connect();
       } else {
         map.on('load', setup.connect);
-        mapLoadedInterval = setInterval(function () { if (map.loaded()) { setup.connect(); } }, 16);
+        mapLoadedInterval = setInterval(function () {
+          if (map.loaded()) { setup.connect(); }
+        }, 16);
       }
 
       ctx.events.start();
@@ -3082,18 +3965,18 @@ function runSetup(ctx) {
       ctx.map.addSource(sources.COLD, {
         data: {
           type: geojsonTypes.FEATURE_COLLECTION,
-          features: []
+          features: [],
         },
-        type: 'geojson'
+        type: 'geojson',
       });
 
       // hot features style
       ctx.map.addSource(sources.HOT, {
         data: {
           type: geojsonTypes.FEATURE_COLLECTION,
-          features: []
+          features: [],
         },
-        type: 'geojson'
+        type: 'geojson',
       });
 
       ctx.options.styles.forEach(function (style) {
@@ -3119,7 +4002,7 @@ function runSetup(ctx) {
       if (ctx.map.getSource(sources.HOT)) {
         ctx.map.removeSource(sources.HOT);
       }
-    }
+    },
   };
 
   ctx.setup = setup;
@@ -4604,7 +5487,7 @@ function moveFeatures(features, delta, modeInstance) {
 
 var SimpleSelect = {};
 
-SimpleSelect.onSetup = function(opts) {
+SimpleSelect.onSetup = function (opts) {
   var this$1$1 = this;
 
   // turn the opts into state.
@@ -4616,7 +5499,7 @@ SimpleSelect.onSetup = function(opts) {
     canBoxSelect: false,
     dragMoving: false,
     canDragMove: false,
-    initiallySelectedFeatureIds: opts.featureIds || []
+    initiallySelectedFeatureIds: opts.featureIds || [],
   };
 
   this.setSelected(state.initiallySelectedFeatureIds.filter(function (id) { return this$1$1.getFeature(id) !== undefined; }));
@@ -4625,7 +5508,7 @@ SimpleSelect.onSetup = function(opts) {
   this.setActionableState({
     combineFeatures: true,
     uncombineFeatures: true,
-    trash: true
+    trash: true,
   });
 
   // extend start
@@ -4633,21 +5516,19 @@ SimpleSelect.onSetup = function(opts) {
   // extend end
 };
 
-SimpleSelect.fireUpdate = function() {
+SimpleSelect.fireUpdate = function () {
   this.map.fire(events$1.UPDATE, {
     action: updateActions.MOVE,
-    features: this.getSelected().map(function (f) { return f.toGeoJSON(); })
+    features: this.getSelected().map(function (f) { return f.toGeoJSON(); }),
   });
 };
 
-SimpleSelect.fireActionable = function() {
+SimpleSelect.fireActionable = function () {
   var this$1$1 = this;
 
   var selectedFeatures = this.getSelected();
 
-  var multiFeatures = selectedFeatures.filter(
-    function (feature) { return this$1$1.isInstanceOf('MultiFeature', feature); }
-  );
+  var multiFeatures = selectedFeatures.filter(function (feature) { return this$1$1.isInstanceOf('MultiFeature', feature); });
 
   var combineFeatures = false;
 
@@ -4665,13 +5546,16 @@ SimpleSelect.fireActionable = function() {
   var trash = selectedFeatures.length > 0;
 
   this.setActionableState({
-    combineFeatures: combineFeatures, uncombineFeatures: uncombineFeatures, trash: trash
+    combineFeatures: combineFeatures,
+    uncombineFeatures: uncombineFeatures,
+    trash: trash,
   });
 };
 
-SimpleSelect.getUniqueIds = function(allFeatures) {
+SimpleSelect.getUniqueIds = function (allFeatures) {
   if (!allFeatures.length) { return []; }
-  var ids = allFeatures.map(function (s) { return s.properties.id; })
+  var ids = allFeatures
+    .map(function (s) { return s.properties.id; })
     .filter(function (id) { return id !== undefined; })
     .reduce(function (memo, id) {
       memo.add(id);
@@ -4681,7 +5565,7 @@ SimpleSelect.getUniqueIds = function(allFeatures) {
   return ids.values();
 };
 
-SimpleSelect.stopExtendedInteractions = function(state) {
+SimpleSelect.stopExtendedInteractions = function (state) {
   if (state.boxSelectElement) {
     if (state.boxSelectElement.parentNode) { state.boxSelectElement.parentNode.removeChild(state.boxSelectElement); }
     state.boxSelectElement = null;
@@ -4695,12 +5579,12 @@ SimpleSelect.stopExtendedInteractions = function(state) {
   state.canDragMove = false;
 };
 
-SimpleSelect.onStop = function() {
+SimpleSelect.onStop = function () {
   doubleClickZoom.enable(this);
   this.destroy();
 };
 
-SimpleSelect.onMouseMove = function(state, e) {
+SimpleSelect.onMouseMove = function (state, e) {
   var isFeature$1 = isFeature(e);
   if (isFeature$1 && state.dragMoving) { this.fireUpdate(); }
 
@@ -4715,7 +5599,7 @@ SimpleSelect.onMouseMove = function(state, e) {
   return true;
 };
 
-SimpleSelect.onMouseOut = function(state) {
+SimpleSelect.onMouseOut = function (state) {
   // As soon as you mouse leaves the canvas, update the feature
   if (state.dragMoving) { return this.fireUpdate(); }
 
@@ -4723,7 +5607,7 @@ SimpleSelect.onMouseOut = function(state) {
   return true;
 };
 
-SimpleSelect.onTap = SimpleSelect.onClick = function(state, e) {
+SimpleSelect.onTap = SimpleSelect.onClick = function (state, e) {
   // Click (with or without shift) on no feature
 
   // extend start
@@ -4731,8 +5615,8 @@ SimpleSelect.onTap = SimpleSelect.onClick = function(state, e) {
   // extend end
   if (noTarget(e)) {
     // extend start
-    mapFireClickOrOnTab(this, {e: e, type: 'clickNoTarget'});
-    if (isClickNotthingNoChangeMode(this._ctx))  { return; }
+    mapFireClickOrOnTab(this, { e: e, type: 'clickNoTarget' });
+    if (isClickNotthingNoChangeMode(this._ctx)) { return; }
     // extend end
     return this.clickAnywhere(state, e); // also tap
   }
@@ -4753,22 +5637,22 @@ SimpleSelect.clickAnywhere = function (state) {
   this.stopExtendedInteractions(state);
 };
 
-SimpleSelect.clickOnVertex = function(state, e) {
+SimpleSelect.clickOnVertex = function (state, e) {
   var this$1$1 = this;
 
   // Enter direct select mode
   this.changeMode(modes$1.DIRECT_SELECT, {
     featureId: e.featureTarget.properties.parent,
     coordPath: e.featureTarget.properties.coord_path,
-    startPos: e.lngLat
+    startPos: e.lngLat,
   });
   // extend start
-  this.afterRender(function () { return mapFireByClickOnVertex(this$1$1, {e: e}); });
+  this.afterRender(function () { return mapFireByClickOnVertex(this$1$1, { e: e }); });
   // extend end
   this.updateUIClasses({ mouse: cursors.MOVE });
 };
 
-SimpleSelect.startOnActiveFeature = function(state, e) {
+SimpleSelect.startOnActiveFeature = function (state, e) {
   // Stop any already-underway extended interactions
   this.stopExtendedInteractions(state);
 
@@ -4783,7 +5667,7 @@ SimpleSelect.startOnActiveFeature = function(state, e) {
   state.dragMoveLocation = e.lngLat;
 };
 
-SimpleSelect.clickOnFeature = function(state, e) {
+SimpleSelect.clickOnFeature = function (state, e) {
   var this$1$1 = this;
 
   // Stop everything
@@ -4799,7 +5683,7 @@ SimpleSelect.clickOnFeature = function(state, e) {
   if (!isShiftClick && isFeatureSelected && this.getFeature(featureId).type !== geojsonTypes.POINT) {
     // Enter direct select mode
     return this.changeMode(modes$1.DIRECT_SELECT, {
-      featureId: featureId
+      featureId: featureId,
     });
   }
 
@@ -4811,12 +5695,12 @@ SimpleSelect.clickOnFeature = function(state, e) {
     if (selectedFeatureIds.length === 1) {
       doubleClickZoom.enable(this);
     }
-  // Shift-click on an unselected feature
+    // Shift-click on an unselected feature
   } else if (!isFeatureSelected && isShiftClick) {
     // Add it to the selection
     this.select(featureId);
     this.updateUIClasses({ mouse: cursors.MOVE });
-  // Click (without shift) on an unselected feature
+    // Click (without shift) on an unselected feature
   } else if (!isFeatureSelected && !isShiftClick) {
     // Make it the only selected feature
     selectedFeatureIds.forEach(function (id) { return this$1$1.doRender(id); });
@@ -4828,12 +5712,12 @@ SimpleSelect.clickOnFeature = function(state, e) {
   this.doRender(featureId);
 };
 
-SimpleSelect.onMouseDown = function(state, e) {
+SimpleSelect.onMouseDown = function (state, e) {
   if (isActiveFeature(e)) { return this.startOnActiveFeature(state, e); }
   if (this.drawConfig.boxSelect && isShiftMousedown(e)) { return this.startBoxSelect(state, e); }
 };
 
-SimpleSelect.startBoxSelect = function(state, e) {
+SimpleSelect.startBoxSelect = function (state, e) {
   this.stopExtendedInteractions(state);
   this.map.dragPan.disable();
   // Enable box select
@@ -4841,11 +5725,11 @@ SimpleSelect.startBoxSelect = function(state, e) {
   state.canBoxSelect = true;
 };
 
-SimpleSelect.onTouchStart = function(state, e) {
+SimpleSelect.onTouchStart = function (state, e) {
   if (isActiveFeature(e)) { return this.startOnActiveFeature(state, e); }
 };
 
-SimpleSelect.onDrag = function(state, e) {
+SimpleSelect.onDrag = function (state, e) {
   // extend start
   if (isDisabledDragVertexWithSimpleSelectMode(this._ctx)) { return; }
   // extend end
@@ -4853,7 +5737,7 @@ SimpleSelect.onDrag = function(state, e) {
   if (this.drawConfig.boxSelect && state.canBoxSelect) { return this.whileBoxSelect(state, e); }
 };
 
-SimpleSelect.whileBoxSelect = function(state, e) {
+SimpleSelect.whileBoxSelect = function (state, e) {
   state.boxSelecting = true;
   this.updateUIClasses({ mouse: cursors.ADD });
 
@@ -4877,9 +5761,9 @@ SimpleSelect.whileBoxSelect = function(state, e) {
   state.boxSelectElement.style.height = (maxY - minY) + "px";
 };
 
-SimpleSelect.dragMove = function(state, e) {
+SimpleSelect.dragMove = function (state, e) {
   // extend start
-  if (state.dragMoving === false) { this._reodUndoAdd({dragMoveLocation: state.dragMoveLocation}); }
+  if (state.dragMoving === false) { this._reodUndoAdd({ dragMoveLocation: state.dragMoveLocation }); }
   // extend end
   // Dragging when drag move is enabled
   state.dragMoving = true;
@@ -4887,7 +5771,7 @@ SimpleSelect.dragMove = function(state, e) {
 
   var delta = {
     lng: e.lngLat.lng - state.dragMoveLocation.lng,
-    lat: e.lngLat.lat - state.dragMoveLocation.lat
+    lat: e.lngLat.lat - state.dragMoveLocation.lat,
   };
 
   moveFeatures(this.getSelected(), delta, this);
@@ -4895,20 +5779,16 @@ SimpleSelect.dragMove = function(state, e) {
   state.dragMoveLocation = e.lngLat;
 };
 
-SimpleSelect.onTouchEnd = SimpleSelect.onMouseUp = function(state, e) {
+SimpleSelect.onTouchEnd = SimpleSelect.onMouseUp = function (state, e) {
   var this$1$1 = this;
 
   // End any extended interactions
   if (state.dragMoving) {
     this.fireUpdate();
   } else if (state.boxSelecting) {
-    var bbox = [
-      state.boxSelectStartLocation,
-      mouseEventPoint(e.originalEvent, this.map.getContainer())
-    ];
+    var bbox = [state.boxSelectStartLocation, mouseEventPoint(e.originalEvent, this.map.getContainer())];
     var featuresInBox = this.featuresAt(null, bbox, 'click');
-    var idsToSelect = this.getUniqueIds(featuresInBox)
-      .filter(function (id) { return !this$1$1.isSelected(id); });
+    var idsToSelect = this.getUniqueIds(featuresInBox).filter(function (id) { return !this$1$1.isSelected(id); });
 
     if (idsToSelect.length) {
       this.select(idsToSelect);
@@ -4919,27 +5799,26 @@ SimpleSelect.onTouchEnd = SimpleSelect.onMouseUp = function(state, e) {
   this.stopExtendedInteractions(state);
 };
 
-SimpleSelect.toDisplayFeatures = function(state, geojson, display) {
-  geojson.properties.active = (this.isSelected(geojson.properties.id)) ?
-    activeStates.ACTIVE : activeStates.INACTIVE;
+SimpleSelect.toDisplayFeatures = function (state, geojson, display) {
+  geojson.properties.active = this.isSelected(geojson.properties.id) ? activeStates.ACTIVE : activeStates.INACTIVE;
   display(geojson);
   this.fireActionable();
-  if (geojson.properties.active !== activeStates.ACTIVE ||
-    geojson.geometry.type === geojsonTypes.POINT) { return; }
+  if (geojson.properties.active !== activeStates.ACTIVE || geojson.geometry.type === geojsonTypes.POINT) { return; }
   createSupplementaryPoints(geojson, undefined, undefined, modes$1.SIMPLE_SELECT).forEach(display);
 };
 
-SimpleSelect.onTrash = function() {
+SimpleSelect.onTrash = function () {
   this.deleteFeature(this.getSelectedIds());
   this.fireActionable();
 };
 
-SimpleSelect.onCombineFeatures = function() {
+SimpleSelect.onCombineFeatures = function () {
   var selectedFeatures = this.getSelected();
 
   if (selectedFeatures.length === 0 || selectedFeatures.length < 2) { return; }
 
-  var coordinates = [], featuresCombined = [];
+  var coordinates = [],
+    featuresCombined = [];
   var featureType = selectedFeatures[0].type.replace('Multi', '');
 
   for (var i = 0; i < selectedFeatures.length; i++) {
@@ -4965,8 +5844,8 @@ SimpleSelect.onCombineFeatures = function() {
       properties: featuresCombined[0].properties,
       geometry: {
         type: ("Multi" + featureType),
-        coordinates: coordinates
-      }
+        coordinates: coordinates,
+      },
     });
 
     this.addFeature(multiFeature);
@@ -4975,13 +5854,13 @@ SimpleSelect.onCombineFeatures = function() {
 
     this.map.fire(events$1.COMBINE_FEATURES, {
       createdFeatures: [multiFeature.toGeoJSON()],
-      deletedFeatures: featuresCombined
+      deletedFeatures: featuresCombined,
     });
   }
   this.fireActionable();
 };
 
-SimpleSelect.onUncombineFeatures = function() {
+SimpleSelect.onUncombineFeatures = function () {
   var this$1$1 = this;
 
   var selectedFeatures = this.getSelected();
@@ -5010,45 +5889,45 @@ SimpleSelect.onUncombineFeatures = function() {
   if (createdFeatures.length > 1) {
     this.map.fire(events$1.UNCOMBINE_FEATURES, {
       createdFeatures: createdFeatures,
-      deletedFeatures: featuresUncombined
+      deletedFeatures: featuresUncombined,
     });
   }
   this.fireActionable();
 };
 // extend start
-SimpleSelect._reodUndoAdd = function(item) {
+SimpleSelect._reodUndoAdd = function (item) {
   var this$1$1 = this;
 
   this.redoUndo.undoStack.push(JSON.parse(JSON.stringify(item)));
-  this.afterRender(function () { return this$1$1.redoUndo.fireChange({type: 'add'}); });
+  this.afterRender(function () { return this$1$1.redoUndo.fireChange({ type: 'add' }); });
 };
-SimpleSelect._redoOrUndo = function(type) {
+SimpleSelect._redoOrUndo = function (type) {
   var this$1$1 = this;
 
   if (!type) { return; }
   var item = this.redoUndo[(type + "Stack")].pop();
   if (item) {
     var state = this.getState();
-    var stack = JSON.parse(JSON.stringify({dragMoveLocation: state.dragMoveLocation}));
+    var stack = JSON.parse(JSON.stringify({ dragMoveLocation: state.dragMoveLocation }));
     this.redoUndo[type === 'undo' ? 'redoStack' : 'undoStack'].push(stack);
     var delta = {
       lng: item.dragMoveLocation.lng - state.dragMoveLocation.lng,
-      lat: item.dragMoveLocation.lat - state.dragMoveLocation.lat
+      lat: item.dragMoveLocation.lat - state.dragMoveLocation.lat,
     };
     state.dragMoveLocation = item.dragMoveLocation;
     var features = this.getSelected();
     moveFeatures(features, delta, this);
     features.forEach(function (feature) { return feature.execMeasure(); });
-    this.afterRender(function () { return this$1$1.redoUndo.fireChange({type: type}); });
+    this.afterRender(function () { return this$1$1.redoUndo.fireChange({ type: type }); });
     this._ctx.store.render();
   }
 };
 
-SimpleSelect.undo = function() {
+SimpleSelect.undo = function () {
   this._redoOrUndo('undo');
 };
 
-SimpleSelect.redo = function() {
+SimpleSelect.redo = function () {
   this._redoOrUndo('redo');
 };
 
@@ -5059,22 +5938,22 @@ var DirectSelect = {};
 
 // INTERNAL FUCNTIONS
 
-DirectSelect.fireUpdate = function() {
+DirectSelect.fireUpdate = function () {
   this.map.fire(events$1.UPDATE, {
     action: updateActions.CHANGE_COORDINATES,
-    features: this.getSelected().map(function (f) { return f.toGeoJSON(); })
+    features: this.getSelected().map(function (f) { return f.toGeoJSON(); }),
   });
 };
 
-DirectSelect.fireActionable = function(state) {
+DirectSelect.fireActionable = function (state) {
   this.setActionableState({
     combineFeatures: false,
     uncombineFeatures: false,
-    trash: state.selectedCoordPaths.length > 0
+    trash: state.selectedCoordPaths.length > 0,
   });
 };
 
-DirectSelect.startDragging = function(state, e) {
+DirectSelect.startDragging = function (state, e) {
   this.map.dragPan.disable();
   // extend start
   this.map.dragRotate.disable();
@@ -5083,10 +5962,9 @@ DirectSelect.startDragging = function(state, e) {
   // extend end
   if (!isDisabledMovePolgon(this._ctx, state)) { state.canDragMove = true; }
   state.dragMoveLocation = e.lngLat;
-
 };
 
-DirectSelect.stopDragging = function(state) {
+DirectSelect.stopDragging = function (state) {
   this.map.dragPan.enable();
   this.map.dragRotate.enable();
   this.map.touchPitch.enable();
@@ -5110,40 +5988,39 @@ DirectSelect.onVertex = function (state, e) {
   var selectedCoordinates = this.pathsToCoordinates(state.featureId, state.selectedCoordPaths);
   this.setSelectedCoordinates(selectedCoordinates);
   // extend start
-  this.afterRender(function () { return mapFireByClickOnVertex(this$1$1, {e: e}); });
+  this.afterRender(function () { return mapFireByClickOnVertex(this$1$1, { e: e }); });
   // extend end
-
 };
 
-DirectSelect.onMidpoint = function(state, e) {
+DirectSelect.onMidpoint = function (state, e) {
   var this$1$1 = this;
 
   this.startDragging(state, e);
   var about = e.featureTarget.properties;
   // extend start
-  this.afterRender(function () { return mapFireByOnMidpoint(this$1$1, {e: e}); });
-  this._reodUndoAdd({selectedCoordPaths: state.selectedCoordPaths});
+  this.afterRender(function () { return mapFireByOnMidpoint(this$1$1, { e: e }); });
+  this._reodUndoAdd({ selectedCoordPaths: state.selectedCoordPaths });
   // extend end
   state.feature.addCoordinate(about.coord_path, about.lng, about.lat);
   this.fireUpdate();
   state.selectedCoordPaths = [about.coord_path];
 };
 
-DirectSelect.pathsToCoordinates = function(featureId, paths) {
+DirectSelect.pathsToCoordinates = function (featureId, paths) {
   return paths.map(function (coord_path) { return ({ feature_id: featureId, coord_path: coord_path }); });
 };
 
-DirectSelect.onFeature = function(state, e) {
+DirectSelect.onFeature = function (state, e) {
   if (state.selectedCoordPaths.length === 0) { this.startDragging(state, e); }
   else { this.stopDragging(state); }
 };
 
-DirectSelect.dragFeature = function(state, e, delta) {
+DirectSelect.dragFeature = function (state, e, delta) {
   moveFeatures(this.getSelected(), delta, this);
   state.dragMoveLocation = e.lngLat;
 };
 
-DirectSelect.dragVertex = function(state, e, delta) {
+DirectSelect.dragVertex = function (state, e, delta) {
   var this$1$1 = this;
 
   if (isDisabledDragVertexWithTwoFingersZoom(this._ctx, e)) { return; }
@@ -5153,8 +6030,8 @@ DirectSelect.dragVertex = function(state, e, delta) {
     properties: {},
     geometry: {
       type: geojsonTypes.POINT,
-      coordinates: coords
-    }
+      coordinates: coords,
+    },
   }); });
 
   var constrainedDelta = constrainFeatureMovement(selectedCoordPoints, delta);
@@ -5164,7 +6041,7 @@ DirectSelect.dragVertex = function(state, e, delta) {
   }
   // extend start
   e.state = state;
-  this.afterRender(function () { return mapFireByDragVertex(this$1$1, {e: e}); });
+  this.afterRender(function () { return mapFireByDragVertex(this$1$1, { e: e }); });
   // extend end
 };
 
@@ -5184,7 +6061,7 @@ DirectSelect.clickActiveFeature = function (state) {
 
 // EXTERNAL FUNCTIONS
 
-DirectSelect.onSetup = function(opts) {
+DirectSelect.onSetup = function (opts) {
   var featureId = opts.featureId;
   var feature = this.getFeature(featureId);
 
@@ -5193,7 +6070,7 @@ DirectSelect.onSetup = function(opts) {
   }
 
   if (feature.type === geojsonTypes.POINT) {
-    throw new TypeError('direct_select mode doesn\'t handle point features');
+    throw new TypeError("direct_select mode doesn't handle point features");
   }
 
   var state = {
@@ -5202,7 +6079,7 @@ DirectSelect.onSetup = function(opts) {
     dragMoveLocation: opts.startPos || null,
     dragMoving: false,
     canDragMove: false,
-    selectedCoordPaths: opts.coordPath ? [opts.coordPath] : []
+    selectedCoordPaths: opts.coordPath ? [opts.coordPath] : [],
   };
 
   this.setSelectedCoordinates(this.pathsToCoordinates(featureId, state.selectedCoordPaths));
@@ -5214,21 +6091,26 @@ DirectSelect.onSetup = function(opts) {
   // extend end
 };
 
-DirectSelect.onStop = function() {
+DirectSelect.onStop = function () {
   doubleClickZoom.enable(this);
   this.clearSelectedCoordinates();
   this.destroy();
 };
 
-DirectSelect.toDisplayFeatures = function(state, geojson, push) {
+DirectSelect.toDisplayFeatures = function (state, geojson, push) {
   if (state.featureId === geojson.properties.id) {
     geojson.properties.active = activeStates.ACTIVE;
     push(geojson);
-    createSupplementaryPoints(geojson, {
-      map: this.map,
-      midpoints: true,
-      selectedPaths: state.selectedCoordPaths,
-    }, undefined, modes$1.DIRECT_SELECT).forEach(push);
+    createSupplementaryPoints(
+      geojson,
+      {
+        map: this.map,
+        midpoints: true,
+        selectedPaths: state.selectedCoordPaths,
+      },
+      undefined,
+      modes$1.DIRECT_SELECT
+    ).forEach(push);
   } else {
     geojson.properties.active = activeStates.INACTIVE;
     push(geojson);
@@ -5236,12 +6118,10 @@ DirectSelect.toDisplayFeatures = function(state, geojson, push) {
   this.fireActionable(state);
 };
 
-DirectSelect.onTrash = function(state) {
+DirectSelect.onTrash = function (state) {
   // Uses number-aware sorting to make sure '9' < '10'. Comparison is reversed because we want them
   // in reverse order so that we can remove by index safely.
-  state.selectedCoordPaths
-    .sort(function (a, b) { return b.localeCompare(a, 'en', { numeric: true }); })
-    .forEach(function (id) { return state.feature.removeCoordinate(id); });
+  state.selectedCoordPaths.sort(function (a, b) { return b.localeCompare(a, 'en', { numeric: true }); }).forEach(function (id) { return state.feature.removeCoordinate(id); });
   this.fireUpdate();
   state.selectedCoordPaths = [];
   this.clearSelectedCoordinates();
@@ -5252,7 +6132,7 @@ DirectSelect.onTrash = function(state) {
   }
 };
 
-DirectSelect.onMouseMove = function(state, e) {
+DirectSelect.onMouseMove = function (state, e) {
   // On mousemove that is not a drag, stop vertex movement.
   var isFeature = isActiveFeature(e);
   var onVertex = isVertex(e);
@@ -5271,25 +6151,25 @@ DirectSelect.onMouseMove = function(state, e) {
   return true;
 };
 
-DirectSelect.onMouseOut = function(state) {
+DirectSelect.onMouseOut = function (state) {
   // As soon as you mouse leaves the canvas, update the feature
   if (state.dragMoving) { this.fireUpdate(); }
   // Skip render
   return true;
 };
 
-DirectSelect.onTouchStart = DirectSelect.onMouseDown = function(state, e) {
+DirectSelect.onTouchStart = DirectSelect.onMouseDown = function (state, e) {
   if (isVertex(e)) { return this.onVertex(state, e); }
   if (isActiveFeature(e)) { return this.onFeature(state, e); }
   if (isMidpoint(e)) { return this.onMidpoint(state, e); }
 };
 
-DirectSelect.onDrag = function(state, e) {
+DirectSelect.onDrag = function (state, e) {
   var this$1$1 = this;
 
   if (state.canDragMove !== true) { return; }
   // extend start
-  if (state.dragMoving === false)  { this._reodUndoAdd({selectedCoordPaths: state.selectedCoordPaths}); }
+  if (state.dragMoving === false) { this._reodUndoAdd({ selectedCoordPaths: state.selectedCoordPaths }); }
   // extend end
   state.dragMoving = true;
   e.originalEvent.stopPropagation();
@@ -5297,7 +6177,7 @@ DirectSelect.onDrag = function(state, e) {
 
   var delta = {
     lng: e.lngLat.lng - state.dragMoveLocation.lng,
-    lat: e.lngLat.lat - state.dragMoveLocation.lat
+    lat: e.lngLat.lat - state.dragMoveLocation.lat,
   };
   if (state.selectedCoordPaths.length > 0) {
     this.dragVertex(state, e, delta);
@@ -5308,11 +6188,11 @@ DirectSelect.onDrag = function(state, e) {
   }
   state.dragMoveLocation = e.lngLat;
   // extend start
-  this.afterRender(function () { return mapFireDrag(this$1$1, {e: e, type: type}); });
+  this.afterRender(function () { return mapFireDrag(this$1$1, { e: e, type: type }); });
   // extend end
 };
 
-DirectSelect.onClick = function(state, e) {
+DirectSelect.onClick = function (state, e) {
   var this$1$1 = this;
 
   // extend start
@@ -5320,7 +6200,7 @@ DirectSelect.onClick = function(state, e) {
   // extend end
   if (noTarget(e)) {
     // extend start
-    this.afterRender(function () { return mapFireClickOrOnTab(this$1$1, {e: e, type: 'clickNoTarget'}); });
+    this.afterRender(function () { return mapFireClickOrOnTab(this$1$1, { e: e, type: 'clickNoTarget' }); });
     if (isClickNotthingNoChangeMode(this._ctx)) {
       return;
     }
@@ -5329,30 +6209,30 @@ DirectSelect.onClick = function(state, e) {
   }
   if (isActiveFeature(e)) {
     // extend start
-    this.afterRender(function () { return mapFireClickOrOnTab(this$1$1, {e: e, type: 'clickActiveFeature'}); });
+    this.afterRender(function () { return mapFireClickOrOnTab(this$1$1, { e: e, type: 'clickActiveFeature' }); });
     // extend end
     return this.clickActiveFeature(state, e);
   }
   if (isInactiveFeature(e)) {
     // extend start
-    this.afterRender(function () { return mapFireClickOrOnTab(this$1$1, {e: e, type: 'clickInactiveFeature'}); });
+    this.afterRender(function () { return mapFireClickOrOnTab(this$1$1, { e: e, type: 'clickInactiveFeature' }); });
     // extend end
     return this.clickInactive(state, e);
   }
 
   this.stopDragging(state);
   // extend start
-  this.afterRender(function () { return mapFireClickOrOnTab(this$1$1, {e: e, type: 'null'}); });
+  this.afterRender(function () { return mapFireClickOrOnTab(this$1$1, { e: e, type: 'null' }); });
   // extend end
 };
 
-DirectSelect.onTap = function(state, e) {
+DirectSelect.onTap = function (state, e) {
   var this$1$1 = this;
 
   if (isStopPropagationClickActiveFeature(this._ctx, e)) { return; }
   if (noTarget(e)) {
     // extend start
-    this.afterRender(function () { return mapFireClickOrOnTab(this$1$1, {e: e, type: 'clickNoTarget'}); });
+    this.afterRender(function () { return mapFireClickOrOnTab(this$1$1, { e: e, type: 'clickNoTarget' }); });
     if (isClickNotthingNoChangeMode(this._ctx)) {
       return; //this.clickActiveFeature(state, e);
     }
@@ -5361,22 +6241,22 @@ DirectSelect.onTap = function(state, e) {
   }
   if (isActiveFeature(e)) {
     // extend start
-    this.afterRender(function () { return mapFireClickOrOnTab(this$1$1, {e: e, type: 'clickActiveFeature'}); });
+    this.afterRender(function () { return mapFireClickOrOnTab(this$1$1, { e: e, type: 'clickActiveFeature' }); });
     // extend end
     return this.clickActiveFeature(state, e);
   }
   if (isInactiveFeature(e)) {
     // extend start
-    this.afterRender(function () { return mapFireClickOrOnTab(this$1$1, {e: e, type:'clickInactiveFeature'}); });
+    this.afterRender(function () { return mapFireClickOrOnTab(this$1$1, { e: e, type: 'clickInactiveFeature' }); });
     // extend end
     return this.clickInactive(state, e);
   }
   // extend start
-  this.afterRender(function () { return mapFireClickOrOnTab(this$1$1, {e: e, type: 'null'}); });
+  this.afterRender(function () { return mapFireClickOrOnTab(this$1$1, { e: e, type: 'null' }); });
   // extend end
 };
 
-DirectSelect.onTouchEnd = DirectSelect.onMouseUp = function(state) {
+DirectSelect.onTouchEnd = DirectSelect.onMouseUp = function (state) {
   if (state.dragMoving) {
     this.fireUpdate();
   }
@@ -5384,13 +6264,13 @@ DirectSelect.onTouchEnd = DirectSelect.onMouseUp = function(state) {
 };
 
 // extend start
-DirectSelect._reodUndoAdd = function(item) {
+DirectSelect._reodUndoAdd = function (item) {
   var stack = JSON.parse(JSON.stringify(Object.assign({}, item, {coordinates: this.getState().feature.getCoordinates()})));
   this.redoUndo.undoStack.push(stack);
-  this.redoUndo.fireChange({type: 'add'});
+  this.redoUndo.fireChange({ type: 'add' });
 };
 
-DirectSelect._redoOrUndo = function(type) {
+DirectSelect._redoOrUndo = function (type) {
   var this$1$1 = this;
 
   if (!type) { return; }
@@ -5399,34 +6279,34 @@ DirectSelect._redoOrUndo = function(type) {
     var state = this.getState();
     this.redoUndo[type === 'undo' ? 'redoStack' : 'undoStack'].push({
       coordinates: state.feature.getCoordinates(),
-      selectedCoordPaths: state.selectedCoordPaths
+      selectedCoordPaths: state.selectedCoordPaths,
     });
     if (state.selectedCoordPaths) { state.selectedCoordPaths = item.selectedCoordPaths; }
     state.feature.setCoordinates(item.coordinates);
     state.feature.execMeasure();
     this._ctx.store.render();
-    this.afterRender(function () { return this$1$1.redoUndo.fireChange({type: type}); });
+    this.afterRender(function () { return this$1$1.redoUndo.fireChange({ type: type }); });
   }
 };
 
-DirectSelect.undo = function() {
+DirectSelect.undo = function () {
   this._redoOrUndo('undo');
 };
 
-DirectSelect.redo = function() {
+DirectSelect.redo = function () {
   this._redoOrUndo('redo');
 };
 
 var DrawPoint = {};
 
-DrawPoint.onSetup = function() {
+DrawPoint.onSetup = function () {
   var point = this.newFeature({
     type: geojsonTypes.FEATURE,
     properties: {},
     geometry: {
       type: geojsonTypes.POINT,
-      coordinates: []
-    }
+      coordinates: [],
+    },
   });
 
   this.addFeature(point);
@@ -5436,34 +6316,34 @@ DrawPoint.onSetup = function() {
   this.activateUIButton(types$1.POINT);
 
   this.setActionableState({
-    trash: true
+    trash: true,
   });
 
   // extend start
-  return this.setState({point: point});
+  return this.setState({ point: point });
   // extend end
 };
 
-DrawPoint.stopDrawingAndRemove = function(state) {
+DrawPoint.stopDrawingAndRemove = function (state) {
   this.deleteFeature([state.point.id], { silent: true });
   this.changeMode(modes$1.SIMPLE_SELECT);
 };
 
-DrawPoint.onTap = DrawPoint.onClick = function(state, e) {
+DrawPoint.onTap = DrawPoint.onClick = function (state, e) {
   var this$1$1 = this;
 
   this.updateUIClasses({ mouse: cursors.MOVE });
   state.point.updateCoordinate('', e.lngLat.lng, e.lngLat.lat);
   // extend start
-  this.afterRender(function () { return mapFireAddPoint(this$1$1, {e: e}); });
+  this.afterRender(function () { return mapFireAddPoint(this$1$1, { e: e }); });
   // extend end
   this.map.fire(events$1.CREATE, {
-    features: [state.point.toGeoJSON()]
+    features: [state.point.toGeoJSON()],
   });
   this.changeMode(modes$1.SIMPLE_SELECT, { featureIds: [state.point.id] });
 };
 
-DrawPoint.onStop = function(state) {
+DrawPoint.onStop = function (state) {
   this.activateUIButton();
   this.destroy();
   if (!state.point.getCoordinate().length) {
@@ -5471,22 +6351,22 @@ DrawPoint.onStop = function(state) {
   }
 };
 
-DrawPoint.toDisplayFeatures = function(state, geojson, display) {
+DrawPoint.toDisplayFeatures = function (state, geojson, display) {
   // Never render the point we're drawing
   var isActivePoint = geojson.properties.id === state.point.id;
-  geojson.properties.active = (isActivePoint) ? activeStates.ACTIVE : activeStates.INACTIVE;
+  geojson.properties.active = isActivePoint ? activeStates.ACTIVE : activeStates.INACTIVE;
   if (!isActivePoint) { return display(geojson); }
 };
 
 DrawPoint.onTrash = DrawPoint.stopDrawingAndRemove;
 
-DrawPoint.onKeyUp = function(state, e) {
+DrawPoint.onKeyUp = function (state, e) {
   if (isEscapeKey(e) || isEnterKey(e)) {
     return this.stopDrawingAndRemove(state, e);
   }
 };
 
-DrawPoint.drawByCoordinate = function(coord) {
+DrawPoint.drawByCoordinate = function (coord) {
   this.onClick(this.getState(), { lngLat: { lng: coord[0], lat: coord[1] } });
 };
 
@@ -5497,14 +6377,14 @@ function isEventAtCoordinates(event, coordinates) {
 
 var DrawPolygon = {};
 
-DrawPolygon.onSetup = function() {
+DrawPolygon.onSetup = function () {
   var polygon = this.newFeature({
     type: geojsonTypes.FEATURE,
     properties: {},
     geometry: {
       type: geojsonTypes.POLYGON,
-      coordinates: [[]]
-    }
+      coordinates: [[]],
+    },
   });
   this.addFeature(polygon);
   this.clearSelectedFeatures();
@@ -5518,7 +6398,7 @@ DrawPolygon.onSetup = function() {
   // extend end
 };
 
-DrawPolygon.clickAnywhere = function(state, e) {
+DrawPolygon.clickAnywhere = function (state, e) {
   var this$1$1 = this;
 
   if (state.currentVertexPosition > 0 && isEventAtCoordinates(e, state.polygon.coordinates[0][state.currentVertexPosition - 1])) {
@@ -5532,25 +6412,25 @@ DrawPolygon.clickAnywhere = function(state, e) {
   state.currentVertexPosition++;
   state.polygon.updateCoordinate(("0." + (state.currentVertexPosition)), e.lngLat.lng, e.lngLat.lat);
   // extend start
-  this.afterRender(function () { return mapFireAddPoint(this$1$1, {e: e}); });
+  this.afterRender(function () { return mapFireAddPoint(this$1$1, { e: e }); });
   // extend end
 };
 
-DrawPolygon.clickOnVertex = function(state) {
+DrawPolygon.clickOnVertex = function (state) {
   // extend start
   if (isDisabledClickOnVertexWithCtx(this._ctx)) { return; }
   // extend end
   return this.changeMode(modes$1.SIMPLE_SELECT, { featureIds: [state.polygon.id] });
 };
 
-DrawPolygon.onMouseMove = function(state, e) {
+DrawPolygon.onMouseMove = function (state, e) {
   state.polygon.updateCoordinate(("0." + (state.currentVertexPosition)), e.lngLat.lng, e.lngLat.lat);
   if (isVertex$1(e)) {
     this.updateUIClasses({ mouse: cursors.POINTER });
   }
 };
 
-DrawPolygon.onTap = DrawPolygon.onClick = function(state, e) {
+DrawPolygon.onTap = DrawPolygon.onClick = function (state, e) {
   // extend start
   if (isIgnoreClickOnVertexWithCtx(this._ctx)) { return this.clickAnywhere(state, e); }
   // extend end
@@ -5558,7 +6438,7 @@ DrawPolygon.onTap = DrawPolygon.onClick = function(state, e) {
   return this.clickAnywhere(state, e);
 };
 
-DrawPolygon.onKeyUp = function(state, e) {
+DrawPolygon.onKeyUp = function (state, e) {
   if (isEscapeKey(e)) {
     this.deleteFeature([state.polygon.id], { silent: true });
     this.changeMode(modes$1.SIMPLE_SELECT);
@@ -5567,7 +6447,7 @@ DrawPolygon.onKeyUp = function(state, e) {
   }
 };
 
-DrawPolygon.onStop = function(state) {
+DrawPolygon.onStop = function (state) {
   this.updateUIClasses({ mouse: cursors.NONE });
   doubleClickZoom.enable(this);
   this.activateUIButton();
@@ -5579,7 +6459,7 @@ DrawPolygon.onStop = function(state) {
   state.polygon.removeCoordinate(("0." + (state.currentVertexPosition)));
   if (state.polygon.isValid()) {
     this.map.fire(events$1.CREATE, {
-      features: [state.polygon.toGeoJSON()]
+      features: [state.polygon.toGeoJSON()],
     });
   } else {
     this.deleteFeature([state.polygon.id], { silent: true });
@@ -5587,9 +6467,9 @@ DrawPolygon.onStop = function(state) {
   }
 };
 
-DrawPolygon.toDisplayFeatures = function(state, geojson, display) {
+DrawPolygon.toDisplayFeatures = function (state, geojson, display) {
   var isActivePolygon = geojson.properties.id === state.polygon.id;
-  geojson.properties.active = (isActivePolygon) ? activeStates.ACTIVE : activeStates.INACTIVE;
+  geojson.properties.active = isActivePolygon ? activeStates.ACTIVE : activeStates.INACTIVE;
   if (!isActivePolygon) { return display(geojson); }
 
   // Don't render a polygon until it has two positions
@@ -5615,26 +6495,46 @@ DrawPolygon.toDisplayFeatures = function(state, geojson, display) {
       });
     }
     // extend end
-    display(createVertex(state.polygon.id, geojson.geometry.coordinates[0][endPos], ("0." + endPos), false, true, modes$1.DRAW_POLYGON));
+    display(
+      createVertex(state.polygon.id, geojson.geometry.coordinates[0][endPos], ("0." + endPos), false, true, modes$1.DRAW_POLYGON)
+    );
     // extend start
-    display(createLastOrSecondToLastPoint(state.polygon.id, geojson.geometry.coordinates[0][endPos], ("0." + endPos), false, false, modes$1.DRAW_POLYGON));
-    display(createLastOrSecondToLastPoint(state.polygon.id, geojson.geometry.coordinates[0][endPos], ("0." + (endPos + 1)), false, true, modes$1.DRAW_POLYGON));
+    display(
+      createLastOrSecondToLastPoint(
+        state.polygon.id,
+        geojson.geometry.coordinates[0][endPos],
+        ("0." + endPos),
+        false,
+        false,
+        modes$1.DRAW_POLYGON
+      )
+    );
+    display(
+      createLastOrSecondToLastPoint(
+        state.polygon.id,
+        geojson.geometry.coordinates[0][endPos],
+        ("0." + (endPos + 1)),
+        false,
+        true,
+        modes$1.DRAW_POLYGON
+      )
+    );
     // extend end
   }
   if (coordinateCount <= 4) {
     // If we've only drawn two positions (plus the closer),
     // make a LineString instead of a Polygon
     var lineCoordinates = [
-      [geojson.geometry.coordinates[0][0][0], geojson.geometry.coordinates[0][0][1]], [geojson.geometry.coordinates[0][1][0], geojson.geometry.coordinates[0][1][1]]
-    ];
+      [geojson.geometry.coordinates[0][0][0], geojson.geometry.coordinates[0][0][1]],
+      [geojson.geometry.coordinates[0][1][0], geojson.geometry.coordinates[0][1][1]] ];
     // create an initial vertex so that we can track the first point on mobile devices
     display({
       type: geojsonTypes.FEATURE,
       properties: geojson.properties,
       geometry: {
         coordinates: lineCoordinates,
-        type: geojsonTypes.LINE_STRING
-      }
+        type: geojsonTypes.LINE_STRING,
+      },
     });
     if (coordinateCount === 3) {
       return;
@@ -5644,12 +6544,12 @@ DrawPolygon.toDisplayFeatures = function(state, geojson, display) {
   return display(geojson);
 };
 
-DrawPolygon.onTrash = function(state) {
+DrawPolygon.onTrash = function (state) {
   this.deleteFeature([state.polygon.id], { silent: true });
   this.changeMode(modes$1.SIMPLE_SELECT);
 };
 
-DrawPolygon.drawByCoordinate = function(coord) {
+DrawPolygon.drawByCoordinate = function (coord) {
   var this$1$1 = this;
 
   var state = this.getState();
@@ -5660,7 +6560,7 @@ DrawPolygon.drawByCoordinate = function(coord) {
 
 var DrawLineString = {};
 
-DrawLineString.onSetup = function(opts) {
+DrawLineString.onSetup = function (opts) {
   opts = opts || {};
   var featureId = opts.featureId;
 
@@ -5700,8 +6600,8 @@ DrawLineString.onSetup = function(opts) {
       properties: {},
       geometry: {
         type: geojsonTypes.LINE_STRING,
-        coordinates: []
-      }
+        coordinates: [],
+      },
     });
     currentVertexPosition = 0;
     this.addFeature(line);
@@ -5712,18 +6612,20 @@ DrawLineString.onSetup = function(opts) {
   this.updateUIClasses({ mouse: cursors.ADD });
   this.activateUIButton(types$1.LINE);
   this.setActionableState({
-    trash: true
+    trash: true,
   });
   // extend start
   return this.setState({ line: line, currentVertexPosition: currentVertexPosition, direction: direction });
   // extend end
 };
 
-DrawLineString.clickAnywhere = function(state, e) {
+DrawLineString.clickAnywhere = function (state, e) {
   var this$1$1 = this;
 
-  if (state.currentVertexPosition > 0 && isEventAtCoordinates(e, state.line.coordinates[state.currentVertexPosition - 1]) ||
-      state.direction === 'backwards' && isEventAtCoordinates(e, state.line.coordinates[state.currentVertexPosition + 1])) {
+  if (
+    (state.currentVertexPosition > 0 && isEventAtCoordinates(e, state.line.coordinates[state.currentVertexPosition - 1])) ||
+    (state.direction === 'backwards' && isEventAtCoordinates(e, state.line.coordinates[state.currentVertexPosition + 1]))
+  ) {
     // extend start
     if (isIgnoreClickOnVertexWithCtx(this._ctx)) { return; }
     // extend end
@@ -5738,26 +6640,25 @@ DrawLineString.clickAnywhere = function(state, e) {
     state.line.addCoordinate(0, e.lngLat.lng, e.lngLat.lat);
   }
   // extend start
-  this.afterRender(function () { return mapFireAddPoint(this$1$1, {e: e}); });
+  this.afterRender(function () { return mapFireAddPoint(this$1$1, { e: e }); });
   // extend end
 };
 
-DrawLineString.clickOnVertex = function(state) {
+DrawLineString.clickOnVertex = function (state) {
   // extend start
   if (isDisabledClickOnVertexWithCtx(this._ctx)) { return; }
   // extend end
   return this.changeMode(modes$1.SIMPLE_SELECT, { featureIds: [state.line.id] });
-
 };
 
-DrawLineString.onMouseMove = function(state, e) {
+DrawLineString.onMouseMove = function (state, e) {
   state.line.updateCoordinate(state.currentVertexPosition, e.lngLat.lng, e.lngLat.lat);
   if (isVertex$1(e)) {
     this.updateUIClasses({ mouse: cursors.POINTER });
   }
 };
 
-DrawLineString.onTap = DrawLineString.onClick = function(state, e) {
+DrawLineString.onTap = DrawLineString.onClick = function (state, e) {
   // extend start
   if (isIgnoreClickOnVertexWithCtx(this._ctx)) { return this.clickAnywhere(state, e); }
   // extend end
@@ -5765,7 +6666,7 @@ DrawLineString.onTap = DrawLineString.onClick = function(state, e) {
   this.clickAnywhere(state, e);
 };
 
-DrawLineString.onKeyUp = function(state, e) {
+DrawLineString.onKeyUp = function (state, e) {
   if (isEnterKey(e)) {
     this.changeMode(modes$1.SIMPLE_SELECT, { featureIds: [state.line.id] });
   } else if (isEscapeKey(e)) {
@@ -5774,7 +6675,7 @@ DrawLineString.onKeyUp = function(state, e) {
   }
 };
 
-DrawLineString.onStop = function(state) {
+DrawLineString.onStop = function (state) {
   doubleClickZoom.enable(this);
   this.activateUIButton();
   this.destroy();
@@ -5785,7 +6686,7 @@ DrawLineString.onStop = function(state) {
   state.line.removeCoordinate(("" + (state.currentVertexPosition)));
   if (state.line.isValid()) {
     this.map.fire(events$1.CREATE, {
-      features: [state.line.toGeoJSON()]
+      features: [state.line.toGeoJSON()],
     });
   } else {
     this.deleteFeature([state.line.id], { silent: true });
@@ -5793,14 +6694,14 @@ DrawLineString.onStop = function(state) {
   }
 };
 
-DrawLineString.onTrash = function(state) {
+DrawLineString.onTrash = function (state) {
   this.deleteFeature([state.line.id], { silent: true });
   this.changeMode(modes$1.SIMPLE_SELECT);
 };
 
-DrawLineString.toDisplayFeatures = function(state, geojson, display) {
+DrawLineString.toDisplayFeatures = function (state, geojson, display) {
   var isActiveLine = geojson.properties.id === state.line.id;
-  geojson.properties.active = (isActiveLine) ? activeStates.ACTIVE : activeStates.INACTIVE;
+  geojson.properties.active = isActiveLine ? activeStates.ACTIVE : activeStates.INACTIVE;
   if (!isActiveLine) { return display(geojson); }
   // Only render the line if it has at least one real coordinate
   if (geojson.geometry.coordinates.length < 2) { return; }
@@ -5830,7 +6731,7 @@ DrawLineString.toDisplayFeatures = function(state, geojson, display) {
   display(geojson);
 };
 
-DrawLineString.drawByCoordinate = function(coord) {
+DrawLineString.drawByCoordinate = function (coord) {
   var this$1$1 = this;
 
   var state = this.getState();
@@ -5857,7 +6758,10 @@ var defaultOptions = {
   styles: styles,
   modes: modes,
   controls: {},
-  userProperties: false
+  userProperties: false,
+  measureOptions: {
+    enable: true,
+  },
 };
 
 var showControls = {
@@ -5872,7 +6776,7 @@ var showControls = {
   redo: true,
   finish: true,
   cancel: true,
-  draw_center: true
+  draw_center: true,
   /** extend end */
 };
 
@@ -5887,7 +6791,7 @@ var hideControls = {
   undo: false,
   redo: false,
   cancel: true,
-  draw_center: true
+  draw_center: true,
   /** extend end */
 };
 
@@ -5896,7 +6800,7 @@ function addSources(styles, sourceBucket) {
     if (style.source) { return style; }
     return xtend(style, {
       id: ((style.id) + "." + sourceBucket),
-      source: (sourceBucket === 'hot') ? sources.HOT : sources.COLD
+      source: sourceBucket === 'hot' ? sources.HOT : sources.COLD,
     });
   });
 }
@@ -5907,7 +6811,7 @@ function genStyles(styles) {
 }
 // extend end
 
-function setupOptions(options) {
+function setupOptions (options) {
   if ( options === void 0 ) options = {};
 
   var withDefaults = xtend(options);
@@ -7799,14 +8703,13 @@ var featureTypes = {
   Point: Point$2,
   MultiPolygon: MultiFeature,
   MultiLineString: MultiFeature,
-  MultiPoint: MultiFeature
+  MultiPoint: MultiFeature,
 };
 
-function setupAPI(ctx, api) {
-
+function setupAPI (ctx, api) {
   api.modes = modes$1;
 
-  api.getFeatureIdsAt = function(point) {
+  api.getFeatureIdsAt = function (point) {
     var features = featuresAt.click({ point: point }, null, ctx);
     return features.map(function (feature) { return feature.properties.id; });
   };
@@ -7818,7 +8721,10 @@ function setupAPI(ctx, api) {
   api.getSelected = function () {
     return {
       type: geojsonTypes.FEATURE_COLLECTION,
-      features: ctx.store.getSelectedIds().map(function (id) { return ctx.store.get(id); }).map(function (feature) { return feature.toGeoJSON(); })
+      features: ctx.store
+        .getSelectedIds()
+        .map(function (id) { return ctx.store.get(id); })
+        .map(function (feature) { return feature.toGeoJSON(); }),
     };
   };
 
@@ -7830,14 +8736,18 @@ function setupAPI(ctx, api) {
         properties: {},
         geometry: {
           type: geojsonTypes.POINT,
-          coordinates: coordinate.coordinates
-        }
-      }); })
+          coordinates: coordinate.coordinates,
+        },
+      }); }),
     };
   };
 
-  api.set = function(featureCollection) {
-    if (featureCollection.type === undefined || featureCollection.type !== geojsonTypes.FEATURE_COLLECTION || !Array.isArray(featureCollection.features)) {
+  api.set = function (featureCollection) {
+    if (
+      featureCollection.type === undefined ||
+      featureCollection.type !== geojsonTypes.FEATURE_COLLECTION ||
+      !Array.isArray(featureCollection.features)
+    ) {
       throw new Error('Invalid FeatureCollection');
     }
     var renderBatch = ctx.store.createRenderBatch();
@@ -7887,7 +8797,6 @@ function setupAPI(ctx, api) {
     return ids;
   };
 
-
   api.get = function (id) {
     var feature = ctx.store.get(id);
     if (feature) {
@@ -7895,14 +8804,14 @@ function setupAPI(ctx, api) {
     }
   };
 
-  api.getAll = function() {
+  api.getAll = function () {
     return {
       type: geojsonTypes.FEATURE_COLLECTION,
-      features: ctx.store.getAll().map(function (feature) { return feature.toGeoJSON(); })
+      features: ctx.store.getAll().map(function (feature) { return feature.toGeoJSON(); }),
     };
   };
 
-  api.delete = function(featureIds) {
+  api.delete = function (featureIds) {
     ctx.store.delete(featureIds, { silent: true });
     // If we were in direct select mode and our selected feature no longer exists
     // (because it was deleted), we need to get out of that mode.
@@ -7915,7 +8824,7 @@ function setupAPI(ctx, api) {
     return api;
   };
 
-  api.deleteAll = function() {
+  api.deleteAll = function () {
     ctx.store.delete(ctx.store.getAllIds(), { silent: true });
     // If we were in direct select mode, now our selected feature no longer exists,
     // so escape that mode.
@@ -7928,12 +8837,12 @@ function setupAPI(ctx, api) {
     return api;
   };
 
-  api.changeMode = function(mode, modeOptions) {
+  api.changeMode = function (mode, modeOptions) {
     if ( modeOptions === void 0 ) modeOptions = {};
 
     // Avoid changing modes just to re-select what's already selected
     if (mode === modes$1.SIMPLE_SELECT && api.getMode() === modes$1.SIMPLE_SELECT) {
-      if (stringSetsAreEqual((modeOptions.featureIds || []), ctx.store.getSelectedIds())) { return api; }
+      if (stringSetsAreEqual(modeOptions.featureIds || [], ctx.store.getSelectedIds())) { return api; }
       // And if we are changing the selection within simple_select mode, just change the selection,
       // instead of stopping and re-starting the mode
       ctx.store.setSelected(modeOptions.featureIds, { silent: true });
@@ -7941,8 +8850,11 @@ function setupAPI(ctx, api) {
       return api;
     }
 
-    if (mode === modes$1.DIRECT_SELECT && api.getMode() === modes$1.DIRECT_SELECT &&
-      modeOptions.featureId === ctx.store.getSelectedIds()[0]) {
+    if (
+      mode === modes$1.DIRECT_SELECT &&
+      api.getMode() === modes$1.DIRECT_SELECT &&
+      modeOptions.featureId === ctx.store.getSelectedIds()[0]
+    ) {
       return api;
     }
 
@@ -7950,59 +8862,59 @@ function setupAPI(ctx, api) {
     return api;
   };
 
-  api.getMode = function() {
+  api.getMode = function () {
     return ctx.events.getMode();
   };
 
-  api.trash = function() {
+  api.trash = function () {
     ctx.events.trash({ silent: true });
     return api;
   };
 
-  api.combineFeatures = function() {
+  api.combineFeatures = function () {
     ctx.events.combineFeatures({ silent: true });
     return api;
   };
 
-  api.uncombineFeatures = function() {
+  api.uncombineFeatures = function () {
     ctx.events.uncombineFeatures({ silent: true });
     return api;
   };
 
-  api.setFeatureProperty = function(featureId, property, value) {
+  api.setFeatureProperty = function (featureId, property, value) {
     ctx.store.setFeatureProperty(featureId, property, value);
     return api;
   };
 
-  api.getFeatureTypeById = function(id) {
+  api.getFeatureTypeById = function (id) {
     return ctx.store.get(id);
   };
   // extend start
-  api.undo = function() {
+  api.undo = function () {
     ctx.events.undo();
     return api;
   };
-  api.redo = function() {
+  api.redo = function () {
     ctx.events.redo();
     return api;
   };
-  api.finish = function(m) {
+  api.finish = function (m) {
     ctx.events.finish(m);
     return api;
   };
-  api.cancel = function(m) {
+  api.cancel = function (m) {
     ctx.events.cancel(m);
     return api;
   };
-  api.drawByCenter = function() {
+  api.drawByCenter = function () {
     ctx.events.drawByCoordinate(ctx.map.getCenter().toArray());
     return api;
   };
-  api.drawByCoordinate = function(coord) {
+  api.drawByCoordinate = function (coord) {
     ctx.events.drawByCoordinate(coord);
     return api;
   };
-  api.setStyle = function(styles) {
+  api.setStyle = function (styles) {
     ctx.options.styles.forEach(function (style) {
       if (ctx.map.getLayer(style.id)) { ctx.map.removeLayer(style.id); }
     });
@@ -8013,12 +8925,15 @@ function setupAPI(ctx, api) {
     });
     return api;
   };
-  api.edit = function(geojson) {
+  api.edit = function (geojson) {
     var ids = api.add(geojson);
     var type = geojson.type;
-    var feature = type === geojsonTypes.FEATURE ?
-      geojson : GEOMETRYS.includes(type) ?
-        { type: geojsonTypes.FEATURE, properties: {}, geometry: geojson } : null;
+    var feature =
+      type === geojsonTypes.FEATURE
+        ? geojson
+        : GEOMETRYS.includes(type)
+        ? { type: geojsonTypes.FEATURE, properties: {}, geometry: geojson }
+        : null;
     if (!feature) {
       console.warn('only support edit feature or geometry');
       return api;
@@ -8030,8 +8945,12 @@ function setupAPI(ctx, api) {
     }
     return api;
   };
-  api.setMeasureOptions = function(options) {
+  api.setMeasureOptions = function (options) {
     ctx.events.setMeasureOptions(options);
+    return api;
+  };
+  api.setGeoJsonEditorOptions = function (options) {
+    ctx.geoJsonEditor.setOptions(options);
     return api;
   };
   // extend end
@@ -8059,6 +8978,8 @@ sortFeatures: sortFeatures,
 stringSetsAreEqual: stringSetsAreEqual,
 StringSet: StringSet,
 theme: styles,
+theme1: theme1,
+theme2: theme2,
 toDenseArray: toDenseArray
 });
 

@@ -15,8 +15,10 @@ const defaultOptions = {
   styles,
   modes,
   controls: {},
-  userProperties: false
-
+  userProperties: false,
+  measureOptions: {
+    enable: true,
+  },
 };
 
 const showControls = {
@@ -31,7 +33,7 @@ const showControls = {
   redo: true,
   finish: true,
   cancel: true,
-  draw_center: true
+  draw_center: true,
   /** extend end */
 };
 
@@ -46,7 +48,7 @@ const hideControls = {
   undo: false,
   redo: false,
   cancel: true,
-  draw_center: true
+  draw_center: true,
   /** extend end */
 };
 
@@ -55,7 +57,7 @@ function addSources(styles, sourceBucket) {
     if (style.source) return style;
     return xtend(style, {
       id: `${style.id}.${sourceBucket}`,
-      source: (sourceBucket === 'hot') ? Constants.sources.HOT : Constants.sources.COLD
+      source: sourceBucket === 'hot' ? Constants.sources.HOT : Constants.sources.COLD,
     });
   });
 }
@@ -66,7 +68,7 @@ export function genStyles(styles) {
 }
 // extend end
 
-export default function(options = {}) {
+export default function (options = {}) {
   let withDefaults = xtend(options);
 
   if (!options.controls) {

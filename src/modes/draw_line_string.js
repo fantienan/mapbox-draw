@@ -3,11 +3,16 @@ import isEventAtCoordinates from '../lib/is_event_at_coordinates';
 import doubleClickZoom from '../lib/double_click_zoom';
 import * as Constants from '../constants';
 import createVertex from '../lib/create_vertex';
-import { createLastOrSecondToLastPoint, isDisabledClickOnVertexWithCtx, isIgnoreClickOnVertexWithCtx, mapFireAddPoint } from '../lib/extend/utils';
+import {
+  createLastOrSecondToLastPoint,
+  isDisabledClickOnVertexWithCtx,
+  isIgnoreClickOnVertexWithCtx,
+  mapFireAddPoint,
+} from '../extend/utils';
 
 const DrawLineString = {};
 
-DrawLineString.onSetup = function(opts) {
+DrawLineString.onSetup = function (opts) {
   opts = opts || {};
   const featureId = opts.featureId;
 
@@ -47,8 +52,8 @@ DrawLineString.onSetup = function(opts) {
       properties: {},
       geometry: {
         type: Constants.geojsonTypes.LINE_STRING,
-        coordinates: []
-      }
+        coordinates: [],
+      },
     });
     currentVertexPosition = 0;
     this.addFeature(line);
@@ -59,16 +64,18 @@ DrawLineString.onSetup = function(opts) {
   this.updateUIClasses({ mouse: Constants.cursors.ADD });
   this.activateUIButton(Constants.types.LINE);
   this.setActionableState({
-    trash: true
+    trash: true,
   });
   // extend start
   return this.setState({ line, currentVertexPosition, direction });
   // extend end
 };
 
-DrawLineString.clickAnywhere = function(state, e) {
-  if (state.currentVertexPosition > 0 && isEventAtCoordinates(e, state.line.coordinates[state.currentVertexPosition - 1]) ||
-      state.direction === 'backwards' && isEventAtCoordinates(e, state.line.coordinates[state.currentVertexPosition + 1])) {
+DrawLineString.clickAnywhere = function (state, e) {
+  if (
+    (state.currentVertexPosition > 0 && isEventAtCoordinates(e, state.line.coordinates[state.currentVertexPosition - 1])) ||
+    (state.direction === 'backwards' && isEventAtCoordinates(e, state.line.coordinates[state.currentVertexPosition + 1]))
+  ) {
     // extend start
     if (isIgnoreClickOnVertexWithCtx(this._ctx)) return;
     // extend end
@@ -83,26 +90,25 @@ DrawLineString.clickAnywhere = function(state, e) {
     state.line.addCoordinate(0, e.lngLat.lng, e.lngLat.lat);
   }
   // extend start
-  this.afterRender(() => mapFireAddPoint(this, {e}));
+  this.afterRender(() => mapFireAddPoint(this, { e }));
   // extend end
 };
 
-DrawLineString.clickOnVertex = function(state) {
+DrawLineString.clickOnVertex = function (state) {
   // extend start
   if (isDisabledClickOnVertexWithCtx(this._ctx)) return;
   // extend end
   return this.changeMode(Constants.modes.SIMPLE_SELECT, { featureIds: [state.line.id] });
-
 };
 
-DrawLineString.onMouseMove = function(state, e) {
+DrawLineString.onMouseMove = function (state, e) {
   state.line.updateCoordinate(state.currentVertexPosition, e.lngLat.lng, e.lngLat.lat);
   if (CommonSelectors.isVertex(e)) {
     this.updateUIClasses({ mouse: Constants.cursors.POINTER });
   }
 };
 
-DrawLineString.onTap = DrawLineString.onClick = function(state, e) {
+DrawLineString.onTap = DrawLineString.onClick = function (state, e) {
   // extend start
   if (isIgnoreClickOnVertexWithCtx(this._ctx)) return this.clickAnywhere(state, e);
   // extend end
@@ -110,7 +116,7 @@ DrawLineString.onTap = DrawLineString.onClick = function(state, e) {
   this.clickAnywhere(state, e);
 };
 
-DrawLineString.onKeyUp = function(state, e) {
+DrawLineString.onKeyUp = function (state, e) {
   if (CommonSelectors.isEnterKey(e)) {
     this.changeMode(Constants.modes.SIMPLE_SELECT, { featureIds: [state.line.id] });
   } else if (CommonSelectors.isEscapeKey(e)) {
@@ -119,7 +125,7 @@ DrawLineString.onKeyUp = function(state, e) {
   }
 };
 
-DrawLineString.onStop = function(state) {
+DrawLineString.onStop = function (state) {
   doubleClickZoom.enable(this);
   this.activateUIButton();
   this.destroy();
@@ -130,7 +136,7 @@ DrawLineString.onStop = function(state) {
   state.line.removeCoordinate(`${state.currentVertexPosition}`);
   if (state.line.isValid()) {
     this.map.fire(Constants.events.CREATE, {
-      features: [state.line.toGeoJSON()]
+      features: [state.line.toGeoJSON()],
     });
   } else {
     this.deleteFeature([state.line.id], { silent: true });
@@ -138,14 +144,14 @@ DrawLineString.onStop = function(state) {
   }
 };
 
-DrawLineString.onTrash = function(state) {
+DrawLineString.onTrash = function (state) {
   this.deleteFeature([state.line.id], { silent: true });
   this.changeMode(Constants.modes.SIMPLE_SELECT);
 };
 
-DrawLineString.toDisplayFeatures = function(state, geojson, display) {
+DrawLineString.toDisplayFeatures = function (state, geojson, display) {
   const isActiveLine = geojson.properties.id === state.line.id;
-  geojson.properties.active = (isActiveLine) ? Constants.activeStates.ACTIVE : Constants.activeStates.INACTIVE;
+  geojson.properties.active = isActiveLine ? Constants.activeStates.ACTIVE : Constants.activeStates.INACTIVE;
   if (!isActiveLine) return display(geojson);
   // Only render the line if it has at least one real coordinate
   if (geojson.geometry.coordinates.length < 2) return;
@@ -175,7 +181,7 @@ DrawLineString.toDisplayFeatures = function(state, geojson, display) {
   display(geojson);
 };
 
-DrawLineString.drawByCoordinate = function(coord) {
+DrawLineString.drawByCoordinate = function (coord) {
   const state = this.getState();
   state.line.addCoordinate(state.currentVertexPosition++, coord[0], coord[1]);
   this.afterRender(() => mapFireAddPoint(this), true);
