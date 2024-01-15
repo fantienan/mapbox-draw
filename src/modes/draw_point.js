@@ -1,6 +1,6 @@
 import * as CommonSelectors from '../lib/common_selectors';
 import * as Constants from '../constants';
-import { mapFireAddPoint } from '../extend/utils';
+import { mapFireAddPoint } from '../extend';
 
 const DrawPoint = {};
 

@@ -1,4 +1,5 @@
 import ModeInterface from './mode_interface';
+import * as Constants from '../constants';
 
 const eventMapper = {
   drag: 'onDrag',
@@ -17,23 +18,27 @@ const eventMapper = {
 
 const eventKeys = Object.keys(eventMapper);
 
-export default function(modeObject) {
+export default function (modeObject) {
   const modeObjectKeys = Object.keys(modeObject);
-  return function(ctx, startOpts = {}) {
+  return function (ctx, startOpts = {}) {
     let state = {};
     const mode = modeObjectKeys.reduce((m, k) => {
       m[k] = modeObject[k];
       return m;
     }, new ModeInterface(ctx));
     function wrapper(eh) {
-      return e => mode[eh](state, e);
+      return (e) => mode[eh](state, e);
     }
 
     return {
       start() {
         state = mode.onSetup(startOpts); // this should set ui buttons
-        if (ctx.options.measureOptions) mode.setMeasureOptions(ctx.options.measureOptions);
-
+        if (ctx.options.measureOptions) {
+          const modeName = ctx.api.getMode();
+          if (modeName !== Constants.modes.CUT_DRAW_LINE && modeName !== Constants.modes.CUT_DRAW_POLYGON) {
+            mode.setMeasureOptions(ctx.options.measureOptions);
+          }
+        }
         // Adds event handlers for all event options
         // add sets the selector to false for all
         // handlers that are not present in the mode
@@ -84,7 +89,7 @@ export default function(modeObject) {
       },
       setMeasureOptions(options) {
         mode.setMeasureOptions(options);
-      }
+      },
       // extend end
     };
   };

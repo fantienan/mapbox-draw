@@ -3,7 +3,7 @@ import Store from './store';
 import ui from './ui';
 import * as Constants from './constants';
 import xtend from 'xtend';
-import { loadIconImageByTheme, mapFireOnAdd, GeoJsonEditor } from './extend';
+import { loadIconImageByTheme, mapFireOnAdd } from './extend';
 
 export default function (ctx) {
   let controlContainer = null;
@@ -14,7 +14,6 @@ export default function (ctx) {
       // Stop connect attempt in the event that control is removed before map is loaded
       ctx.map.off('load', setup.connect);
       clearInterval(mapLoadedInterval);
-
       setup.removeLayers();
       ctx.store.restoreMapConfig();
       ctx.ui.removeButtons();
@@ -65,8 +64,6 @@ export default function (ctx) {
       ctx.ui = ui(ctx);
       ctx.container = map.getContainer();
       ctx.store = new Store(ctx);
-      ctx.geoJsonEditor = new GeoJsonEditor({ ctx });
-
       controlContainer = ctx.ui.addButtons();
 
       if (ctx.options.boxSelect) {

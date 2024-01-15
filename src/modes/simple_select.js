@@ -11,7 +11,7 @@ import {
   isStopPropagationClickActiveFeature,
   mapFireByClickOnVertex,
   mapFireClickOrOnTab,
-} from '../extend/utils';
+} from '../extend';
 
 const SimpleSelect = {};
 

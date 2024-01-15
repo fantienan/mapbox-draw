@@ -71,6 +71,7 @@ function App() {
       geoJsonEditorOptions: {
         layers: ['BEIJIGN'],
       },
+      userProperties: true,
     });
     _map.addControl(_draw);
     window._draw = _draw;
@@ -78,6 +79,33 @@ function App() {
     _map.on('style.load', () => {
       setMap(_map);
       setDraw(_draw);
+      _draw.set({
+        type: 'FeatureCollection',
+        features: [
+          {
+            id: '175670f9bc6228803c4545ae9315f044',
+            type: 'Feature',
+            properties: {},
+            geometry: {
+              coordinates: [
+                [
+                  [117.9463405121158, 40.7185868164847],
+                  [117.86813037283878, 40.43940105481127],
+                  [118.55246909151464, 40.403676481698284],
+                  [118.58766365418933, 40.78079882237071],
+                  [118.63458973775658, 41.138123864880896],
+                  [118.33739120850095, 40.831118286048195],
+                  [118.1262238324523, 41.202884142601135],
+                  [117.8055622614167, 40.84886898664695],
+                  [117.40278004413915, 40.857742554299676],
+                  [117.9463405121158, 40.7185868164847],
+                ],
+              ],
+              type: 'Polygon',
+            },
+          },
+        ],
+      });
       _map
         .on('draw.redoUndo', (e) => {
           console.log('draw.redoUndo', e);
@@ -136,109 +164,3 @@ function App() {
 }
 
 export default App;
-
-function polygonCut(poly, line, tolerance = 0.001, toleranceType = 'kilometers') {
-  debugger;
-  // 1. 条件判断
-  if (poly.geometry === void 0 || poly.geometry.type !== 'Polygon') throw '传入的必须为polygon';
-  if (line.geometry === void 0 || line.geometry.type.toLowerCase().indexOf('linestring') === -1) throw '传入的必须为linestring';
-  if (line.geometry.type === 'LineString') {
-    if (
-      turf.booleanPointInPolygon(turf.point(line.geometry.coordinates[0]), poly) ||
-      turf.booleanPointInPolygon(turf.point(line.geometry.coordinates[line.geometry.coordinates.length - 1]), poly)
-    )
-      throw '起点和终点必须在多边形之外';
-  }
-  // 2. 计算交点，并把线的点合并
-  let lineIntersect = turf.lineIntersect(line, poly);
-  const lineExp = turf.explode(line);
-  for (let i = 0; i < lineExp.features.length - 1; i++) {
-    lineIntersect.features.push(turf.point(lineExp.features[i].geometry.coordinates));
-  }
-  return turf.featureCollection(lineIntersect.features);
-  // 3. 计算线的缓冲区
-  const lineBuffer = turf.buffer(line, tolerance, {
-    units: toleranceType,
-  });
-  // 4. 计算线缓冲和多边形的difference，返回"MultiPolygon"，所以将其拆开
-  const _body = turf.difference(poly, lineBuffer);
-  let pieces = [];
-  if (_body.geometry.type === 'Polygon') {
-    pieces.push(turf.polygon(_body.geometry.coordinates));
-  } else {
-    _body.geometry.coordinates.forEach(function (a) {
-      pieces.push(turf.polygon(a));
-    });
-  }
-  return turf.featureCollection(pieces);
-  debugger;
-  // 5. 处理点数据
-  for (const p in pieces) {
-    const piece = pieces[p];
-    for (let c in piece.geometry.coordinates[0]) {
-      const coord = piece.geometry.coordinates[0][c];
-      const p = turf.point(coord);
-      for (let lp in lineIntersect.features) {
-        const lpoint = lineIntersect.features[lp];
-        if (turf.distance(lpoint, p, toleranceType) <= tolerance * 2) {
-          piece.geometry.coordinates[0][c] = lpoint.geometry.coordinates;
-        }
-      }
-    }
-  }
-  // 6. 过滤掉重复点
-  for (const p in pieces) {
-    const coords = pieces[p].geometry.coordinates[0];
-    pieces[p].geometry.coordinates[0] = filterDuplicatePoints(coords);
-  }
-  // 7. 将属性赋予每一个polygon，并处理id
-  pieces.forEach((a, index) => {
-    a.properties = Object.assign({}, poly.properties);
-    a.properties.id += `-${index}`;
-  });
-  return turf.featureCollection(pieces);
-}
-
-function filterDuplicatePoints(coords) {
-  debugger;
-  return coords;
-}
-
-window.cut = () => {
-  const features = window._draw.getAll().features;
-  const line = features.find((a) => a.geometry.type === 'LineString');
-  const poly = features.find((a) => a.geometry.type === 'Polygon');
-  const fs = polygonCut(poly, line);
-  const id = Math.random().toString(16).slice(2);
-  window._map.addSource(id, {
-    type: 'geojson',
-    data: fs,
-  });
-  window._map.addLayer({
-    id: id + '-fill',
-    source: id,
-    type: 'fill',
-    paint: {
-      'fill-color': '#f00',
-      'fill-opacity': 0.5,
-    },
-  });
-  window._map.addLayer({
-    id: id + '-line',
-    source: id,
-    type: 'line',
-    paint: {
-      'line-color': '#f00',
-      'line-width': 2,
-    },
-  });
-  window._map.addLayer({
-    id: id + '-circle',
-    source: id,
-    type: 'circle',
-    paint: {
-      'circle-color': '#f00',
-      'circle-radius': 4,
-    },
-  });
-};

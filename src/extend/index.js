@@ -7,5 +7,3 @@ export * from './theme_1';
 export * from './theme_2';
 
 export * from './measure';
-
-export * from './geojson_editor';

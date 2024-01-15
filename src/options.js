@@ -34,6 +34,8 @@ const showControls = {
   finish: true,
   cancel: true,
   draw_center: true,
+  cut_line: true,
+  cut_polygon: true,
   /** extend end */
 };
 
@@ -49,6 +51,8 @@ const hideControls = {
   redo: false,
   cancel: true,
   draw_center: true,
+  cut_line: true,
+  cut_polygon: true,
   /** extend end */
 };
 

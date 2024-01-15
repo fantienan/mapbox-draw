@@ -3,12 +3,7 @@ import isEventAtCoordinates from '../lib/is_event_at_coordinates';
 import doubleClickZoom from '../lib/double_click_zoom';
 import * as Constants from '../constants';
 import createVertex from '../lib/create_vertex';
-import {
-  createLastOrSecondToLastPoint,
-  isDisabledClickOnVertexWithCtx,
-  isIgnoreClickOnVertexWithCtx,
-  mapFireAddPoint,
-} from '../extend/utils';
+import { createLastOrSecondToLastPoint, isDisabledClickOnVertexWithCtx, isIgnoreClickOnVertexWithCtx, mapFireAddPoint } from '../extend';
 
 const DrawLineString = {};
 

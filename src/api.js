@@ -88,6 +88,7 @@ export default function (ctx, api) {
       if (feature.geometry === null) {
         throw new Error('Invalid geometry: null');
       }
+      let internalFeature;
 
       if (ctx.store.get(feature.id) === undefined || ctx.store.get(feature.id).type !== feature.geometry.type) {
         // If the feature has not yet been created ...
@@ -95,15 +96,20 @@ export default function (ctx, api) {
         if (Model === undefined) {
           throw new Error(`Invalid geometry type: ${feature.geometry.type}.`);
         }
-        const internalFeature = new Model(ctx, feature);
+        internalFeature = new Model(ctx, feature);
         ctx.store.add(internalFeature);
       } else {
         // If a feature of that id has already been created, and we are swapping it out ...
-        const internalFeature = ctx.store.get(feature.id);
+        internalFeature = ctx.store.get(feature.id);
         internalFeature.properties = feature.properties;
         if (!isEqual(internalFeature.getCoordinates(), feature.geometry.coordinates)) {
           internalFeature.incomingCoords(feature.geometry.coordinates);
         }
+      }
+
+      if (internalFeature && api.options.measureOptions) {
+        internalFeature.measure.setOptions(api.options.measureOptions);
+        internalFeature.execMeasure();
       }
       return feature.id;
     });
@@ -231,7 +237,6 @@ export default function (ctx, api) {
     ctx.options.styles.forEach((style) => {
       if (ctx.map.getLayer(style.id)) ctx.map.removeLayer(style.id);
     });
-
     ctx.options.styles = genStyles(styles).map((style) => {
       ctx.map.addLayer(style);
       return style;
@@ -260,10 +265,6 @@ export default function (ctx, api) {
   };
   api.setMeasureOptions = function (options) {
     ctx.events.setMeasureOptions(options);
-    return api;
-  };
-  api.setGeoJsonEditorOptions = function (options) {
-    ctx.geoJsonEditor.setOptions(options);
     return api;
   };
   // extend end

@@ -4,8 +4,8 @@ export const theme1 = [
     type: 'fill',
     filter: ['all', ['==', 'active', 'false'], ['==', '$type', 'Polygon'], ['!=', 'mode', 'static']],
     paint: {
-      'fill-color':  '#E1361B',
-      'fill-outline-color':  '#E1361B',
+      'fill-color': ['coalesce', ['get', 'user_inactive-fill-color'], '#E1361B'],
+      'fill-outline-color': ['coalesce', ['get', 'user_inactive-fill-outline-color'], '#E1361B'],
       'fill-opacity': 0.1,
     },
   },
@@ -14,8 +14,8 @@ export const theme1 = [
     type: 'fill',
     filter: ['all', ['==', 'active', 'true'], ['==', '$type', 'Polygon']],
     paint: {
-      'fill-color':  '#E1361B',
-      'fill-outline-color':  '#E1361B',
+      'fill-color': '#E1361B',
+      'fill-outline-color': '#E1361B',
       'fill-opacity': 0.1,
     },
   },
@@ -25,7 +25,7 @@ export const theme1 = [
     filter: ['all', ['==', '$type', 'Point'], ['==', 'meta', 'midpoint']],
     paint: {
       'circle-radius': 3,
-      'circle-color':  '#E1361B',
+      'circle-color': '#E1361B',
     },
   },
   {
@@ -37,7 +37,7 @@ export const theme1 = [
       'line-join': 'round',
     },
     paint: {
-      'line-color':  '#E1361B',
+      'line-color': ['coalesce', ['get', 'user_inactive-line-color'], '#E1361B'],
       'line-width': 2,
     },
   },
@@ -50,7 +50,7 @@ export const theme1 = [
       'line-join': 'round',
     },
     paint: {
-      'line-color':  '#E1361B',
+      'line-color': '#E1361B',
       'line-width': 2,
     },
   },
@@ -63,7 +63,7 @@ export const theme1 = [
       'line-join': 'round',
     },
     paint: {
-      'line-color':  '#E1361B',
+      'line-color': ['coalesce', ['get', 'user_inactive-line-color'], '#E1361B'],
       'line-width': 2,
     },
   },
@@ -76,7 +76,7 @@ export const theme1 = [
       'line-join': 'round',
     },
     paint: {
-      'line-color':  '#E1361B',
+      'line-color': '#E1361B',
       'line-width': 2,
     },
   },
@@ -87,7 +87,7 @@ export const theme1 = [
     filter: ['all', ['==', 'meta', 'vertex'], ['==', '$type', 'Point'], ['!=', 'mode', 'static']],
     paint: {
       'circle-radius': 8,
-      'circle-color':  '#E1361B',
+      'circle-color': '#E1361B',
     },
   },
   {
@@ -105,7 +105,7 @@ export const theme1 = [
     filter: ['all', ['==', 'meta', 'vertex'], ['==', '$type', 'Point'], ['!=', 'mode', 'static']],
     paint: {
       'circle-radius': 4,
-      'circle-color':  '#E1361B',
+      'circle-color': '#E1361B',
     },
   },
   {
@@ -124,7 +124,7 @@ export const theme1 = [
     filter: ['all', ['==', 'active', 'false'], ['==', '$type', 'Point'], ['==', 'meta', 'feature'], ['!=', 'mode', 'static']],
     paint: {
       'circle-radius': 5,
-      'circle-color':  '#E1361B',
+      'circle-color': '#E1361B',
     },
   },
   {
@@ -133,7 +133,7 @@ export const theme1 = [
     filter: ['all', ['==', '$type', 'Point'], ['==', 'active', 'true'], ['!=', 'meta', 'midpoint'], ['!has', 'user__edit-point']],
     paint: {
       'circle-radius': 9,
-      'circle-color':  '#E1361B',
+      'circle-color': '#E1361B',
     },
   },
   {
@@ -151,7 +151,7 @@ export const theme1 = [
     filter: ['all', ['==', '$type', 'Point'], ['!=', 'meta', 'midpoint'], ['==', 'active', 'true'], ['!has', 'user__edit-point']],
     paint: {
       'circle-radius': 5,
-      'circle-color':  '#E1361B',
+      'circle-color': '#E1361B',
     },
   },
   {
@@ -229,7 +229,7 @@ export const theme1 = [
       'icon-allow-overlap': true, // 允许图标重叠
       'text-ignore-placement': true, // 忽略文字的碰撞
       'icon-ignore-placement': true, // 忽略图标的碰撞
-      'icon-size': 0.7
+      'icon-size': 0.7,
     },
-  }
+  },
 ];

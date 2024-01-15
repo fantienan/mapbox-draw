@@ -3,26 +3,24 @@ import * as Constants from './constants';
 
 const classTypes = ['mode', 'feature', 'mouse'];
 
-export default function(ctx) {
-
-
+export default function (ctx) {
   const buttonElements = {};
   let activeButton = null;
 
   let currentMapClasses = {
     mode: null, // e.g. mode-direct_select
     feature: null, // e.g. feature-vertex
-    mouse: null // e.g. mouse-move
+    mouse: null, // e.g. mouse-move
   };
 
   let nextMapClasses = {
     mode: null,
     feature: null,
-    mouse: null
+    mouse: null,
   };
 
   function clearMapClasses() {
-    queueMapClasses({mode:null, feature:null, mouse:null});
+    queueMapClasses({ mode: null, feature: null, mouse: null });
     updateMapClasses();
   }
 
@@ -62,24 +60,28 @@ export default function(ctx) {
     button.setAttribute('title', options.title);
     button.disabled = !!options.disabled;
     options.container.appendChild(button);
-    button.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
+    button.addEventListener(
+      'click',
+      (e) => {
+        e.preventDefault();
+        e.stopPropagation();
 
-      if (typeof options.onClick === 'function') {
-        options.onClick();
-        return;
-      }
-      const clickedButton = e.target;
-      if (clickedButton === activeButton) {
-        deactivateButtons();
-        options.onDeactivate();
-        return;
-      }
+        if (typeof options.onClick === 'function') {
+          options.onClick();
+          return;
+        }
+        const clickedButton = e.target;
+        if (clickedButton === activeButton) {
+          deactivateButtons();
+          options.onDeactivate();
+          return;
+        }
 
-      setActiveButton(id);
-      options.onActivate();
-    }, true);
+        setActiveButton(id);
+        options.onActivate();
+      },
+      true,
+    );
 
     return button;
   }
@@ -115,7 +117,7 @@ export default function(ctx) {
         className: Constants.classes.CONTROL_BUTTON_LINE,
         title: `LineString tool ${ctx.options.keybindings ? '(l)' : ''}`,
         onActivate: () => ctx.events.changeMode(Constants.modes.DRAW_LINE_STRING),
-        onDeactivate: () => ctx.events.trash()
+        onDeactivate: () => ctx.events.trash(),
       });
     }
 
@@ -125,7 +127,7 @@ export default function(ctx) {
         className: Constants.classes.CONTROL_BUTTON_POLYGON,
         title: `Polygon tool ${ctx.options.keybindings ? '(p)' : ''}`,
         onActivate: () => ctx.events.changeMode(Constants.modes.DRAW_POLYGON),
-        onDeactivate: () => ctx.events.trash()
+        onDeactivate: () => ctx.events.trash(),
       });
     }
 
@@ -135,7 +137,7 @@ export default function(ctx) {
         className: Constants.classes.CONTROL_BUTTON_POINT,
         title: `Marker tool ${ctx.options.keybindings ? '(m)' : ''}`,
         onActivate: () => ctx.events.changeMode(Constants.modes.DRAW_POINT),
-        onDeactivate: () => ctx.events.trash()
+        onDeactivate: () => ctx.events.trash(),
       });
     }
 
@@ -146,7 +148,7 @@ export default function(ctx) {
         title: 'Delete',
         onActivate: () => {
           ctx.events.trash();
-        }
+        },
       });
     }
 
@@ -157,7 +159,7 @@ export default function(ctx) {
         title: 'Combine',
         onActivate: () => {
           ctx.events.combineFeatures();
-        }
+        },
       });
     }
 
@@ -168,17 +170,17 @@ export default function(ctx) {
         title: 'Uncombine',
         onActivate: () => {
           ctx.events.uncombineFeatures();
-        }
+        },
       });
     }
-
+    // extend start
     if (controls.undo) {
       buttonElements.undo = createControlButton('undo', {
         container: controlGroup,
         className: Constants.classes.CONTROL_BUTTON_UNDO,
         title: 'Undo',
         disabled: true,
-        onClick: () => ctx.events.undo()
+        onClick: () => ctx.events.undo(),
       });
     }
 
@@ -188,7 +190,7 @@ export default function(ctx) {
         className: Constants.classes.CONTROL_BUTTON_REDO,
         title: 'Redo',
         disabled: true,
-        onClick: () => ctx.events.redo()
+        onClick: () => ctx.events.redo(),
       });
     }
 
@@ -198,7 +200,7 @@ export default function(ctx) {
         className: Constants.classes.CONTROL_BUTTON_FINISH,
         title: 'Finsih',
         disabled: true,
-        onClick: () => ctx.events.finish()
+        onClick: () => ctx.events.finish(),
       });
     }
 
@@ -208,7 +210,7 @@ export default function(ctx) {
         className: Constants.classes.CONTROL_BUTTON_CANCEL,
         title: 'Cancel',
         disabled: true,
-        onClick: () => ctx.events.cancel()
+        onClick: () => ctx.events.cancel(),
       });
     }
 
@@ -218,11 +220,31 @@ export default function(ctx) {
         className: Constants.classes.CONTROL_BUTTON_DRAW_CENTER,
         title: 'Draw By Center',
         disabled: true,
-        onClick: () => ctx.api.drawByCenter()
+        onClick: () => ctx.api.drawByCenter(),
       });
-
     }
 
+    if (controls.cut_line) {
+      buttonElements.cut_line = createControlButton('cut_line', {
+        container: controlGroup,
+        className: Constants.classes.CONTROL_BUTTON_CUT_LINE,
+        title: 'cut line',
+        disabled: true,
+        onClick: () => ctx.api.changeMode('cut_line'),
+      });
+    }
+
+    if (controls.cut_polygon) {
+      buttonElements.cut_polygon = createControlButton('cut_polygon', {
+        container: controlGroup,
+        className: Constants.classes.CONTROL_BUTTON_CUT_POLYGON,
+        title: 'cut polygon',
+        disabled: true,
+        onClick: () => ctx.api.changeMode('cut_polygon'),
+      });
+    }
+
+    // extend end
     return controlGroup;
   }
 
@@ -239,7 +261,7 @@ export default function(ctx) {
   // extend start
   function setDisableButtons(cb) {
     const orginStatus = Object.entries(buttonElements).reduce((prev, [k, v]) => {
-      prev[k] = {disabled: !!v.disabled};
+      prev[k] = { disabled: !!v.disabled };
       return prev;
     }, {});
     const status = cb(JSON.parse(JSON.stringify(orginStatus)));
@@ -256,6 +278,6 @@ export default function(ctx) {
     clearMapClasses,
     addButtons,
     removeButtons,
-    setDisableButtons
+    setDisableButtons,
   };
 }

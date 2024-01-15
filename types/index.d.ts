@@ -394,6 +394,8 @@ declare namespace MapboxDraw {
       CONTROL_BUTTON_CANCEL: 'mapbox-gl-draw_cancel';
       CONTROL_BUTTON_DRAW_CENTER: 'mapbox-gl-draw_draw-center';
       MEASURE_MARKER: 'mapbox-gl-draw-measure';
+      CONTROL_BUTTON_LINE_CUT: 'line_cut';
+      CONTROL_BUTTON_POLYGON_CUT: 'polygon_cut';
       /** extend end */
     };
 
@@ -765,5 +767,6 @@ declare class MapboxDraw implements IControl {
   setStyle: (styles: object[]) => this;
   edit: (geojson: Feature | Geometry) => this;
   setMeasureOptions: (options: MapboxDraw.MapboxDrawOptions['measureOptions']) => this;
+  setGeoJsonEditorOptions: (options: MapboxDraw.MapboxDrawOptions['geoJsonEditorOptions']) => this;
   // extend end
 }

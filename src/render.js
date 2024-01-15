@@ -16,20 +16,27 @@ export default function render() {
   if (store.isDirty) {
     newColdIds = store.getAllIds();
   } else {
-    newHotIds = store.getChangedIds().filter(id => store.get(id) !== undefined);
-    newColdIds = store.sources.hot.filter(geojson => geojson.properties.id && newHotIds.indexOf(geojson.properties.id) === -1 && store.get(geojson.properties.id) !== undefined).map(geojson => geojson.properties.id);
+    newHotIds = store.getChangedIds().filter((id) => store.get(id) !== undefined);
+    newColdIds = store.sources.hot
+      .filter(
+        (geojson) =>
+          geojson.properties.id && newHotIds.indexOf(geojson.properties.id) === -1 && store.get(geojson.properties.id) !== undefined,
+      )
+      .map((geojson) => geojson.properties.id);
   }
 
   store.sources.hot = [];
   const lastColdCount = store.sources.cold.length;
-  store.sources.cold = store.isDirty ? [] : store.sources.cold.filter((geojson) => {
-    const id = geojson.properties.id || geojson.properties.parent;
-    return newHotIds.indexOf(id) === -1;
-  });
+  store.sources.cold = store.isDirty
+    ? []
+    : store.sources.cold.filter((geojson) => {
+        const id = geojson.properties.id || geojson.properties.parent;
+        return newHotIds.indexOf(id) === -1;
+      });
 
   const coldChanged = lastColdCount !== store.sources.cold.length || newColdIds.length > 0;
-  newHotIds.forEach(id => renderFeature(id, 'hot'));
-  newColdIds.forEach(id => renderFeature(id, 'cold'));
+  newHotIds.forEach((id) => renderFeature(id, 'hot'));
+  newColdIds.forEach((id) => renderFeature(id, 'cold'));
 
   function renderFeature(id, source) {
     const feature = store.get(id);
@@ -42,32 +49,41 @@ export default function render() {
   if (coldChanged) {
     store.ctx.map.getSource(Constants.sources.COLD).setData({
       type: Constants.geojsonTypes.FEATURE_COLLECTION,
-      features: store.sources.cold
+      features: store.sources.cold,
     });
   }
 
   store.ctx.map.getSource(Constants.sources.HOT).setData({
     type: Constants.geojsonTypes.FEATURE_COLLECTION,
-    features: store.sources.hot
+    features: store.sources.hot,
   });
 
   if (store._emitSelectionChange) {
     store.ctx.map.fire(Constants.events.SELECTION_CHANGE, {
-      features: store.getSelected().map(feature => feature.toGeoJSON()),
-      points: store.getSelectedCoordinates().map(coordinate => ({
+      features: store.getSelected().map((feature) => feature.toGeoJSON()),
+      points: store.getSelectedCoordinates().map((coordinate) => ({
         type: Constants.geojsonTypes.FEATURE,
         properties: {},
         geometry: {
           type: Constants.geojsonTypes.POINT,
-          coordinates: coordinate.coordinates
-        }
-      }))
+          coordinates: coordinate.coordinates,
+        },
+      })),
     });
     store._emitSelectionChange = false;
+
+    // extend start
+    const disableButton = !store.getSelected().length || store.ctx.events.getMode().includes('draw_');
+    store.ctx.ui.setDisableButtons((buttonStatus) => {
+      buttonStatus.cut_polygon = { disabled: disableButton };
+      buttonStatus.cut_line = { disabled: disableButton };
+      return buttonStatus;
+    });
+    // extend end
   }
 
   if (store._deletedFeaturesToEmit.length) {
-    const geojsonToEmit = store._deletedFeaturesToEmit.map(feature => feature.delete().toGeoJSON());
+    const geojsonToEmit = store._deletedFeaturesToEmit.map((feature) => feature.delete().toGeoJSON());
     store._deletedFeaturesToEmit = [];
     store.ctx.map.fire(Constants.events.DELETE, { features: geojsonToEmit });
   }

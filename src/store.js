@@ -2,7 +2,7 @@ import toDenseArray from './lib/to_dense_array';
 import StringSet from './lib/string_set';
 import render from './render';
 import { interactions } from './constants';
-import { mapClearSelectedCoordinates } from './extend/utils';
+import { mapClearSelectedCoordinates } from './extend';
 
 export default function Store(ctx) {
   this._features = {};

@@ -5,7 +5,7 @@ import isClick from './lib/is_click';
 import isTap from './lib/is_tap';
 import * as Constants from './constants';
 import objectToMode from './modes/object_to_mode';
-import { isClickOnMissAndDoNothing } from './extend/utils';
+import { isClickOnMissAndDoNothing } from './extend';
 
 export default function (ctx) {
   const modes = Object.keys(ctx.options.modes).reduce((m, k) => {

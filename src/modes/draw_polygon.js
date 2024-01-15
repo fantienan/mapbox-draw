@@ -3,12 +3,7 @@ import doubleClickZoom from '../lib/double_click_zoom';
 import * as Constants from '../constants';
 import isEventAtCoordinates from '../lib/is_event_at_coordinates';
 import createVertex from '../lib/create_vertex';
-import {
-  createLastOrSecondToLastPoint,
-  isDisabledClickOnVertexWithCtx,
-  isIgnoreClickOnVertexWithCtx,
-  mapFireAddPoint,
-} from '../extend/utils';
+import { createLastOrSecondToLastPoint, isDisabledClickOnVertexWithCtx, isIgnoreClickOnVertexWithCtx, mapFireAddPoint } from '../extend';
 
 const DrawPolygon = {};
 
@@ -21,6 +16,7 @@ DrawPolygon.onSetup = function () {
       coordinates: [[]],
     },
   });
+
   this.addFeature(polygon);
   this.clearSelectedFeatures();
   doubleClickZoom.disable(this);
@@ -186,8 +182,7 @@ DrawPolygon.onTrash = function (state) {
 DrawPolygon.drawByCoordinate = function (coord) {
   const state = this.getState();
   state.polygon.addCoordinate(`0.${state.currentVertexPosition++}`, coord[0], coord[1]);
-  this._ctx.store.addEmitCallback(() => mapFireAddPoint(this));
-  this._ctx.store.render();
+  this.afterRender(() => mapFireAddPoint(this), true);
 };
 
 export default DrawPolygon;

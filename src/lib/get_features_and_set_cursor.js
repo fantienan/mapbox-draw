@@ -1,6 +1,6 @@
 import featuresAt from './features_at';
 import * as Constants from '../constants';
-import { isDisabledDragVertexUi } from '../extend/utils';
+import { isDisabledDragVertexUi } from '../extend';
 
 export default function getFeatureAtAndSetCursors(event, ctx) {
   const features = featuresAt.click(event, null, ctx);

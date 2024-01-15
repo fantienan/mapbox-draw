@@ -14,7 +14,7 @@ import {
   isStopPropagationClickActiveFeature,
   isClickNotthingNoChangeMode,
   isDisabledMovePolgon,
-} from '../extend/utils';
+} from '../extend';
 
 const isVertex = isOfMetaType(Constants.meta.VERTEX);
 const isMidpoint = isOfMetaType(Constants.meta.MIDPOINT);

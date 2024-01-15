@@ -18,13 +18,15 @@ export const classes = {
   CONTROL_BUTTON_FINISH: 'mapbox-gl-draw_finish',
   CONTROL_BUTTON_CANCEL: 'mapbox-gl-draw_cancel',
   CONTROL_BUTTON_DRAW_CENTER: 'mapbox-gl-draw_draw-center',
-  MEASURE_MARKER: 'mapbox-gl-draw-measure'
+  MEASURE_MARKER: 'mapbox-gl-draw-measure',
+  CONTROL_BUTTON_CUT_LINE: 'mapbox-gl-draw_cut-line',
+  CONTROL_BUTTON_CUT_POLYGON: 'mapbox-gl-draw_cut-polygon',
   /** extend end */
 };
 
 export const sources = {
   HOT: 'mapbox-gl-draw-hot',
-  COLD: 'mapbox-gl-draw-cold'
+  COLD: 'mapbox-gl-draw-cold',
 };
 
 export const cursors = {
@@ -32,13 +34,13 @@ export const cursors = {
   MOVE: 'move',
   DRAG: 'drag',
   POINTER: 'pointer',
-  NONE: 'none'
+  NONE: 'none',
 };
 
 export const types = {
   POLYGON: 'polygon',
   LINE: 'line_string',
-  POINT: 'point'
+  POINT: 'point',
 };
 
 export const geojsonTypes = {
@@ -50,7 +52,7 @@ export const geojsonTypes = {
   MULTI_PREFIX: 'Multi',
   MULTI_POINT: 'MultiPoint',
   MULTI_LINE_STRING: 'MultiLineString',
-  MULTI_POLYGON: 'MultiPolygon'
+  MULTI_POLYGON: 'MultiPolygon',
 };
 
 export const modes = {
@@ -59,7 +61,13 @@ export const modes = {
   DRAW_POINT: 'draw_point',
   SIMPLE_SELECT: 'simple_select',
   DIRECT_SELECT: 'direct_select',
-  STATIC: 'static'
+  STATIC: 'static',
+  // extend start
+  CUT_POLYGON: 'cut_polygon',
+  CUT_LINE: 'cut_line',
+  CUT_DRAW_POLYGON: 'cut_draw_polygon',
+  CUT_DRAW_LINE: 'cut_draw_line',
+  // extend end
 };
 
 export const events = {
@@ -73,21 +81,22 @@ export const events = {
   COMBINE_FEATURES: 'draw.combine',
   UNCOMBINE_FEATURES: 'draw.uncombine',
   // extend start
-  REDO_UNDO: "draw.redoUndo",
-  CLICK_ON_VERTEX: "draw.clickOnVertex",
-  ON_MIDPOINT: "draw.onMidpoint",
-  DRAG_VERTEX: "draw.dragVertex",
-  CLICK_OR_TAB: "draw.clickOrTab",
-  DRAG: "draw.drag",
+  REDO_UNDO: 'draw.redoUndo',
+  CLICK_ON_VERTEX: 'draw.clickOnVertex',
+  ON_MIDPOINT: 'draw.onMidpoint',
+  DRAG_VERTEX: 'draw.dragVertex',
+  CLICK_OR_TAB: 'draw.clickOrTab',
+  DRAG: 'draw.drag',
   CLEAR_SELECTED_COORDINATES: 'draw.clearSelectedCoordinates',
   ADD_POINT: 'draw.addPoint',
   ADD: 'draw.onAdd',
+  POLYTON_CUT_CREATE: 'draw.polygonCutCreate',
   // extend end
 };
 
 export const updateActions = {
   MOVE: 'move',
-  CHANGE_COORDINATES: 'change_coordinates'
+  CHANGE_COORDINATES: 'change_coordinates',
 };
 
 export const meta = {
@@ -95,23 +104,15 @@ export const meta = {
   MIDPOINT: 'midpoint',
   VERTEX: 'vertex',
   LAST_POINT: 'last_point',
-  SECOND_TO_LAST_POINT: 'second_to_last_point'
+  SECOND_TO_LAST_POINT: 'second_to_last_point',
 };
 
 export const activeStates = {
   ACTIVE: 'true',
-  INACTIVE: 'false'
+  INACTIVE: 'false',
 };
 
-export const interactions = [
-  'scrollZoom',
-  'boxZoom',
-  'dragRotate',
-  'dragPan',
-  'keyboard',
-  'doubleClickZoom',
-  'touchZoomRotate'
-];
+export const interactions = ['scrollZoom', 'boxZoom', 'dragRotate', 'dragPan', 'keyboard', 'doubleClickZoom', 'touchZoomRotate'];
 
 export const LAT_MIN = -90;
 export const LAT_RENDERED_MIN = -85;
@@ -120,4 +121,4 @@ export const LAT_RENDERED_MAX = 85;
 export const LNG_MIN = -270;
 export const LNG_MAX = 270;
 
-export const GEOMETRYS = [ "Point", "MultiPoint", "LineString", "MultiLineString", "Polygon", "MultiPolygon", "GeometryCollection" ];
+export const GEOMETRYS = ['Point', 'MultiPoint', 'LineString', 'MultiLineString', 'Polygon', 'MultiPolygon', 'GeometryCollection'];
