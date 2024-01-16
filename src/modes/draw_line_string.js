@@ -42,14 +42,17 @@ DrawLineString.onSetup = function (opts) {
       throw new Error('`from` should match the point at either the start or the end of the provided LineString');
     }
   } else {
-    line = this.newFeature({
-      type: Constants.geojsonTypes.FEATURE,
-      properties: {},
-      geometry: {
-        type: Constants.geojsonTypes.LINE_STRING,
-        coordinates: [],
+    line = this.newFeature(
+      {
+        type: Constants.geojsonTypes.FEATURE,
+        properties: {},
+        geometry: {
+          type: Constants.geojsonTypes.LINE_STRING,
+          coordinates: [],
+        },
       },
-    });
+      { declareFeature: true },
+    );
     currentVertexPosition = 0;
     this.addFeature(line);
   }

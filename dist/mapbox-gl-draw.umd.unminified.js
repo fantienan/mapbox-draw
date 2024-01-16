@@ -24,8 +24,7 @@ return Object.freeze(n);
 
 var turf__namespace = /*#__PURE__*/_interopNamespace(turf);
 
-var ModeHandler = function(mode, DrawContext) {
-
+var ModeHandler = function (mode, DrawContext) {
   var handlers = {
     drag: [],
     click: [],
@@ -48,13 +47,12 @@ var ModeHandler = function(mode, DrawContext) {
       }
       handlers[event].push({
         selector: selector,
-        fn: fn
+        fn: fn,
       });
     },
     render: function render(id) {
       DrawContext.store.featureChanged(id);
-
-    }
+    },
   };
 
   var delegate = function (eventName, event) {
@@ -65,7 +63,7 @@ var ModeHandler = function(mode, DrawContext) {
       if (handle.selector(event)) {
         var skipRender = handle.fn.call(ctx, event);
         if (!skipRender) {
-          DrawContext.store.render();
+          DrawContext.store.render(event);
         }
         DrawContext.ui.updateMapClasses();
         // ensure an event is only handled once
@@ -155,7 +153,7 @@ var ModeHandler = function(mode, DrawContext) {
     },
     setMeasureOptions: function setMeasureOptions(options) {
       mode.setMeasureOptions(options);
-    }
+    },
 
     // extend end
   };
@@ -358,8 +356,7 @@ var modes$1 = {
   // extend start
   CUT_POLYGON: 'cut_polygon',
   CUT_LINE: 'cut_line',
-  CUT_DRAW_POLYGON: 'cut_draw_polygon',
-  CUT_DRAW_LINE: 'cut_draw_line',
+  CUT_SELECT: 'cut_select',
   // extend end
 };
 
@@ -821,13 +818,15 @@ RedoUndo.prototype._fireChangeAndRender = function _fireChangeAndRender (eventDa
 RedoUndo.prototype.fireChange = function fireChange (eventData) {
   var undoStack = this.undoStack;
   var modeName = this._api.getMode();
-  if (modeName === modes$1.DRAW_LINE_STRING) {
+  var modes = modes$1;
+  if (modeName === modes.DRAW_LINE_STRING || modeName === modes.CUT_LINE) {
     undoStack = this._modeInstance.feature.getCoordinates();
     undoStack.pop();
-  } else if (modeName === modes$1.DRAW_POLYGON) {
+  } else if (modeName === modes.DRAW_POLYGON || modeName === modes.CUT_POLYGON) {
     undoStack = this._modeInstance.feature.getCoordinates()[0] || [];
     if (undoStack.length < 3) { undoStack = []; }
   }
+
   var e = xtend(eventData, { undoStack: undoStack, redoStack: this.redoStack });
   this._ctx.ui.setDisableButtons(function (buttonStatus) {
     buttonStatus.undo = { disabled: e.undoStack.length === 0 };
@@ -836,9 +835,10 @@ RedoUndo.prototype.fireChange = function fireChange (eventData) {
   });
 
   mapFireRedoUndo(this._modeInstance, JSON.parse(JSON.stringify(e)));
+  if (typeof eventData.cb === 'function') { eventData.cb(); }
 };
 
-RedoUndo.prototype.undo = function undo () {
+RedoUndo.prototype.undo = function undo (e) {
     var assign, assign$1;
 
   var coord = null;
@@ -850,27 +850,38 @@ RedoUndo.prototype.undo = function undo () {
   } else if (state.polygon) {
     (assign$1 = state.polygon.removeCoordinate(("0." + position), true), coord = assign$1[0]);
   }
+
   if (coord) {
     state.currentVertexPosition--;
     this.redoStack.push(coord);
-    this._fireChangeAndRender({ type: 'undo' });
+    this._fireChangeAndRender(Object.assign({}, {type: 'undo'}, e));
   }
 };
 
-RedoUndo.prototype.redo = function redo () {
+RedoUndo.prototype.redo = function redo (e) {
   var state = this._modeInstance.getState();
   var coord = this.redoStack.pop();
-  if (!coord) { return; }
+  var res = { coord: coord, redoStack: this.redoStack };
+  if (!coord) {
+    typeof e.cb === 'function' && e.cb(res);
+    return res;
+  }
   if (state.line) {
     state.line.addCoordinate(state.currentVertexPosition++, coord[0], coord[1]);
   } else if (state.polygon) {
     state.polygon.addCoordinate(("0." + (state.currentVertexPosition++)), coord[0], coord[1]);
   }
-  this._fireChangeAndRender({ type: 'redo' });
+  this._fireChangeAndRender(Object.assign({}, {type: 'redo'}, e, {cb: function () { return typeof e.cb === 'function' && e.cb(res); }}));
+
+  return res;
 };
 
 RedoUndo.prototype.destroy = function destroy () {
   this._unbindEvent();
+  this.reset();
+};
+
+RedoUndo.prototype.reset = function reset () {
   this.undoStack = [];
   this.redoStack = [];
 };
@@ -1342,9 +1353,9 @@ var theme2 = [
     },
   } ];
 
-var getDefaultOptions = function () { return ({
-  unit: {line: 'meters', area: 'meters'},
-  precision: 2
+var getDefaultOptions$1 = function () { return ({
+  unit: { line: 'meters', area: 'meters' },
+  precision: 2,
 }); };
 
 var Measure = function Measure(options) {
@@ -1354,7 +1365,7 @@ var Measure = function Measure(options) {
 };
 
 Measure.prototype.setOptions = function setOptions (options) {
-  this.options = xtend(getDefaultOptions(), options);
+  this.options = xtend(getDefaultOptions$1(), options);
   this[options.enable ? 'enable' : 'cancel']();
 };
 
@@ -1367,7 +1378,6 @@ Measure.prototype.cancel = function cancel () {
   this.markers = [];
   this.enabled = false;
 };
-
 Measure.prototype.destroy = function destroy () {
   this.cancel();
 };
@@ -1388,7 +1398,8 @@ function getFeatureAtAndSetCursors(event, ctx) {
     // extend end
   }
 
-  if (ctx.events.currentModeName().indexOf('draw') !== -1) {
+  var modeName = ctx.events.currentModeName();
+  if (modeName.includes('draw') || modeName.includes('cut')) {
     classes.mouse = cursors.ADD;
   }
 
@@ -1538,6 +1549,11 @@ Feature.prototype.getCoordinates = function () {
 
 Feature.prototype.setProperty = function (property, value) {
   this.properties[property] = value;
+  if (value === void 0) { delete this.properties[property]; }
+};
+
+Feature.prototype.getProperty = function (property) {
+  return this.properties[property];
 };
 
 Feature.prototype.toGeoJSON = function () {
@@ -2059,19 +2075,22 @@ ModeInterface.prototype.featuresAt = function (event, bbox, bufferType) {
  * @param {GeoJSONFeature} geojson
  * @returns {DrawFeature}
  */
-ModeInterface.prototype.newFeature = function (geojson) {
-  var type = geojson.geometry.type;
-  if (type === geojsonTypes.POINT) {
-    this.feature = new Point$2(this._ctx, geojson);
-  } else if (type === geojsonTypes.LINE_STRING) {
-    this.feature = new LineString(this._ctx, geojson);
-  } else if (type === geojsonTypes.POLYGON) {
-    this.feature = new Polygon(this._ctx, geojson);
-  } else {
-    this.feature = new MultiFeature(this._ctx, geojson);
-  }
+ModeInterface.prototype.newFeature = function (geojson, options) {
+  if ( options === void 0 ) options = {};
 
-  return this.feature;
+  var type = geojson.geometry.type;
+  var feature;
+  if (type === geojsonTypes.POINT) {
+    feature = new Point$2(this._ctx, geojson);
+  } else if (type === geojsonTypes.LINE_STRING) {
+    feature = new LineString(this._ctx, geojson);
+  } else if (type === geojsonTypes.POLYGON) {
+    feature = new Polygon(this._ctx, geojson);
+  } else {
+    feature = new MultiFeature(this._ctx, geojson);
+  }
+  if (options.declareFeature) { this.feature = feature; }
+  return feature;
 };
 
 /**
@@ -2141,6 +2160,10 @@ ModeInterface.prototype.isDrawing = function () {
 
 ModeInterface.prototype.afterRender = function (cb, render) {
   this._ctx.store.afterRender(cb, render);
+};
+
+ModeInterface.prototype.beforeRender = function (cb) {
+  this._ctx.store.beforeRender(cb);
 };
 
 ModeInterface.prototype.setMeasureOptions = function (options) {
@@ -2335,7 +2358,7 @@ function objectToMode (modeObject) {
         state = mode.onSetup(startOpts); // this should set ui buttons
         if (ctx.options.measureOptions) {
           var modeName = ctx.api.getMode();
-          if (modeName !== modes$1.CUT_DRAW_LINE && modeName !== modes$1.CUT_DRAW_POLYGON) {
+          if (modeName !== modes$1.CUT_LINE && modeName !== modes$1.CUT_POLYGON) {
             mode.setMeasureOptions(ctx.options.measureOptions);
           }
         }
@@ -2731,7 +2754,7 @@ function toDenseArray(x) {
   return [].concat(x).filter(function (y) { return y !== undefined; });
 }
 
-function render() {
+function render(e) {
   // eslint-disable-next-line no-invalid-this
   var store = this;
   var mapExists = store.ctx.map && store.ctx.map.getSource(sources.HOT) !== undefined;
@@ -2749,9 +2772,9 @@ function render() {
   } else {
     newHotIds = store.getChangedIds().filter(function (id) { return store.get(id) !== undefined; });
     newColdIds = store.sources.hot
-      .filter(
-        function (geojson) { return geojson.properties.id && newHotIds.indexOf(geojson.properties.id) === -1 && store.get(geojson.properties.id) !== undefined; }
-      )
+      .filter(function (geojson) {
+        return geojson.properties.id && newHotIds.indexOf(geojson.properties.id) === -1 && store.get(geojson.properties.id) !== undefined;
+      })
       .map(function (geojson) { return geojson.properties.id; });
   }
 
@@ -2788,6 +2811,23 @@ function render() {
     features: store.sources.hot,
   });
 
+  // extend start
+  if (store._emitSelectionChange || !e || e.type !== 'mousemove') {
+    var isSimpleSelectMode = mode === modes$1.SIMPLE_SELECT;
+    var isCutMode = mode.includes('cut');
+    var disabled = isSimpleSelectMode
+      ? !store.getSelected().length
+      : isCutMode
+      ? store.ctx.events.getModeInstance().getWaitCutFeatures().length
+      : true;
+    store.ctx.ui.setDisableButtons(function (buttonStatus) {
+      buttonStatus.cut_polygon = { disabled: disabled };
+      buttonStatus.cut_line = { disabled: disabled };
+      return buttonStatus;
+    });
+  }
+  // extend end
+
   if (store._emitSelectionChange) {
     store.ctx.map.fire(events$1.SELECTION_CHANGE, {
       features: store.getSelected().map(function (feature) { return feature.toGeoJSON(); }),
@@ -2801,15 +2841,6 @@ function render() {
       }); }),
     });
     store._emitSelectionChange = false;
-
-    // extend start
-    var disableButton = !store.getSelected().length || store.ctx.events.getMode().includes('draw_');
-    store.ctx.ui.setDisableButtons(function (buttonStatus) {
-      buttonStatus.cut_polygon = { disabled: disableButton };
-      buttonStatus.cut_line = { disabled: disableButton };
-      return buttonStatus;
-    });
-    // extend end
   }
 
   if (store._deletedFeaturesToEmit.length) {
@@ -2820,7 +2851,6 @@ function render() {
 
   cleanup();
   store.ctx.map.fire(events$1.RENDER, {});
-
   // extend start
   store.emitCallbacks();
   // extend end
@@ -2853,11 +2883,11 @@ function Store(ctx) {
 
   // Deduplicate requests to render and tie them to animation frames.
   var renderRequest;
-  this.render = function () {
+  this.render = function (e) {
     if (!renderRequest) {
       renderRequest = requestAnimationFrame(function () {
         renderRequest = null;
-        render.call(this$1$1);
+        render.call(this$1$1, e);
       });
     }
   };
@@ -3225,6 +3255,11 @@ Store.prototype.afterRender = function (cb, render) {
   if (typeof cb === 'function') { this._emitCallbacks.push(cb); }
   if (render) { this.render(); }
 };
+
+Store.prototype.beforeRender = function (cb) {
+  if (typeof cb === 'function') { cb(); }
+  this.render();
+};
 // extend end
 
 var classTypes = ['mode', 'feature', 'mouse'];
@@ -3295,11 +3330,11 @@ function ui (ctx) {
       function (e) {
         e.preventDefault();
         e.stopPropagation();
-
         if (typeof options.onClick === 'function') {
           options.onClick();
           return;
         }
+
         var clickedButton = e.target;
         if (clickedButton === activeButton) {
           deactivateButtons();
@@ -3460,7 +3495,8 @@ function ui (ctx) {
         className: classes.CONTROL_BUTTON_CUT_LINE,
         title: 'cut line',
         disabled: true,
-        onClick: function () { return ctx.api.changeMode('cut_line'); },
+        onActivate: function () { return ctx.api.changeMode(modes$1.CUT_LINE); },
+        onDeactivate: function () { return ctx.events.trash(); },
       });
     }
 
@@ -3470,7 +3506,8 @@ function ui (ctx) {
         className: classes.CONTROL_BUTTON_CUT_POLYGON,
         title: 'cut polygon',
         disabled: true,
-        onClick: function () { return ctx.api.changeMode('cut_polygon'); },
+        onDeactivate: function () { return ctx.events.trash(); },
+        onActivate: function () { return ctx.api.changeMode(modes$1.CUT_POLYGON); },
       });
     }
 
@@ -3490,6 +3527,7 @@ function ui (ctx) {
 
   // extend start
   function setDisableButtons(cb) {
+    if (!buttonElements) { return; }
     var orginStatus = Object.entries(buttonElements).reduce(function (prev, ref) {
       var k = ref[0];
       var v = ref[1];
@@ -3503,7 +3541,8 @@ function ui (ctx) {
       var buttonId = ref[0];
       var button = ref[1];
 
-      if (typeof status[buttonId].disabled === 'boolean') { button.disabled = status[buttonId].disabled; }
+      var disabled = status[buttonId].disabled;
+      if (typeof disabled === 'boolean' && disabled !== button.disabled) { button.disabled = status[buttonId].disabled; }
     });
   }
   // extend end
@@ -3650,7 +3689,7 @@ function runSetup (ctx) {
   return setup;
 }
 
-var styles = [
+var styles$1 = [
   {
     id: 'gl-draw-polygon-fill-inactive',
     type: 'fill',
@@ -5897,14 +5936,17 @@ DirectSelect.redo = function () {
 var DrawPoint = {};
 
 DrawPoint.onSetup = function () {
-  var point = this.newFeature({
-    type: geojsonTypes.FEATURE,
-    properties: {},
-    geometry: {
-      type: geojsonTypes.POINT,
-      coordinates: [],
+  var point = this.newFeature(
+    {
+      type: geojsonTypes.FEATURE,
+      properties: {},
+      geometry: {
+        type: geojsonTypes.POINT,
+        coordinates: [],
+      },
     },
-  });
+    { declareFeature: true }
+  );
 
   this.addFeature(point);
 
@@ -5972,23 +6014,28 @@ function isEventAtCoordinates(event, coordinates) {
   return event.lngLat.lng === coordinates[0] && event.lngLat.lat === coordinates[1];
 }
 
-var DrawPolygon$1 = {};
+var DrawPolygon = {};
 
-DrawPolygon$1.onSetup = function () {
-  var polygon = this.newFeature({
-    type: geojsonTypes.FEATURE,
-    properties: {},
-    geometry: {
-      type: geojsonTypes.POLYGON,
-      coordinates: [[]],
+DrawPolygon.onSetup = function (opt) {
+  if ( opt === void 0 ) opt = {};
+
+  var polygon = this.newFeature(
+    {
+      type: geojsonTypes.FEATURE,
+      properties: {},
+      geometry: {
+        type: geojsonTypes.POLYGON,
+        coordinates: [[]],
+      },
     },
-  });
+    { declareFeature: true }
+  );
 
   this.addFeature(polygon);
   this.clearSelectedFeatures();
   doubleClickZoom.disable(this);
   this.updateUIClasses({ mouse: cursors.ADD });
-  this.activateUIButton(types$1.POLYGON);
+  this.activateUIButton(opt.button || types$1.POLYGON);
   this.setActionableState({ trash: true });
 
   // extend start
@@ -5996,7 +6043,7 @@ DrawPolygon$1.onSetup = function () {
   // extend end
 };
 
-DrawPolygon$1.clickAnywhere = function (state, e) {
+DrawPolygon.clickAnywhere = function (state, e) {
   var this$1$1 = this;
 
   if (state.currentVertexPosition > 0 && isEventAtCoordinates(e, state.polygon.coordinates[0][state.currentVertexPosition - 1])) {
@@ -6005,6 +6052,7 @@ DrawPolygon$1.clickAnywhere = function (state, e) {
     // extend end
     return this.changeMode(modes$1.SIMPLE_SELECT, { featureIds: [state.polygon.id] });
   }
+
   this.updateUIClasses({ mouse: cursors.ADD });
   state.polygon.updateCoordinate(("0." + (state.currentVertexPosition)), e.lngLat.lng, e.lngLat.lat);
   state.currentVertexPosition++;
@@ -6014,21 +6062,22 @@ DrawPolygon$1.clickAnywhere = function (state, e) {
   // extend end
 };
 
-DrawPolygon$1.clickOnVertex = function (state) {
+DrawPolygon.clickOnVertex = function (state, cb) {
   // extend start
   if (isDisabledClickOnVertexWithCtx(this._ctx)) { return; }
+  if (typeof cb === 'function') { return cb(state); }
   // extend end
   return this.changeMode(modes$1.SIMPLE_SELECT, { featureIds: [state.polygon.id] });
 };
 
-DrawPolygon$1.onMouseMove = function (state, e) {
+DrawPolygon.onMouseMove = function (state, e) {
   state.polygon.updateCoordinate(("0." + (state.currentVertexPosition)), e.lngLat.lng, e.lngLat.lat);
   if (isVertex$1(e)) {
     this.updateUIClasses({ mouse: cursors.POINTER });
   }
 };
 
-DrawPolygon$1.onTap = DrawPolygon$1.onClick = function (state, e) {
+DrawPolygon.onTap = DrawPolygon.onClick = function (state, e) {
   // extend start
   if (isIgnoreClickOnVertexWithCtx(this._ctx)) { return this.clickAnywhere(state, e); }
   // extend end
@@ -6036,7 +6085,7 @@ DrawPolygon$1.onTap = DrawPolygon$1.onClick = function (state, e) {
   return this.clickAnywhere(state, e);
 };
 
-DrawPolygon$1.onKeyUp = function (state, e) {
+DrawPolygon.onKeyUp = function (state, e) {
   if (isEscapeKey(e)) {
     this.deleteFeature([state.polygon.id], { silent: true });
     this.changeMode(modes$1.SIMPLE_SELECT);
@@ -6045,7 +6094,7 @@ DrawPolygon$1.onKeyUp = function (state, e) {
   }
 };
 
-DrawPolygon$1.onStop = function (state) {
+DrawPolygon.onStop = function (state, cb) {
   this.updateUIClasses({ mouse: cursors.NONE });
   doubleClickZoom.enable(this);
   this.activateUIButton();
@@ -6054,18 +6103,18 @@ DrawPolygon$1.onStop = function (state) {
   // check to see if we've deleted this feature
   if (this.getFeature(state.polygon.id) === undefined) { return; }
   //remove last added coordinate
+
   state.polygon.removeCoordinate(("0." + (state.currentVertexPosition)));
+  if (typeof cb === 'function') { return cb(state); }
   if (state.polygon.isValid()) {
-    this.map.fire(events$1.CREATE, {
-      features: [state.polygon.toGeoJSON()],
-    });
+    this.map.fire(events$1.CREATE, { features: [state.polygon.toGeoJSON()] });
   } else {
     this.deleteFeature([state.polygon.id], { silent: true });
     // this.changeMode(Constants.modes.SIMPLE_SELECT, {}, { silent: true });
   }
 };
 
-DrawPolygon$1.toDisplayFeatures = function (state, geojson, display) {
+DrawPolygon.toDisplayFeatures = function (state, geojson, display) {
   var isActivePolygon = geojson.properties.id === state.polygon.id;
   geojson.properties.active = isActivePolygon ? activeStates.ACTIVE : activeStates.INACTIVE;
   if (!isActivePolygon) { return display(geojson); }
@@ -6142,12 +6191,12 @@ DrawPolygon$1.toDisplayFeatures = function (state, geojson, display) {
   return display(geojson);
 };
 
-DrawPolygon$1.onTrash = function (state) {
+DrawPolygon.onTrash = function (state) {
   this.deleteFeature([state.polygon.id], { silent: true });
   this.changeMode(modes$1.SIMPLE_SELECT);
 };
 
-DrawPolygon$1.drawByCoordinate = function (coord) {
+DrawPolygon.drawByCoordinate = function (coord) {
   var this$1$1 = this;
 
   var state = this.getState();
@@ -6192,14 +6241,17 @@ DrawLineString.onSetup = function (opts) {
       throw new Error('`from` should match the point at either the start or the end of the provided LineString');
     }
   } else {
-    line = this.newFeature({
-      type: geojsonTypes.FEATURE,
-      properties: {},
-      geometry: {
-        type: geojsonTypes.LINE_STRING,
-        coordinates: [],
+    line = this.newFeature(
+      {
+        type: geojsonTypes.FEATURE,
+        properties: {},
+        geometry: {
+          type: geojsonTypes.LINE_STRING,
+          coordinates: [],
+        },
       },
-    });
+      { declareFeature: true }
+    );
     currentVertexPosition = 0;
     this.addFeature(line);
   }
@@ -6338,128 +6390,105 @@ DrawLineString.drawByCoordinate = function (coord) {
 
 function objectWithoutProperties (obj, exclude) { var target = {}; for (var k in obj) if (Object.prototype.hasOwnProperty.call(obj, k) && exclude.indexOf(k) === -1) target[k] = obj[k]; return target; }
 
-var originOnSetup = DrawPolygon$1.onSetup;
-var originOnMouseMove = DrawPolygon$1.onMouseMove;
-var rest = objectWithoutProperties( DrawPolygon$1, ["onSetup", "onMouseMove"] );
+var getDefaultOptions = function () { return ({
+  featureIds: [],
+  highlightColor: '#73d13d',
+  continuous: true,
+  lineWidth: 0.001,
+  lineWidthUnit: 'kilometers',
+}); };
+
+var styles = ['inactive-fill-color', 'inactive-fill-outline-color', 'inactive-line-color'];
+
+var highlightFieldName = 'wait-cut';
+
+var originOnSetup = DrawPolygon.onSetup;
+var originOnMouseMove = DrawPolygon.onMouseMove;
+var originClickOnVertex = DrawPolygon.clickOnVertex;
+var originOnStop = DrawPolygon.onStop;
+var originOnTrash = DrawPolygon.onTrash;
+var rest = objectWithoutProperties( DrawPolygon, ["onSetup", "onMouseMove", "clickOnVertex", "onStop", "onTrash"] );
 var restOriginMethods = rest;
 
-var DrawPolygon = Object.assign({}, {originOnSetup: originOnSetup, originOnMouseMove: originOnMouseMove}, restOriginMethods);
-
-DrawPolygon.onSetup = function (opt) {
-  var state = this.originOnSetup();
-  var onDraw = opt.onDraw;
-  var onCancel = opt.onCancel;
-  state.onDraw = onDraw;
-  state.onCancel = onCancel;
-  return this.setState(state);
-};
-
-DrawPolygon.onMouseMove = function (state, e) {
-  this.updateUIClasses({ mouse: cursors.ADD });
-  this.originOnMouseMove(state, e);
-};
-
-DrawPolygon.onStop = function (state) {
-  var f = state.polygon;
-
-  this.updateUIClasses({ mouse: cursors.NONE });
-  doubleClickZoom.enable(this);
-  this.activateUIButton();
-  var drawnFeature = this.getFeature(f.id);
-  if (drawnFeature === undefined) {
-    if (typeof state.onCancel === 'function') { state.onCancel(); }
-    return;
-  }
-  f.removeCoordinate(("" + (state.currentVertexPosition)));
-
-  if (f.isValid()) {
-    if (typeof state.onDraw === 'function') { state.onDraw(f.toGeoJSON()); }
-    else { this.map.fire('draw.passing-create', { features: [f.toGeoJSON()] }); }
-  }
-  this.deleteFeature([f.id], { silent: true });
-  this.changeMode(modes$1.SIMPLE_SELECT, {}, { silent: true });
-};
-
-var defaultOptions$1 = { highlightColor: '#73d13d', lineWidth: 0.001, lineWidthUnit: 'kilometers' };
-
-var CutPolygonMode = {};
+var CutPolygonMode = Object.assign({}, {originOnSetup: originOnSetup, originOnMouseMove: originOnMouseMove, originClickOnVertex: originClickOnVertex, originOnStop: originOnStop, originOnTrash: originOnTrash}, restOriginMethods);
 
 CutPolygonMode.onSetup = function (opt) {
   var this$1$1 = this;
 
-  var ref = opt || {};
-  var highlightColor = ref.highlightColor; if ( highlightColor === void 0 ) highlightColor = defaultOptions$1.highlightColor;
-
-  var features = this.getSelected()
-    .filter(function (f) { return f.type === 'Polygon' || f.type === 'MultiPolygon'; })
-    .map(function (f) { return f.toGeoJSON(); });
-
+  var options = xtend(getDefaultOptions(), opt);
+  var highlightColor = options.highlightColor;
+  var featureIds = options.featureIds;
+  var features = [];
+  if (featureIds.length) {
+    features = featureIds.map(function (id) { return this$1$1.getFeature(id).toGeoJSON(); });
+  } else {
+    features = this.getSelected().map(function (f) { return f.toGeoJSON(); });
+  }
+  features = features.filter(
+    function (f) { return f.geometry.type === geojsonTypes.POLYGON || f.geometry.type === geojsonTypes.MULTI_POLYGON; }
+  );
   if (features.length < 1) {
     throw new Error('Please select a feature/features (Polygon or MultiPolygon) to split!');
   }
+  this._features = features;
+  this._options = options;
+  this._undoStack = [];
+  this._redoStack = [];
+  this._redoType = '';
+  this._undoType = '';
 
-  var ref$1 = this._ctx;
-  var store = ref$1.store;
-  var api = ref$1.api;
-  this.afterRender(function () {
-    this$1$1.changeMode(modes$1.CUT_DRAW_POLYGON, {
-      onDraw: function (cuttingpolygon) {
-        features.forEach(function (feature) {
-          if (feature.geometry.type === geojsonTypes.POLYGON || feature.geometry.type === geojsonTypes.MULTI_POLYGON) {
-            var afterCut = turf__namespace.difference(feature, cuttingpolygon);
-            var newFeature = this$1$1.newFeature(afterCut);
-            store.get(feature.id).measure.delete();
-            if (newFeature.features) {
-              var ref = newFeature.features.sort(function (a, b) { return turf__namespace.area(a) - turf__namespace.area(b); });
-              var f = ref[0];
-              var rest = ref.slice(1);
-              f.id = feature.id;
-              this$1$1.addFeature(f);
-              api.add(turf__namespace.featureCollection(rest.map(function (v) { return v.toGeoJSON(); })));
-              this$1$1._execMeasure(f);
-            } else {
-              newFeature.id = feature.id;
-              this$1$1.addFeature(newFeature);
-              this$1$1._execMeasure(newFeature);
-            }
-            // this.deleteFeature(feature.id);
-            // this.fireUpdate(newFeature);
-          } else {
-            console.info('The feature is not Polygon/MultiPolygon!');
-          }
-        });
-      },
-      onCancel: function () {
-        if (features.length) { features.forEach(function (feature) { return this$1$1.setHighlight(feature.id); }); }
-      },
-    });
+  this._batchHighlight(features, highlightColor);
+  var state = this.originOnSetup({ button: modes$1.CUT_POLYGON });
+  return this.setState(state);
+};
+
+CutPolygonMode.onMouseMove = function (state, e) {
+  this.updateUIClasses({ mouse: cursors.ADD });
+  this.originOnMouseMove(state, e);
+};
+
+CutPolygonMode.onStop = function (state) {
+  var this$1$1 = this;
+
+  this.originOnStop(state, function () {
+    this$1$1._cancelCut();
+    this$1$1.deleteFeature([state.polygon.id], { silent: true });
+  });
+};
+
+CutPolygonMode.clickOnVertex = function (state) {
+  var this$1$1 = this;
+
+  this.originClickOnVertex(state, function () {
+    var geoJson = state.polygon.toGeoJSON();
+    geoJson.geometry.coordinates[0].splice(state.currentVertexPosition, 1);
+    this$1$1._cutEffect(geoJson);
+    if (this$1$1._options.continuous) {
+      state.currentVertexPosition = 0;
+      state.polygon.setCoordinates([[]]);
+      this$1$1.redoUndo.reset();
+      this$1$1._emitRedoUndo({ type: 'clear' });
+    } else {
+      this$1$1.deleteFeature([state.polygon.id], { silent: true });
+    }
+  });
+};
+
+CutPolygonMode._cutEffect = function (geoJson) {
+  this._setRedoUndoStack(function (ref) {
+    var undoStack = ref.undoStack;
+
+    return ({
+    undoStack: undoStack.concat( [{ geoJson: geoJson, type: 'draw' }]),
+  });
   });
 
-  if (features.length) { features.forEach(function (feature) { return this$1$1.setHighlight(feature.id, highlightColor); }); }
-
-  return {
-    features: features,
-  };
+  this._cut(geoJson);
 };
 
-CutPolygonMode._execMeasure = function (feature) {
-  var api = this._ctx.api;
-
-  if (feature && api.options.measureOptions) {
-    feature.measure.setOptions(api.options.measureOptions);
-    feature.execMeasure();
-  }
-};
-
-CutPolygonMode.setHighlight = function (id, color) {
-  var api = this._ctx.api;
-  api.setFeatureProperty(id, 'inactive-fill-color', color);
-  api.setFeatureProperty(id, 'inactive-fill-outline-color', color);
-  api.setFeatureProperty(id, 'inactive-line-color', color);
-};
-
-CutPolygonMode.toDisplayFeatures = function (state, geojson, display) {
-  display(geojson);
+CutPolygonMode.onTrash = function (state) {
+  this.originOnTrash(state);
+  this._cancelCut();
 };
 
 CutPolygonMode.fireUpdate = function (newF) {
@@ -6469,18 +6498,216 @@ CutPolygonMode.fireUpdate = function (newF) {
   });
 };
 
+CutPolygonMode.getWaitCutFeatures = function () {
+  return JSON.parse(JSON.stringify(this._features));
+};
+
+CutPolygonMode.undo = function () {
+  var this$1$1 = this;
+
+  var state = this.getState();
+  if (this._undoType === 'draw') {
+    this._redoType = 'draw';
+    if (state.currentVertexPosition !== 0) {
+      return this.redoUndo.undo({
+        cb: function () {
+          if (state.currentVertexPosition === 0) { this$1$1._setButtonStatus(); }
+        },
+      });
+    }
+  }
+
+  var stacks = this._undoStack.splice(-2);
+  this._undoType = (stacks[0] || {}).type;
+  if (stacks.length < 2) { return; }
+  this.beforeRender(function () {
+    stacks.forEach(function (stack) {
+      if (stack.type === 'cut') {
+        stack.collection.forEach(function (item) {
+          var combine = turf__namespace.combine(item.difference);
+          var nuion = turf__namespace.union(item.intersect, combine.features[0]);
+          var nuionFeature = this$1$1.newFeature(nuion);
+          var ref = item.difference.features;
+          var f = ref[0];
+          var rest = ref.slice(1);
+          nuionFeature.id = f.id;
+          item.difference.features.forEach(function (f) { return this$1$1._ctx.store.get(f.id).measure.delete(); });
+          rest.forEach(function (v) { return this$1$1.deleteFeature(v.id); });
+          this$1$1.addFeature(nuionFeature);
+          this$1$1._execMeasure(nuionFeature);
+          this$1$1._setHighlight(nuionFeature.id, this$1$1._options.highlightColor);
+        });
+        this$1$1._redoStack.push({ type: 'cut', cuttingpolygon: stack.cuttingpolygon });
+      } else if (stack.type === 'draw') {
+        state.currentVertexPosition = stack.geoJson.geometry.coordinates[0].length - 1;
+        state.polygon.setCoordinates(stack.geoJson.geometry.coordinates);
+        this$1$1._redoStack.push({ type: 'draw', geoJson: stack.geoJson });
+      }
+    });
+    this$1$1._updateFeatures();
+    this$1$1._setButtonStatus({ undo: false, redo: false });
+  });
+};
+
+CutPolygonMode.redo = function () {
+  var this$1$1 = this;
+
+  var state = this.getState();
+  if (this._redoType === 'draw') {
+    this._undoType = 'draw';
+    var res = this.redoUndo.redo({
+      cb: function (r) {
+        if (!r.redoStack.length) { this$1$1._setButtonStatus({ undo: false }); }
+      },
+    });
+    if (res.coord) { return; }
+  }
+  var stacks = this._redoStack.splice(-2);
+  this._redoType = (stacks[0] || {}).type;
+  if (stacks.length < 2) { return; }
+
+  this.beforeRender(function () {
+    stacks.forEach(function (stack) {
+      if (stack.type === 'cut') {
+        this$1$1._cutEffect(stack.cuttingpolygon, stack.cuttingpolygon.geometry.coordinates[0].length - 1);
+
+        state.currentVertexPosition = 0;
+        state.polygon.setCoordinates([[]]);
+        this$1$1._setButtonStatus({ undo: false, redo: false });
+      } else if (stack.type === 'draw') {
+        state.currentVertexPosition = stack.geoJson.geometry.coordinates[0].length - 1;
+        state.polygon.setCoordinates(stack.geoJson.geometry.coordinates);
+      }
+    });
+  });
+};
+
+CutPolygonMode._emitRedoUndo = function (event) {
+  var e = xtend({ undoStack: this._undoStack, redoStack: this._redoStack }, event);
+  this._setButtonStatus();
+  mapFireRedoUndo(this._ctx.events.getModeInstance(), JSON.parse(JSON.stringify(e)));
+};
+
+CutPolygonMode._setButtonStatus = function (params) {
+  var p = Object.assign({}, {undo: !this._undoStack.length, redo: !this._redoStack.length}, params);
+  this._ctx.ui.setDisableButtons(function (buttonStatus) {
+    buttonStatus.undo = { disabled: p.undo };
+    buttonStatus.redo = { disabled: p.redo };
+    return buttonStatus;
+  });
+};
+
+CutPolygonMode._execMeasure = function (feature) {
+  var api = this._ctx.api;
+  if (feature && api.options.measureOptions) {
+    feature.measure.setOptions(api.options.measureOptions);
+    feature.execMeasure();
+  }
+};
+
+CutPolygonMode._setHighlight = function (id, color) {
+  var api = this._ctx.api;
+  styles.forEach(function (style) { return api.setFeatureProperty(id, style, color); });
+  api.setFeatureProperty(id, highlightFieldName, color ? true : undefined);
+};
+
+CutPolygonMode._cut = function (cuttingpolygon) {
+  var this$1$1 = this;
+
+  var ref = this._ctx;
+  var store = ref.store;
+  var api = ref.api;
+  var ref$1 = this._options;
+  var highlightColor = ref$1.highlightColor;
+  var stack = { type: 'cut', cuttingpolygon: JSON.parse(JSON.stringify(cuttingpolygon)), collection: [] };
+  this._features.forEach(function (feature) {
+    if (feature.geometry.type === geojsonTypes.POLYGON || feature.geometry.type === geojsonTypes.MULTI_POLYGON) {
+      var afterCut = turf__namespace.difference(feature, cuttingpolygon);
+      if (!afterCut) { return; }
+      var newFeature = this$1$1.newFeature(afterCut);
+      store.get(feature.id).measure.delete();
+      var item = {
+        intersect: turf__namespace.intersect(feature, cuttingpolygon),
+      };
+      if (newFeature.features) {
+        var ref = newFeature.features.sort(function (a, b) { return turf__namespace.area(a) - turf__namespace.area(b); });
+        var f = ref[0];
+        var rest = ref.slice(1);
+        f.id = feature.id;
+        this$1$1.addFeature(f);
+        api.add(turf__namespace.featureCollection(rest.map(function (v) { return v.toGeoJSON(); })));
+        this$1$1._execMeasure(f);
+        this$1$1._continuous(function () { return this$1$1._batchHighlight(newFeature.features, highlightColor); });
+        if (item.intersect) {
+          item.difference = turf__namespace.featureCollection(newFeature.features.map(function (v) { return v.toGeoJSON(); }));
+        }
+      } else {
+        newFeature.id = feature.id;
+        this$1$1.addFeature(newFeature);
+        this$1$1._execMeasure(newFeature);
+        this$1$1._continuous(function () { return this$1$1._setHighlight(newFeature.id, highlightColor); });
+        if (item.intersect) { item.difference = turf__namespace.featureCollection([newFeature.toGeoJSON()]); }
+      }
+      if (item.intersect && item.difference) { stack.collection.push(item); }
+    } else {
+      console.info('The feature is not Polygon/MultiPolygon!');
+    }
+  });
+
+  this._setRedoUndoStack(function (ref) {
+    var undoStack = ref.undoStack;
+
+    return ({ undoStack: undoStack.concat( [stack]) });
+  });
+};
+
+CutPolygonMode._continuous = function (cb) {
+  if (this._options.continuous) {
+    cb();
+    this._updateFeatures();
+  }
+};
+
+CutPolygonMode._updateFeatures = function () {
+  this._features = this._ctx.store
+    .getAll()
+    .filter(function (f) { return f.getProperty(highlightFieldName); })
+    .map(function (f) { return f.toGeoJSON(); });
+};
+
+CutPolygonMode._cancelCut = function () {
+  if (this._features.length) {
+    this._batchHighlight(this._features);
+    this._features = [];
+  }
+};
+
+CutPolygonMode._batchHighlight = function (features, color) {
+  var this$1$1 = this;
+
+  if (features.length) { features.forEach(function (feature) { return this$1$1._setHighlight(feature.id, color); }); }
+};
+
+CutPolygonMode._setRedoUndoStack = function (cb) {
+  var ref = cb({ undoStack: this._undoStack, redoStack: this._redoStack });
+  var undoStack = ref.undoStack;
+  var redoStack = ref.redoStack;
+  if (Array.isArray(undoStack)) { this._undoStack = undoStack; }
+  if (Array.isArray(redoStack)) { this._redoStack = redoStack; }
+};
+
 function genCutPolygonMode(modes) {
   var obj;
 
   return Object.assign({}, modes,
-    ( obj = {}, obj[modes$1.CUT_DRAW_POLYGON] = DrawPolygon, obj[modes$1.CUT_POLYGON] = CutPolygonMode, obj ));
+    ( obj = {}, obj[modes$1.CUT_POLYGON] = CutPolygonMode, obj ));
 }
 
 var modes = genCutPolygonMode({
   simple_select: SimpleSelect,
   direct_select: DirectSelect,
   draw_point: DrawPoint,
-  draw_polygon: DrawPolygon$1,
+  draw_polygon: DrawPolygon,
   draw_line_string: DrawLineString,
 });
 
@@ -6492,7 +6719,7 @@ var defaultOptions = {
   touchBuffer: 25,
   boxSelect: true,
   displayControlsDefault: true,
-  styles: styles,
+  styles: styles$1,
   modes: modes,
   controls: {},
   userProperties: false,
@@ -8719,7 +8946,7 @@ moveFeatures: moveFeatures,
 sortFeatures: sortFeatures,
 stringSetsAreEqual: stringSetsAreEqual,
 StringSet: StringSet,
-theme: styles,
+theme: styles$1,
 theme1: theme1,
 theme2: theme2,
 toDenseArray: toDenseArray
@@ -8753,3 +8980,4 @@ MapboxDraw.lib = lib;
 return MapboxDraw;
 
 }));
+//# sourceMappingURL=mapbox-gl-draw.umd.unminified.js.map

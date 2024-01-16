@@ -1,16 +1,29 @@
 {
   "name": "@ttfn/mapbox-gl-draw",
-  "version": "1.4.2-beta.67",
-  "description": "A drawing component for Mapbox GL JS",
-  "homepage": "",
-  "author": "mapbox",
-  "license": "ISC",
+  "version": "1.4.2-beta.68",
   "private": false,
+  "description": "A drawing component for Mapbox GL JS",
+  "keywords": [
+    "webgl",
+    "mapbox",
+    "draw",
+    "drawing"
+  ],
+  "homepage": "",
+  "bugs": {
+    "url": ""
+  },
+  "license": "ISC",
+  "author": "mapbox",
   "main": "dist/mapbox-gl-draw.umd.min.js",
-  "browser": "dist/mapbox-gl-draw.umd.min.js",
   "module": "dist/mapbox-gl-draw.es.min.js",
-  "style": "dist/mapbox-gl-draw.css",
+  "browser": "dist/mapbox-gl-draw.umd.min.js",
   "types": "types/index.d.ts",
+  "style": "dist/mapbox-gl-draw.css",
+  "files": [
+    "dist/mapbox-gl-draw*",
+    "types/index.d.ts"
+  ],
   "scripts": {
     "docs": "run-s docs-modes-life-cycle docs-modes-get-and-set",
     "docs-modes-get-and-set": "documentation readme --readme-file ./docs/MODES.md -s \"Setters and Getters\" src/modes/mode_interface_accessors.js --shallow",
@@ -30,22 +43,23 @@
     "start-server": "st --no-cache -H 0.0.0.0 --port 9967 --index index.html .",
     "start": "run-p build-token watch watch-bench start-server"
   },
-  "files": [
-    "dist/mapbox-gl-draw*",
-    "types/index.d.ts"
-  ],
-  "keywords": [
-    "webgl",
-    "mapbox",
-    "draw",
-    "drawing"
-  ],
-  "bugs": {
-    "url": ""
-  },
   "nyc": {
-    "sourceMap": false,
-    "instrument": false
+    "instrument": false,
+    "sourceMap": false
+  },
+  "dependencies": {
+    "@mapbox/geojson-area": "^0.2.2",
+    "@mapbox/geojson-extent": "^1.0.1",
+    "@mapbox/geojson-normalize": "^0.0.1",
+    "@mapbox/point-geometry": "^0.1.0",
+    "@turf/area": "^6.5.0",
+    "@turf/center": "^6.5.0",
+    "@turf/helpers": "^6.5.0",
+    "@turf/length": "^6.5.0",
+    "hat": "0.0.3",
+    "lodash.isequal": "^4.5.0",
+    "polygon-splitter": "^0.0.11",
+    "xtend": "^4.0.2"
   },
   "devDependencies": {
     "@babel/core": "^7.21.4",
@@ -80,20 +94,6 @@
     "synthetic-dom-events": "0.3.0",
     "tape": "5.6.3",
     "typescript": "^5.3.3"
-  },
-  "dependencies": {
-    "@mapbox/geojson-area": "^0.2.2",
-    "@mapbox/geojson-extent": "^1.0.1",
-    "@mapbox/geojson-normalize": "^0.0.1",
-    "@mapbox/point-geometry": "^0.1.0",
-    "@turf/area": "^6.5.0",
-    "@turf/center": "^6.5.0",
-    "@turf/helpers": "^6.5.0",
-    "@turf/length": "^6.5.0",
-    "hat": "0.0.3",
-    "lodash.isequal": "^4.5.0",
-    "polygon-splitter": "^0.0.11",
-    "xtend": "^4.0.2"
   },
   "peerDependencies": {
     "@turf/turf": "^6.5.0",

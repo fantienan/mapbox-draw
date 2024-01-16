@@ -35,13 +35,15 @@ export class RedoUndo {
   fireChange(eventData) {
     let undoStack = this.undoStack;
     const modeName = this._api.getMode();
-    if (modeName === Constants.modes.DRAW_LINE_STRING) {
+    const { modes } = Constants;
+    if (modeName === modes.DRAW_LINE_STRING || modeName === modes.CUT_LINE) {
       undoStack = this._modeInstance.feature.getCoordinates();
       undoStack.pop();
-    } else if (modeName === Constants.modes.DRAW_POLYGON) {
+    } else if (modeName === modes.DRAW_POLYGON || modeName === modes.CUT_POLYGON) {
       undoStack = this._modeInstance.feature.getCoordinates()[0] || [];
       if (undoStack.length < 3) undoStack = [];
     }
+
     const e = xtend(eventData, { undoStack, redoStack: this.redoStack });
     this._ctx.ui.setDisableButtons((buttonStatus) => {
       buttonStatus.undo = { disabled: e.undoStack.length === 0 };
@@ -50,9 +52,10 @@ export class RedoUndo {
     });
 
     mapFireRedoUndo(this._modeInstance, JSON.parse(JSON.stringify(e)));
+    if (typeof eventData.cb === 'function') eventData.cb();
   }
 
-  undo() {
+  undo(e) {
     let coord = null;
     const state = this._modeInstance.getState();
     const pos = state.currentVertexPosition - 1;
@@ -62,27 +65,38 @@ export class RedoUndo {
     } else if (state.polygon) {
       [coord] = state.polygon.removeCoordinate(`0.${position}`, true);
     }
+
     if (coord) {
       state.currentVertexPosition--;
       this.redoStack.push(coord);
-      this._fireChangeAndRender({ type: 'undo' });
+      this._fireChangeAndRender({ type: 'undo', ...e });
     }
   }
 
-  redo() {
+  redo(e) {
     const state = this._modeInstance.getState();
     const coord = this.redoStack.pop();
-    if (!coord) return;
+    const res = { coord, redoStack: this.redoStack };
+    if (!coord) {
+      typeof e.cb === 'function' && e.cb(res);
+      return res;
+    }
     if (state.line) {
       state.line.addCoordinate(state.currentVertexPosition++, coord[0], coord[1]);
     } else if (state.polygon) {
       state.polygon.addCoordinate(`0.${state.currentVertexPosition++}`, coord[0], coord[1]);
     }
-    this._fireChangeAndRender({ type: 'redo' });
+    this._fireChangeAndRender({ type: 'redo', ...e, cb: () => typeof e.cb === 'function' && e.cb(res) });
+
+    return res;
   }
 
   destroy() {
     this._unbindEvent();
+    this.reset();
+  }
+
+  reset() {
     this.undoStack = [];
     this.redoStack = [];
   }

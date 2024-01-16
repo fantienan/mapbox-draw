@@ -7,21 +7,24 @@ import { createLastOrSecondToLastPoint, isDisabledClickOnVertexWithCtx, isIgnore
 
 const DrawPolygon = {};
 
-DrawPolygon.onSetup = function () {
-  const polygon = this.newFeature({
-    type: Constants.geojsonTypes.FEATURE,
-    properties: {},
-    geometry: {
-      type: Constants.geojsonTypes.POLYGON,
-      coordinates: [[]],
+DrawPolygon.onSetup = function (opt = {}) {
+  const polygon = this.newFeature(
+    {
+      type: Constants.geojsonTypes.FEATURE,
+      properties: {},
+      geometry: {
+        type: Constants.geojsonTypes.POLYGON,
+        coordinates: [[]],
+      },
     },
-  });
+    { declareFeature: true },
+  );
 
   this.addFeature(polygon);
   this.clearSelectedFeatures();
   doubleClickZoom.disable(this);
   this.updateUIClasses({ mouse: Constants.cursors.ADD });
-  this.activateUIButton(Constants.types.POLYGON);
+  this.activateUIButton(opt.button || Constants.types.POLYGON);
   this.setActionableState({ trash: true });
 
   // extend start
@@ -36,6 +39,7 @@ DrawPolygon.clickAnywhere = function (state, e) {
     // extend end
     return this.changeMode(Constants.modes.SIMPLE_SELECT, { featureIds: [state.polygon.id] });
   }
+
   this.updateUIClasses({ mouse: Constants.cursors.ADD });
   state.polygon.updateCoordinate(`0.${state.currentVertexPosition}`, e.lngLat.lng, e.lngLat.lat);
   state.currentVertexPosition++;
@@ -45,9 +49,10 @@ DrawPolygon.clickAnywhere = function (state, e) {
   // extend end
 };
 
-DrawPolygon.clickOnVertex = function (state) {
+DrawPolygon.clickOnVertex = function (state, cb) {
   // extend start
   if (isDisabledClickOnVertexWithCtx(this._ctx)) return;
+  if (typeof cb === 'function') return cb(state);
   // extend end
   return this.changeMode(Constants.modes.SIMPLE_SELECT, { featureIds: [state.polygon.id] });
 };
@@ -76,7 +81,7 @@ DrawPolygon.onKeyUp = function (state, e) {
   }
 };
 
-DrawPolygon.onStop = function (state) {
+DrawPolygon.onStop = function (state, cb) {
   this.updateUIClasses({ mouse: Constants.cursors.NONE });
   doubleClickZoom.enable(this);
   this.activateUIButton();
@@ -85,11 +90,11 @@ DrawPolygon.onStop = function (state) {
   // check to see if we've deleted this feature
   if (this.getFeature(state.polygon.id) === undefined) return;
   //remove last added coordinate
+
   state.polygon.removeCoordinate(`0.${state.currentVertexPosition}`);
+  if (typeof cb === 'function') return cb(state);
   if (state.polygon.isValid()) {
-    this.map.fire(Constants.events.CREATE, {
-      features: [state.polygon.toGeoJSON()],
-    });
+    this.map.fire(Constants.events.CREATE, { features: [state.polygon.toGeoJSON()] });
   } else {
     this.deleteFeature([state.polygon.id], { silent: true });
     // this.changeMode(Constants.modes.SIMPLE_SELECT, {}, { silent: true });

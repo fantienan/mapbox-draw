@@ -24,11 +24,11 @@ export default function Store(ctx) {
 
   // Deduplicate requests to render and tie them to animation frames.
   let renderRequest;
-  this.render = () => {
+  this.render = (e) => {
     if (!renderRequest) {
       renderRequest = requestAnimationFrame(() => {
         renderRequest = null;
-        render.call(this);
+        render.call(this, e);
       });
     }
   };
@@ -369,5 +369,10 @@ Store.prototype.emitCallbacks = function (e) {
 Store.prototype.afterRender = function (cb, render) {
   if (typeof cb === 'function') this._emitCallbacks.push(cb);
   if (render) this.render();
+};
+
+Store.prototype.beforeRender = function (cb) {
+  if (typeof cb === 'function') cb();
+  this.render();
 };
 // extend end

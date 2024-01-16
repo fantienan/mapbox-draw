@@ -1,6 +1,6 @@
 import * as Constants from './constants';
 
-export default function render() {
+export default function render(e) {
   // eslint-disable-next-line no-invalid-this
   const store = this;
   const mapExists = store.ctx.map && store.ctx.map.getSource(Constants.sources.HOT) !== undefined;
@@ -18,10 +18,9 @@ export default function render() {
   } else {
     newHotIds = store.getChangedIds().filter((id) => store.get(id) !== undefined);
     newColdIds = store.sources.hot
-      .filter(
-        (geojson) =>
-          geojson.properties.id && newHotIds.indexOf(geojson.properties.id) === -1 && store.get(geojson.properties.id) !== undefined,
-      )
+      .filter((geojson) => {
+        return geojson.properties.id && newHotIds.indexOf(geojson.properties.id) === -1 && store.get(geojson.properties.id) !== undefined;
+      })
       .map((geojson) => geojson.properties.id);
   }
 
@@ -58,6 +57,23 @@ export default function render() {
     features: store.sources.hot,
   });
 
+  // extend start
+  if (store._emitSelectionChange || !e || e.type !== 'mousemove') {
+    const isSimpleSelectMode = mode === Constants.modes.SIMPLE_SELECT;
+    const isCutMode = mode.includes('cut');
+    const disabled = isSimpleSelectMode
+      ? !store.getSelected().length
+      : isCutMode
+      ? store.ctx.events.getModeInstance().getWaitCutFeatures().length
+      : true;
+    store.ctx.ui.setDisableButtons((buttonStatus) => {
+      buttonStatus.cut_polygon = { disabled };
+      buttonStatus.cut_line = { disabled };
+      return buttonStatus;
+    });
+  }
+  // extend end
+
   if (store._emitSelectionChange) {
     store.ctx.map.fire(Constants.events.SELECTION_CHANGE, {
       features: store.getSelected().map((feature) => feature.toGeoJSON()),
@@ -71,15 +87,6 @@ export default function render() {
       })),
     });
     store._emitSelectionChange = false;
-
-    // extend start
-    const disableButton = !store.getSelected().length || store.ctx.events.getMode().includes('draw_');
-    store.ctx.ui.setDisableButtons((buttonStatus) => {
-      buttonStatus.cut_polygon = { disabled: disableButton };
-      buttonStatus.cut_line = { disabled: disableButton };
-      return buttonStatus;
-    });
-    // extend end
   }
 
   if (store._deletedFeaturesToEmit.length) {
@@ -90,7 +97,6 @@ export default function render() {
 
   cleanup();
   store.ctx.map.fire(Constants.events.RENDER, {});
-
   // extend start
   store.emitCallbacks();
   // extend end

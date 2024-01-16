@@ -52,6 +52,8 @@ declare namespace MapboxDraw {
     SIMPLE_SELECT: 'simple_select';
     DIRECT_SELECT: 'direct_select';
     STATIC: 'static';
+    CUT_POLYGON: 'cut_polygon';
+    CUT_LINE: 'cut_line';
   }
 
   interface MapboxDrawControls {
@@ -746,7 +748,8 @@ declare class MapboxDraw implements IControl {
   changeMode(mode: 'simple_select', options?: { featureIds: string[] }): this;
   changeMode(mode: 'direct_select', options: { featureId: string }): this;
   changeMode(mode: 'draw_line_string', options?: { featureId: string; from: Feature<Point> | Point | number[] }): this;
-  changeMode(mode: Exclude<MapboxDraw.DrawMode, 'direct_select' | 'simple_select' | 'draw_line_string'>): this;
+  changeMode(mode: 'cut_polygon', options?: { featureIds?: string[]; highlightColor?: string; continuous?: boolean }): this;
+  changeMode(mode: Exclude<MapboxDraw.DrawMode, 'direct_select' | 'simple_select' | 'draw_line_string' | 'cut_polygon'>): this;
   changeMode<T extends string>(mode: T & (T extends MapboxDraw.DrawMode ? T : never), options?: object): this;
 
   setFeatureProperty(featureId: string, property: string, value: any): this;

@@ -35,7 +35,7 @@ export default function (modeObject) {
         state = mode.onSetup(startOpts); // this should set ui buttons
         if (ctx.options.measureOptions) {
           const modeName = ctx.api.getMode();
-          if (modeName !== Constants.modes.CUT_DRAW_LINE && modeName !== Constants.modes.CUT_DRAW_POLYGON) {
+          if (modeName !== Constants.modes.CUT_LINE && modeName !== Constants.modes.CUT_POLYGON) {
             mode.setMeasureOptions(ctx.options.measureOptions);
           }
         }

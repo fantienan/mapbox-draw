@@ -193,19 +193,20 @@ ModeInterface.prototype.featuresAt = function (event, bbox, bufferType = 'click'
  * @param {GeoJSONFeature} geojson
  * @returns {DrawFeature}
  */
-ModeInterface.prototype.newFeature = function (geojson) {
+ModeInterface.prototype.newFeature = function (geojson, options = {}) {
   const type = geojson.geometry.type;
+  let feature;
   if (type === Constants.geojsonTypes.POINT) {
-    this.feature = new Point(this._ctx, geojson);
+    feature = new Point(this._ctx, geojson);
   } else if (type === Constants.geojsonTypes.LINE_STRING) {
-    this.feature = new LineString(this._ctx, geojson);
+    feature = new LineString(this._ctx, geojson);
   } else if (type === Constants.geojsonTypes.POLYGON) {
-    this.feature = new Polygon(this._ctx, geojson);
+    feature = new Polygon(this._ctx, geojson);
   } else {
-    this.feature = new MultiFeature(this._ctx, geojson);
+    feature = new MultiFeature(this._ctx, geojson);
   }
-
-  return this.feature;
+  if (options.declareFeature) this.feature = feature;
+  return feature;
 };
 
 /**
@@ -271,6 +272,10 @@ ModeInterface.prototype.isDrawing = function () {
 
 ModeInterface.prototype.afterRender = function (cb, render) {
   this._ctx.store.afterRender(cb, render);
+};
+
+ModeInterface.prototype.beforeRender = function (cb) {
+  this._ctx.store.beforeRender(cb);
 };
 
 ModeInterface.prototype.setMeasureOptions = function (options) {

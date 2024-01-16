@@ -1,6 +1,4 @@
-
-const ModeHandler = function(mode, DrawContext) {
-
+const ModeHandler = function (mode, DrawContext) {
   const handlers = {
     drag: [],
     click: [],
@@ -23,13 +21,12 @@ const ModeHandler = function(mode, DrawContext) {
       }
       handlers[event].push({
         selector,
-        fn
+        fn,
       });
     },
     render(id) {
       DrawContext.store.featureChanged(id);
-
-    }
+    },
   };
 
   const delegate = function (eventName, event) {
@@ -40,7 +37,7 @@ const ModeHandler = function(mode, DrawContext) {
       if (handle.selector(event)) {
         const skipRender = handle.fn.call(ctx, event);
         if (!skipRender) {
-          DrawContext.store.render();
+          DrawContext.store.render(event);
         }
         DrawContext.ui.updateMapClasses();
         // ensure an event is only handled once
@@ -130,7 +127,7 @@ const ModeHandler = function(mode, DrawContext) {
     },
     setMeasureOptions(options) {
       mode.setMeasureOptions(options);
-    }
+    },
 
     // extend end
   };

@@ -1,8 +1,8 @@
 import xtend from 'xtend';
 
 const getDefaultOptions = () => ({
-  unit: {line: 'meters', area: 'meters'},
-  precision: 2
+  unit: { line: 'meters', area: 'meters' },
+  precision: 2,
 });
 
 export class Measure {
@@ -22,11 +22,10 @@ export class Measure {
   }
 
   cancel() {
-    this.markers.forEach(marker => marker.remove());
+    this.markers.forEach((marker) => marker.remove());
     this.markers = [];
     this.enabled = false;
   }
-
   destroy() {
     this.cancel();
   }

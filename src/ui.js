@@ -65,11 +65,11 @@ export default function (ctx) {
       (e) => {
         e.preventDefault();
         e.stopPropagation();
-
         if (typeof options.onClick === 'function') {
           options.onClick();
           return;
         }
+
         const clickedButton = e.target;
         if (clickedButton === activeButton) {
           deactivateButtons();
@@ -230,7 +230,8 @@ export default function (ctx) {
         className: Constants.classes.CONTROL_BUTTON_CUT_LINE,
         title: 'cut line',
         disabled: true,
-        onClick: () => ctx.api.changeMode('cut_line'),
+        onActivate: () => ctx.api.changeMode(Constants.modes.CUT_LINE),
+        onDeactivate: () => ctx.events.trash(),
       });
     }
 
@@ -240,7 +241,8 @@ export default function (ctx) {
         className: Constants.classes.CONTROL_BUTTON_CUT_POLYGON,
         title: 'cut polygon',
         disabled: true,
-        onClick: () => ctx.api.changeMode('cut_polygon'),
+        onDeactivate: () => ctx.events.trash(),
+        onActivate: () => ctx.api.changeMode(Constants.modes.CUT_POLYGON),
       });
     }
 
@@ -260,6 +262,7 @@ export default function (ctx) {
 
   // extend start
   function setDisableButtons(cb) {
+    if (!buttonElements) return;
     const orginStatus = Object.entries(buttonElements).reduce((prev, [k, v]) => {
       prev[k] = { disabled: !!v.disabled };
       return prev;
@@ -267,7 +270,8 @@ export default function (ctx) {
     const status = cb(JSON.parse(JSON.stringify(orginStatus)));
 
     Object.entries(buttonElements).forEach(([buttonId, button]) => {
-      if (typeof status[buttonId].disabled === 'boolean') button.disabled = status[buttonId].disabled;
+      const disabled = status[buttonId].disabled;
+      if (typeof disabled === 'boolean' && disabled !== button.disabled) button.disabled = status[buttonId].disabled;
     });
   }
   // extend end

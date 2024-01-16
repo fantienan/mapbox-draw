@@ -33,6 +33,11 @@ Feature.prototype.getCoordinates = function () {
 
 Feature.prototype.setProperty = function (property, value) {
   this.properties[property] = value;
+  if (value === void 0) delete this.properties[property];
+};
+
+Feature.prototype.getProperty = function (property) {
+  return this.properties[property];
 };
 
 Feature.prototype.toGeoJSON = function () {

@@ -14,7 +14,8 @@ export default function getFeatureAtAndSetCursors(event, ctx) {
     // extend end
   }
 
-  if (ctx.events.currentModeName().indexOf('draw') !== -1) {
+  const modeName = ctx.events.currentModeName();
+  if (modeName.includes('draw') || modeName.includes('cut')) {
     classes.mouse = Constants.cursors.ADD;
   }
 

@@ -3,6 +3,15 @@ import * as turf from '@turf/turf';
 import * as Constants from '../../../constants';
 import { modeName, passingModeName, highlightPropertyName, defaultOptions } from './constants';
 
+const defaultOptions = {
+  highlightColor: '#73d13d',
+  lineWidth: 0,
+  lineWidthUnit: 'kilometers',
+  onSelectFeatureRequest() {
+    throw new Error('no Feature is selected to split.');
+  },
+};
+
 const SplitPolygonMode = {};
 
 SplitPolygonMode.onSetup = function (opt) {
@@ -44,13 +53,9 @@ SplitPolygonMode.onSetup = function (opt) {
     featuresToSplit,
     api,
   };
-
-  /// `onSetup` job should complete for this mode to work.
-  /// so `setTimeout` is used to bupass mode change after `onSetup` is done executing.
-  setTimeout(this.drawAndSplit.bind(this, state), 0);
+  this.afterRender(() => this.drawAndSplit.bind(this, state));
   this.highlighFeatures(state);
-
-  return state;
+  return this.setState(state);
 };
 
 SplitPolygonMode.drawAndSplit = function (state) {
@@ -178,4 +183,12 @@ function polygonCutWithSpacing(poly, line, options) {
   }
 
   return clipped;
+}
+
+export function getCutLineMode(modes) {
+  return {
+    ...SelectFeatureMode(modes),
+    [passingModeName]: passing_draw_line_string,
+    [modeName]: splitPolygonMode,
+  };
 }

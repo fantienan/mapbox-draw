@@ -5,14 +5,17 @@ import { mapFireAddPoint } from '../extend';
 const DrawPoint = {};
 
 DrawPoint.onSetup = function () {
-  const point = this.newFeature({
-    type: Constants.geojsonTypes.FEATURE,
-    properties: {},
-    geometry: {
-      type: Constants.geojsonTypes.POINT,
-      coordinates: [],
+  const point = this.newFeature(
+    {
+      type: Constants.geojsonTypes.FEATURE,
+      properties: {},
+      geometry: {
+        type: Constants.geojsonTypes.POINT,
+        coordinates: [],
+      },
     },
-  });
+    { declareFeature: true },
+  );
 
   this.addFeature(point);
 
