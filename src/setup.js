@@ -110,7 +110,7 @@ export default function (ctx) {
         ctx.map.addLayer(style);
       });
 
-      ctx.store.setDirty(true);
+      ctx.store.setDirty();
       ctx.store.render();
     },
     // Check for layers and sources before attempting to remove

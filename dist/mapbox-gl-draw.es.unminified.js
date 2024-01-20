@@ -560,30 +560,6 @@ function featuresAt$1(event, bbox, ctx, buffer) {
   return sortFeatures(uniqueFeatures);
 }
 
-var immutable = extend;
-
-var hasOwnProperty$1 = Object.prototype.hasOwnProperty;
-
-function extend() {
-    var arguments$1 = arguments;
-
-    var target = {};
-
-    for (var i = 0; i < arguments.length; i++) {
-        var source = arguments$1[i];
-
-        for (var key in source) {
-            if (hasOwnProperty$1.call(source, key)) {
-                target[key] = source[key];
-            }
-        }
-    }
-
-    return target
-}
-
-var xtend = /*@__PURE__*/getDefaultExportFromCjs(immutable);
-
 var icon1 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAApCAYAAAAmukmKAAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyZpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMTQ1IDc5LjE2MzQ5OSwgMjAxOC8wOC8xMy0xNjo0MDoyMiAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTkgKFdpbmRvd3MpIiB4bXBNTTpJbnN0YW5jZUlEPSJ4bXAuaWlkOkQ4MDgwMUNENTg0ODExRUVBNjUwODMyMzhEQjFEMDY2IiB4bXBNTTpEb2N1bWVudElEPSJ4bXAuZGlkOkQ4MDgwMUNFNTg0ODExRUVBNjUwODMyMzhEQjFEMDY2Ij4gPHhtcE1NOkRlcml2ZWRGcm9tIHN0UmVmOmluc3RhbmNlSUQ9InhtcC5paWQ6RDgwODAxQ0I1ODQ4MTFFRUE2NTA4MzIzOERCMUQwNjYiIHN0UmVmOmRvY3VtZW50SUQ9InhtcC5kaWQ6RDgwODAxQ0M1ODQ4MTFFRUE2NTA4MzIzOERCMUQwNjYiLz4gPC9yZGY6RGVzY3JpcHRpb24+IDwvcmRmOlJERj4gPC94OnhtcG1ldGE+IDw/eHBhY2tldCBlbmQ9InIiPz5YUW5BAAAD0UlEQVR42uyXWUwTURRA70xbptQCATW2QllEFlkEoxGi4o+iBkQNJiSIcfnwR+VLY2IixESMS2L8MfEPl2iMGCNLJO5GiUZMRDbZoyCr7KVQW7qM97ZIgtCZAYv+cJOX6bx355zO65t5t4w9LgOEgq0qYPGQhC1VI1duDue8wrxlCm8aG7FZRprMhuYeq+ktnj7GVoY8uxCPcSVEkRwPh1cpvXMO+Abrdvv4QyTnNWNug9kARfpOuD3U2l5vGsnDrnzkWiULURatU6jundVEx6IMZAwDUsLG83BnqA1ye2pr2y3GTGTXigpRtmuHl+b+rcAE5VI5B3OJPqsZDn4vNz8x9GQgv3gK/09Zlm/Qo+KQpDnLKOhaZHD7kUXMGYU4EJPirS24qVvPyiVOoVAQ4wayUpFJ7ClCWiD4m91HGSdzg+x3EOumLoEL9FAVTCzCyTs8cl4bG7XkL6bRVSyWe0CeJnYVORyLhqQxSp+OyohtWhYYmI+wAw/xjc+6a036ALrNLQf8gqXJgrTAZKUAxIY5z2uagb9bCtDWLfzyQDY5TnVVbZXhefY1/7WJdOuCkZwIzPUzAHHhuAx9nS06FJj0LSjsAvjaIbJylXCtv3mADVB4bgrj1MKygGXA5B0D4BTTx7CPOXfUkSMU5PBXeG5kQzzUK8VmksnYhmCBGVByzhyRCPVQh7E+MoVaNDMiGNyRgy99NcsDbxfNtFrBHTnkYges48OiiRX14I4ccrGNZkM9PSeCUfAc4MeA63EaoxyRZ5Fc7JBt/E2FcUhYaBgDPvsSQGfv9DHs47MvOnKEghzkoge/8KG+I3edyk9Y2tQGfPoJgO0bgIle4ZzGL18Bnr4HMI+LTic66FDk2A91dSWVjZEpcSpWNi+vNqPdBhENpVXtUWnxjpd3p+VnztW+JpivIDY5JncLvMuSy731j+tMI26XYY0DyC4lx5QN2GC3Ht7X9uFHP5YH7gpiZSIT2Yem7fj4DfqqTcPJO7+V6fvcICUGsYhJ7BlrGhyo+WgcTExqedVabhyYswwZQAxiEdNlETUhbcDiNm5zy+v8450VPP7YkkWUS9egLJ8YxJJcCE/UOms8WdnpFC/tnjSf5YqNi5ZAsGLRZJ1KdWirZQzejfVDib7LgmVh4ZjdegGZn2ddef8hprcC7rSQoGRkWcbVezXUr6p+2GPibXfxYzm2l8gaFK3mJNUkTtADaiiPpP8Z1I+yTzh2clblIwKkF0Ou/4dIZrDwj2NBuCBcEP5/oXwO14xiUTnqqGudx3kXXklsfrH89+fZXvxLgAEAlgiiMDyIpU8AAAAASUVORK5CYII=";
 var icon2 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAB4AAAAiCAYAAABIiGl0AAAFVklEQVRYhZ1XfWxTVRT/vdfRbiN10cCqMAdqZzL52CKICH84YehIRf/QFcYWh/9IggIKfiQmwkIiCUJQIJCIkpHAlkj0rzHCx5QZI9OB+7CWOcYmllUZlhIt3dqtfdec9t55+/r6gTc5eR/3nN/v3XvOPec8hTGGdENRFEWaViSRB5NEjLTAOakmJEKVk6mSiA+ARKhJIp6R6gOSiCVCQWbievLVpCOOconorpoEnfgBtNVCpJUQsBlAPoACANPLy8tnd3d3v+n3+0+Hw+FhTdPGo9FoMBQKDdI7miMd0uU2+RzDZOSeSR9LKxUrmsIN8wYGBjbYZ81+H1//CJy/BPT9BvhuA1NygML7gIeLgGcWAsufxNXfr+0sKSk5BGAMwDiACWlHJleuJ1b5dhKhpampaUFFRcWrM9ye1Th0Arg+kiok4uNBG7DBiT/mFH/R3t7eWFtb+xOAMP+ACP7zf5yYkyoSae7evXvnvLV5czvbdRT4qi09oX68VAnlvXX4eN++ii1btrgBhCTyWDDKxMKvuQCsHo/no6Ivv3Wy4613Ryp8WOfA8MtPnyguLn4XQEAipy1nqrTFwq95/f39W4v6hp3s2EmKvv8lZFt0+bqTsAiTY5vE8ZSj2EKRWFZWVtjTefGX6PMbgb9uJy+l+AGom9ZCWTwv9sh+cEHb3wx4/kzWnX4vTCcPoHzRE3N7e3tvAhjlPo+qXEWs2Hzw4MEX2NkOsBE/mMYShEhNxz+EsnwRMDUvJnRP72hOrx/DONsBwpSOlgpdVooFlt1uX6F905lwvoUoG2sA69TklVmnxuaMbAiLMDlxjuDM0WWoKVar1a5d8cAoh6uL56cMJnVJGSIGNpp7EAUFBaV6H4uUKfxsslgs0yI3fQDTkkAy5H0wAxt28xbMZvM0XapVVF3FUXkWTfaXxhDt+DklafT7HkObWGzER0LqVPUAoVDoFkWjkb8mPjkOFggmryoQjM8Z2BBWOBz26W1UfVnz+/2DyqOzwDQtSbSrHoSr30aUoj44FhO6p3c0Z2SjzLXD5/P9KhKH8Jfwsailka6urvOOZ5+qiJz6znhLh4YRfWNnGk8nDtOKxeju7m6XCkU8ZfJVixJ4j81mu//G8HDHaOV6aN4MRSHDUGfakH/uUxQ9NHuJ1+ulDPMPTyLjqrTNlMAnRkZG7lzo7Dxs/uC1uJ8Mti8rYQyEceFi52Gv1xvg5XGyQong0vg2UDobW7p06ZG+wvxT5o1rDQMmGyFbwiAsXpvDclcitzCKnMmGhoaurTuwaw0LhRG55L6rLbasr0bu1ldQX1//zuDg4A0Ad3TVCSqLpyjRN01wheCZM2eu1dbV1fU99/g5y+trUp5RvZAu2ZAtYRAWx5yQg0tu9oSfx3kAmJqbm/sCgUBjQ0ODUgpUhqgKpRm5m9bi8rL5bQ3btze2tLT08zo8qutAYiNGTKvmLZdY9WQ2a2lpuaJp2pEdO3aglKFybH+TIXPe5jr0LZvXtm3btiOtra0DAP6WtnhCf46NOswcXputAGwA7AAWOhyONV1dXWdHdzeyWzOXJ8jonqOM5lauXLmadLmNjWNYOGZip5mivTUiX+BwOKp7enpOB3c3Mt+MZTGhe3pXVVVVTTpZkeqJM5A/AqB81apVL7rd7pNEGNxzlNE9vaM5rpOZ1Ig4DXkhAGrYH6upqVnhcrk+d7lcnzmdzkoApXyuMCtSua9Omkhu8M0c0Cy1MSIgx7mEpbOa0MBnTWxArvIuIkfunaSsF+HRq2UizUisI9f/LcrE+r/FtKRZEevIY48pflOz/jfOmjjNR8gjeyAA/wLyQavmRr/R2AAAAABJRU5ErkJggg==";
 var icon3 = "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAADMAAABRCAYAAAB/nZ57AAAAGXRFWHRTb2Z0d2FyZQBBZG9iZSBJbWFnZVJlYWR5ccllPAAAAyZpVFh0WE1MOmNvbS5hZG9iZS54bXAAAAAAADw/eHBhY2tldCBiZWdpbj0i77u/IiBpZD0iVzVNME1wQ2VoaUh6cmVTek5UY3prYzlkIj8+IDx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDUuNi1jMTQ1IDc5LjE2MzQ5OSwgMjAxOC8wOC8xMy0xNjo0MDoyMiAgICAgICAgIj4gPHJkZjpSREYgeG1sbnM6cmRmPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5LzAyLzIyLXJkZi1zeW50YXgtbnMjIj4gPHJkZjpEZXNjcmlwdGlvbiByZGY6YWJvdXQ9IiIgeG1sbnM6eG1wPSJodHRwOi8vbnMuYWRvYmUuY29tL3hhcC8xLjAvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtcDpDcmVhdG9yVG9vbD0iQWRvYmUgUGhvdG9zaG9wIENDIDIwMTkgKFdpbmRvd3MpIiB4bXBNTTpJbnN0YW5jZUlEPSJ4bXAuaWlkOkVEMzUxQkYyNUNDQzExRUVBNEM2QTgxMTYxRUNEMEIxIiB4bXBNTTpEb2N1bWVudElEPSJ4bXAuZGlkOkVEMzUxQkYzNUNDQzExRUVBNEM2QTgxMTYxRUNEMEIxIj4gPHhtcE1NOkRlcml2ZWRGcm9tIHN0UmVmOmluc3RhbmNlSUQ9InhtcC5paWQ6RUQzNTFCRjA1Q0NDMTFFRUE0QzZBODExNjFFQ0QwQjEiIHN0UmVmOmRvY3VtZW50SUQ9InhtcC5kaWQ6RUQzNTFCRjE1Q0NDMTFFRUE0QzZBODExNjFFQ0QwQjEiLz4gPC9yZGY6RGVzY3JpcHRpb24+IDwvcmRmOlJERj4gPC94OnhtcG1ldGE+IDw/eHBhY2tldCBlbmQ9InIiPz4I43SmAAAIDUlEQVR42uxb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";
@@ -761,6 +737,8 @@ function loadIconImageByTheme(map) {
   batchLoadImages(map, [Object.assign({}, icon1$1), Object.assign({}, icon2$1), Object.assign({}, icon3$1)]);
 }
 
+function objectWithoutProperties$2 (obj, exclude) { var target = {}; for (var k in obj) if (Object.prototype.hasOwnProperty.call(obj, k) && exclude.indexOf(k) === -1) target[k] = obj[k]; return target; }
+
 var RedoUndo = function RedoUndo(options) {
   this._modeInstance = options.modeInstance;
   this._ctx = options.ctx;
@@ -783,7 +761,7 @@ RedoUndo.prototype._unbindEvent = function _unbindEvent () {
 RedoUndo.prototype._drawAddPointEvent = function _drawAddPointEvent () {
   this.undoStack = [];
   this.redoStack = [];
-  this.fireChange({ type: 'clear' });
+  this.fireChange({ type: 'add' });
 };
 
 RedoUndo.prototype._fireChangeAndRender = function _fireChangeAndRender (eventData) {
@@ -792,19 +770,22 @@ RedoUndo.prototype._fireChangeAndRender = function _fireChangeAndRender (eventDa
   this._modeInstance.afterRender(function () { return this$1$1.fireChange(eventData); }, true);
 };
 
-RedoUndo.prototype.fireChange = function fireChange (eventData) {
+RedoUndo.prototype.fireChange = function fireChange (ref) {
+    var cb = ref.cb;
+    var rest = objectWithoutProperties$2( ref, ["cb"] );
+    var eventData = rest;
+
   var undoStack = this.undoStack;
   var modeName = this._api.getMode();
   var modes = modes$1;
-  if (modeName === modes.DRAW_LINE_STRING || modeName === modes.CUT_LINE) {
+  if (modeName === modes.DRAW_LINE_STRING) {
     undoStack = this._modeInstance.feature.getCoordinates();
     undoStack.pop();
-  } else if (modeName === modes.DRAW_POLYGON || modeName === modes.CUT_POLYGON) {
+  } else if (modeName === modes.DRAW_POLYGON) {
     undoStack = this._modeInstance.feature.getCoordinates()[0] || [];
     if (undoStack.length < 3) { undoStack = []; }
   }
-
-  var e = xtend(eventData, { undoStack: undoStack, redoStack: this.redoStack });
+  var e = JSON.parse(JSON.stringify(Object.assign({}, eventData, {undoStack: undoStack, redoStack: this.redoStack})));
   this._ctx.ui.setDisableButtons(function (buttonStatus) {
     buttonStatus.undo = { disabled: e.undoStack.length === 0 };
     buttonStatus.redo = { disabled: e.redoStack.length === 0 };
@@ -812,12 +793,13 @@ RedoUndo.prototype.fireChange = function fireChange (eventData) {
   });
 
   mapFireRedoUndo(this._modeInstance, JSON.parse(JSON.stringify(e)));
-  if (typeof eventData.cb === 'function') { eventData.cb(); }
+  typeof cb === 'function' && cb();
 };
 
-RedoUndo.prototype.undo = function undo (e) {
+RedoUndo.prototype.undo = function undo (cb) {
     var assign, assign$1;
 
+    if ( cb === void 0 ) cb = function () {};
   var coord = null;
   var state = this._modeInstance.getState();
   var pos = state.currentVertexPosition - 1;
@@ -830,27 +812,26 @@ RedoUndo.prototype.undo = function undo (e) {
 
   if (coord) {
     state.currentVertexPosition--;
+    if (state.currentVertexPosition < 0) { return; }
     this.redoStack.push(coord);
-    this._fireChangeAndRender(Object.assign({}, {type: 'undo'}, e));
+    console.log(this.redoStack);
+
+    this._fireChangeAndRender({ type: 'undo', cb: cb });
   }
 };
 
-RedoUndo.prototype.redo = function redo (e) {
+RedoUndo.prototype.redo = function redo (cb) {
+    if ( cb === void 0 ) cb = function () {};
+
   var state = this._modeInstance.getState();
   var coord = this.redoStack.pop();
-  var res = { coord: coord, redoStack: this.redoStack };
-  if (!coord) {
-    typeof e.cb === 'function' && e.cb(res);
-    return res;
-  }
+  if (!coord) { return; }
   if (state.line) {
     state.line.addCoordinate(state.currentVertexPosition++, coord[0], coord[1]);
   } else if (state.polygon) {
     state.polygon.addCoordinate(("0." + (state.currentVertexPosition++)), coord[0], coord[1]);
   }
-  this._fireChangeAndRender(Object.assign({}, {type: 'redo'}, e, {cb: function () { return typeof e.cb === 'function' && e.cb(res); }}));
-
-  return res;
+  this._fireChangeAndRender({ type: 'redo', cb: cb });
 };
 
 RedoUndo.prototype.destroy = function destroy () {
@@ -861,6 +842,135 @@ RedoUndo.prototype.destroy = function destroy () {
 RedoUndo.prototype.reset = function reset () {
   this.undoStack = [];
   this.redoStack = [];
+};
+
+function objectWithoutProperties$1 (obj, exclude) { var target = {}; for (var k in obj) if (Object.prototype.hasOwnProperty.call(obj, k) && exclude.indexOf(k) === -1) target[k] = obj[k]; return target; }
+
+var RedoUndoCut = function RedoUndoCut(options) {
+  this._modeInstance = options.modeInstance;
+  this._ctx = options.ctx;
+  this._api = options.ctx.api;
+  this.undoStack = [];
+  this.redoStack = [];
+  this._addPointEvent = this._drawAddPointEvent.bind(this);
+  this._bindEvent();
+};
+
+RedoUndoCut.prototype._bindEvent = function _bindEvent () {
+  this._unbindEvent();
+  this._ctx.map.on(events$1.ADD_POINT, this._addPointEvent);
+};
+
+RedoUndoCut.prototype._unbindEvent = function _unbindEvent () {
+  this._ctx.map.off(events$1.ADD_POINT, this._addPointEvent);
+};
+
+RedoUndoCut.prototype._drawAddPointEvent = function _drawAddPointEvent (e) {
+  this.redoStack = [];
+  var coord = e.data.e.lngLat.toArray();
+  this.undoStack.push(coord);
+  if (this.undoStack.length === 1) { this.undoStack.push(coord); }
+
+  this._fireChange({ type: 'add' });
+};
+
+RedoUndoCut.prototype._fireChangeAndRender = function _fireChangeAndRender (eventData) {
+    var this$1$1 = this;
+
+  this._modeInstance.afterRender(function () { return this$1$1._fireChange(eventData); }, true);
+};
+
+RedoUndoCut.prototype._genStacks = function _genStacks (stacks) {
+  return stacks.map(function (v) { return ({ type: Array.isArray(v) ? 'draw' : 'cut', stack: v }); });
+};
+
+RedoUndoCut.prototype._fireChange = function _fireChange (ref) {
+    var cb = ref.cb;
+    var rest = objectWithoutProperties$1( ref, ["cb"] );
+    var eventData = rest;
+
+  var e = JSON.parse(
+    JSON.stringify(Object.assign({}, eventData, {undoStack: this._genStacks(this.undoStack), redoStack: this._genStacks(this.redoStack)}))
+  );
+  this._ctx.ui.setDisableButtons(function (buttonStatus) {
+    buttonStatus.undo = { disabled: e.undoStack.length === 0 };
+    buttonStatus.redo = { disabled: e.redoStack.length === 0 };
+    return buttonStatus;
+  });
+
+  mapFireRedoUndo(this._modeInstance, JSON.parse(JSON.stringify(e)));
+  typeof cb === 'function' && cb();
+};
+
+RedoUndoCut.prototype.setRedoUndoStack = function setRedoUndoStack (cb) {
+  var ref = cb({ undoStack: this.undoStack, redoStack: this.redoStack });
+    var undoStack = ref.undoStack;
+    var redoStack = ref.redoStack;
+  if (Array.isArray(undoStack)) { this.undoStack = JSON.parse(JSON.stringify(undoStack)); }
+  if (Array.isArray(redoStack)) { this.redoStack = JSON.parse(JSON.stringify(redoStack)); }
+  this._fireChangeAndRender({ type: 'cut' });
+};
+
+RedoUndoCut.prototype.undo = function undo (cb) {
+    var assign, assign$1;
+
+    if ( cb === void 0 ) cb = function () {};
+  var coord = null;
+  var state = this._modeInstance.getState();
+  var pos = state.currentVertexPosition - 1;
+  var position = Math.max(0, pos);
+  var stack = this.undoStack.pop();
+  if (Array.isArray(stack)) {
+    if (state.line) {
+      (assign = state.line.removeCoordinate(("" + position)), coord = assign[0]);
+    } else if (state.polygon) {
+      (assign$1 = state.polygon.removeCoordinate(("0." + position), true), coord = assign$1[0]);
+    }
+
+    if (coord) {
+      if (state.currentVertexPosition === 0) { return; }
+      state.currentVertexPosition--;
+      this.redoStack.push(coord);
+      this._fireChangeAndRender({ type: 'undo', cb: cb });
+    }
+  }
+
+  return this._genStacks([stack])[0];
+};
+
+RedoUndoCut.prototype.redo = function redo (cb) {
+    if ( cb === void 0 ) cb = function () {};
+
+  var state = this._modeInstance.getState();
+  var coord = this.redoStack.pop();
+  if (Array.isArray(coord)) {
+    if (state.line) {
+      state.line.addCoordinate(state.currentVertexPosition++, coord[0], coord[1]);
+    } else if (state.polygon) {
+      if (state.polygon.coordinates[0].length === 0) {
+        state.polygon.updateCoordinate(("0." + (state.currentVertexPosition)), coord[0], coord[1]);
+      }
+      state.polygon.addCoordinate(("0." + (state.currentVertexPosition++)), coord[0], coord[1]);
+      if (this.undoStack.length === 0) { this.undoStack.push(coord); }
+      this.undoStack.push(coord);
+    }
+    this._fireChangeAndRender({ type: 'redo', cb: cb });
+  }
+  return this._genStacks([coord])[0];
+};
+
+RedoUndoCut.prototype.destroy = function destroy () {
+  this._unbindEvent();
+  this.reset();
+};
+
+RedoUndoCut.prototype.reset = function reset () {
+  this.undoStack = [];
+  this.redoStack = [];
+};
+
+var installRedoUndo = function (options) {
+  return options.ctx.events.getMode().includes('cut') ? new RedoUndoCut(options) : new RedoUndo(options);
 };
 
 var theme1 = [
@@ -1329,6 +1439,30 @@ var theme2 = [
       'icon-offset': ['coalesce', ['get', 'user__edit-point-icon-offset'], [0, 4]],
     },
   } ];
+
+var immutable = extend;
+
+var hasOwnProperty$1 = Object.prototype.hasOwnProperty;
+
+function extend() {
+    var arguments$1 = arguments;
+
+    var target = {};
+
+    for (var i = 0; i < arguments.length; i++) {
+        var source = arguments$1[i];
+
+        for (var key in source) {
+            if (hasOwnProperty$1.call(source, key)) {
+                target[key] = source[key];
+            }
+        }
+    }
+
+    return target
+}
+
+var xtend = /*@__PURE__*/getDefaultExportFromCjs(immutable);
 
 var getDefaultOptions$1 = function () { return ({
   unit: { line: 'meters', area: 'meters' },
@@ -1861,7 +1995,7 @@ function ModeInterface(ctx) {
   // extend start
   this._state = {};
   this.feature = null;
-  this.redoUndo = new RedoUndo({ ctx: ctx, modeInstance: this });
+  this.redoUndo = installRedoUndo({ ctx: ctx, modeInstance: this });
   // extend end
 }
 
@@ -3639,7 +3773,7 @@ function runSetup (ctx) {
         ctx.map.addLayer(style);
       });
 
-      ctx.store.setDirty(true);
+      ctx.store.setDirty();
       ctx.store.render();
     },
     // Check for layers and sources before attempting to remove
@@ -6416,6 +6550,8 @@ CutPolygonMode.onSetup = function (opt) {
 
   this._batchHighlight(features, highlightColor);
   var state = this.originOnSetup({ button: modes$1.CUT_POLYGON });
+  window.state = state;
+  window.p = this;
   return this.setState(state);
 };
 
@@ -6437,30 +6573,15 @@ CutPolygonMode.clickOnVertex = function (state) {
   var this$1$1 = this;
 
   this.originClickOnVertex(state, function () {
-    var geoJson = state.polygon.toGeoJSON();
-    geoJson.geometry.coordinates[0].splice(state.currentVertexPosition, 1);
-    this$1$1._cutEffect(geoJson);
+    var cuttingpolygon = state.polygon.toGeoJSON();
+    cuttingpolygon.geometry.coordinates[0].splice(state.currentVertexPosition, 1);
+    this$1$1._cut(cuttingpolygon);
     if (this$1$1._options.continuous) {
-      state.currentVertexPosition = 0;
-      state.polygon.setCoordinates([[]]);
-      this$1$1.redoUndo.reset();
-      this$1$1._emitRedoUndo({ type: 'clear' });
+      this$1$1._resetState();
     } else {
       this$1$1.deleteFeature([state.polygon.id], { silent: true });
     }
   });
-};
-
-CutPolygonMode._cutEffect = function (geoJson) {
-  this._setRedoUndoStack(function (ref) {
-    var undoStack = ref.undoStack;
-
-    return ({
-    undoStack: undoStack.concat( [{ geoJson: geoJson, type: 'draw' }]),
-  });
-  });
-
-  this._cut(geoJson);
 };
 
 CutPolygonMode.onTrash = function (state) {
@@ -6482,87 +6603,51 @@ CutPolygonMode.getWaitCutFeatures = function () {
 CutPolygonMode.undo = function () {
   var this$1$1 = this;
 
-  var state = this.getState();
-  if (this._undoType === 'draw') {
-    this._redoType = 'draw';
-    if (state.currentVertexPosition !== 0) {
-      return this.redoUndo.undo({
-        cb: function () {
-          if (state.currentVertexPosition === 0) { this$1$1._setButtonStatus(); }
-        },
-      });
-    }
-  }
+  var ref = this.redoUndo.undo() || {};
+  var type = ref.type;
+  var stack = ref.stack;
+  if (type !== 'cut') { return; }
 
-  var stacks = this._undoStack.splice(-2);
-  this._undoType = (stacks[0] || {}).type;
-  if (stacks.length < 2) { return; }
   this.beforeRender(function () {
-    stacks.forEach(function (stack) {
-      if (stack.type === 'cut') {
-        stack.collection.forEach(function (item) {
-          var combine = turf.combine(item.difference);
-          var nuion = turf.union(item.intersect, combine.features[0]);
-          var nuionFeature = this$1$1.newFeature(nuion);
-          var ref = item.difference.features;
-          var f = ref[0];
-          var rest = ref.slice(1);
-          nuionFeature.id = f.id;
-          item.difference.features.forEach(function (f) { return this$1$1._ctx.store.get(f.id).measure.delete(); });
-          rest.forEach(function (v) { return this$1$1.deleteFeature(v.id); });
-          this$1$1.addFeature(nuionFeature);
-          this$1$1._execMeasure(nuionFeature);
-          this$1$1._setHighlight(nuionFeature.id, this$1$1._options.highlightColor);
-        });
-        this$1$1._redoStack.push({ type: 'cut', cuttingpolygon: stack.cuttingpolygon });
-      } else if (stack.type === 'draw') {
-        state.currentVertexPosition = stack.geoJson.geometry.coordinates[0].length - 1;
-        state.polygon.setCoordinates(stack.geoJson.geometry.coordinates);
-        this$1$1._redoStack.push({ type: 'draw', geoJson: stack.geoJson });
-      }
+    var state = this$1$1.getState();
+    var redoStack = { geoJson: stack.geoJson };
+    stack.collection.forEach(function (item) {
+      var combine = turf.combine(item.difference);
+      var nuion = turf.union(item.intersect, combine.features[0]);
+      var nuionFeature = this$1$1.newFeature(nuion);
+      var ref = item.difference.features;
+      var f = ref[0];
+      var rest = ref.slice(1);
+      nuionFeature.id = f.id;
+      item.difference.features.forEach(function (f) { return this$1$1._ctx.store.get(f.id).measure.delete(); });
+      rest.forEach(function (v) { return this$1$1.deleteFeature(v.id); });
+      this$1$1.addFeature(nuionFeature);
+      this$1$1._execMeasure(nuionFeature);
+      this$1$1._setHighlight(nuionFeature.id, this$1$1._options.highlightColor);
+    });
+    state.currentVertexPosition = stack.geoJson.geometry.coordinates[0].length - 1;
+    state.polygon.setCoordinates(stack.geoJson.geometry.coordinates);
+    this$1$1.redoUndo.setRedoUndoStack(function (ref) {
+      var r = ref.redoStack;
+
+      return ({ redoStack: r.concat( [redoStack]) });
     });
     this$1$1._updateFeatures();
-    this$1$1._setButtonStatus({ undo: false, redo: false });
   });
 };
 
 CutPolygonMode.redo = function () {
   var this$1$1 = this;
 
-  var state = this.getState();
-  if (this._redoType === 'draw') {
-    this._undoType = 'draw';
-    var res = this.redoUndo.redo({
-      cb: function (r) {
-        if (!r.redoStack.length) { this$1$1._setButtonStatus({ undo: false }); }
-      },
-    });
-    if (res.coord) { return; }
-  }
-  var stacks = this._redoStack.splice(-2);
-  this._redoType = (stacks[0] || {}).type;
-  if (stacks.length < 2) { return; }
+  var res = this.redoUndo.redo() || {};
+  var type = res.type;
+  var stack = res.stack;
+  if (type !== 'cut') { return; }
 
   this.beforeRender(function () {
-    stacks.forEach(function (stack) {
-      if (stack.type === 'cut') {
-        this$1$1._cutEffect(stack.cuttingpolygon, stack.cuttingpolygon.geometry.coordinates[0].length - 1);
-
-        state.currentVertexPosition = 0;
-        state.polygon.setCoordinates([[]]);
-        this$1$1._setButtonStatus({ undo: false, redo: false });
-      } else if (stack.type === 'draw') {
-        state.currentVertexPosition = stack.geoJson.geometry.coordinates[0].length - 1;
-        state.polygon.setCoordinates(stack.geoJson.geometry.coordinates);
-      }
-    });
+    this$1$1._cut(stack.geoJson);
+    this$1$1._resetState();
   });
-};
-
-CutPolygonMode._emitRedoUndo = function (event) {
-  var e = xtend({ undoStack: this._undoStack, redoStack: this._redoStack }, event);
-  this._setButtonStatus();
-  mapFireRedoUndo(this._ctx.events.getModeInstance(), JSON.parse(JSON.stringify(e)));
 };
 
 CutPolygonMode._setButtonStatus = function (params) {
@@ -6596,7 +6681,7 @@ CutPolygonMode._cut = function (cuttingpolygon) {
   var api = ref.api;
   var ref$1 = this._options;
   var highlightColor = ref$1.highlightColor;
-  var stack = { type: 'cut', cuttingpolygon: JSON.parse(JSON.stringify(cuttingpolygon)), collection: [] };
+  var undoStack = { geoJson: cuttingpolygon, collection: [] };
   this._features.forEach(function (feature) {
     if (feature.geometry.type === geojsonTypes.POLYGON || feature.geometry.type === geojsonTypes.MULTI_POLYGON) {
       var afterCut = turf.difference(feature, cuttingpolygon);
@@ -6625,17 +6710,17 @@ CutPolygonMode._cut = function (cuttingpolygon) {
         this$1$1._continuous(function () { return this$1$1._setHighlight(newFeature.id, highlightColor); });
         if (item.intersect) { item.difference = turf.featureCollection([newFeature.toGeoJSON()]); }
       }
-      if (item.intersect && item.difference) { stack.collection.push(item); }
+      if (item.intersect && item.difference) { undoStack.collection.push(item); }
     } else {
       console.info('The feature is not Polygon/MultiPolygon!');
     }
   });
+  this.redoUndo.setRedoUndoStack(function (ref) {
+    var u = ref.undoStack;
 
-  this._setRedoUndoStack(function (ref) {
-    var undoStack = ref.undoStack;
-
-    return ({ undoStack: undoStack.concat( [stack]) });
+    return ({ undoStack: u.concat( [undoStack]) });
   });
+  store.setDirty();
 };
 
 CutPolygonMode._continuous = function (cb) {
@@ -6665,12 +6750,10 @@ CutPolygonMode._batchHighlight = function (features, color) {
   if (features.length) { features.forEach(function (feature) { return this$1$1._setHighlight(feature.id, color); }); }
 };
 
-CutPolygonMode._setRedoUndoStack = function (cb) {
-  var ref = cb({ undoStack: this._undoStack, redoStack: this._redoStack });
-  var undoStack = ref.undoStack;
-  var redoStack = ref.redoStack;
-  if (Array.isArray(undoStack)) { this._undoStack = undoStack; }
-  if (Array.isArray(redoStack)) { this._redoStack = redoStack; }
+CutPolygonMode._resetState = function (coord) {
+  var state = this.getState();
+  state.currentVertexPosition = 0;
+  state.polygon.setCoordinates([[]]);
 };
 
 function genCutPolygonMode(modes) {

@@ -44,7 +44,7 @@ export default {
   },
   external: ['mapbox-gl', '@turf/turf'],
 
-  treeshake: true,
+  treeshake: !isWatch,
   plugins: [
     replace({
       'process.env.NODE_ENV': "'browser'",

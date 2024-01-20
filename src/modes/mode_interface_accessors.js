@@ -4,7 +4,7 @@ import Point from '../feature_types/point';
 import LineString from '../feature_types/line_string';
 import Polygon from '../feature_types/polygon';
 import MultiFeature from '../feature_types/multi_feature';
-import { RedoUndo } from '../extend';
+import { installRedoUndo } from '../extend';
 
 export default function ModeInterface(ctx) {
   this.map = ctx.map;
@@ -13,7 +13,7 @@ export default function ModeInterface(ctx) {
   // extend start
   this._state = {};
   this.feature = null;
-  this.redoUndo = new RedoUndo({ ctx, modeInstance: this });
+  this.redoUndo = installRedoUndo({ ctx, modeInstance: this });
   // extend end
 }
 

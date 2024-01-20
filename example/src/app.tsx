@@ -150,7 +150,7 @@ function App() {
       });
       _map
         .on('draw.redoUndo', (e) => {
-          console.log('draw.redoUndo', e);
+          // console.log('draw.redoUndo', e);
         })
         .on('draw.onAdd', (e) => {
           console.log('draw.onAdd', e);
