@@ -619,6 +619,8 @@ declare namespace MapboxDraw {
 
     theme2: Array<(FillLayer | LineLayer | CircleLayer) & { id: ThemeLayerId }>;
 
+    theme3: Array<(FillLayer | LineLayer | CircleLayer) & { id: ThemeLayerId }>;
+
     /**
      * Derive a dense array (no `undefined`s) from a single value or array.
      */

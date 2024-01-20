@@ -17,7 +17,7 @@ import sortFeatures from './sort_features';
 import StringSet from './string_set';
 import stringSetsAreEqual from './string_sets_are_equal';
 import theme from './theme';
-import { theme1, theme2 } from '../extend';
+import { theme3 } from '../extend';
 import toDenseArray from './to_dense_array';
 export {
   CommonSelectors,
@@ -39,7 +39,6 @@ export {
   stringSetsAreEqual,
   StringSet,
   theme,
-  theme1,
-  theme2,
+  theme3,
   toDenseArray,
 };

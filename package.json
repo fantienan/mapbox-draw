@@ -1,6 +1,6 @@
 {
   "name": "@ttfn/mapbox-gl-draw",
-  "version": "1.4.2-beta.69",
+  "version": "1.4.2-beta.74",
   "private": false,
   "description": "A drawing component for Mapbox GL JS",
   "keywords": [
@@ -9,7 +9,7 @@
     "draw",
     "drawing"
   ],
-  "homepage": "",
+  "homepage": "http://www.fantienan.com/mapbox-draw",
   "bugs": {
     "url": ""
   },
@@ -21,7 +21,11 @@
   "types": "types/index.d.ts",
   "style": "dist/mapbox-gl-draw.css",
   "files": [
-    "dist/mapbox-gl-draw*",
+    "dist/mapbox-gl-draw.css",
+    "dist/mapbox-gl-draw.umd.min.js",
+    "dist/mapbox-gl-draw.es.min.js",
+    "dist/mapbox-gl-draw.umd.min.js.map",
+    "dist/mapbox-gl-draw.es.min.js.map",
     "types/index.d.ts"
   ],
   "scripts": {

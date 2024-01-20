@@ -22,8 +22,7 @@ function mockFeature(count = 4) {
 
 const themes = [
   { color: '#fbb03b', style: MapboxDraw.lib.theme },
-  { color: '#E1361B', style: MapboxDraw.lib.theme1 },
-  { color: '#42baf3', style: MapboxDraw.lib.theme2 },
+  { color: '#E1361B', style: MapboxDraw.lib.theme3 },
 ];
 
 function App() {
