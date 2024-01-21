@@ -145,6 +145,19 @@ function App() {
               type: 'Polygon',
             },
           },
+          {
+            id: 'dda45baea696705ba81bbb4d1e9bd407',
+            type: 'Feature',
+            properties: {},
+            geometry: {
+              coordinates: [
+                [117.82444133771116, 39.99614847532905],
+                [118.28597127781279, 39.99914478575951],
+                [118.6849208870546, 39.9541863261324],
+              ],
+              type: 'LineString',
+            },
+          },
         ],
       });
       _map

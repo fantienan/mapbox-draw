@@ -133,19 +133,26 @@ SimpleSelect.onMouseOut = function (state) {
 
 SimpleSelect.onTap = SimpleSelect.onClick = function (state, e) {
   // Click (with or without shift) on no feature
-
   // extend start
   if (isStopPropagationClickActiveFeature(this._ctx, e)) return;
+  const selectedFeatures = this.getSelected();
   // extend end
   if (CommonSelectors.noTarget(e)) {
     // extend start
+    if (selectedFeatures.length) this.redoUndo.reset();
     mapFireClickOrOnTab(this, { e, type: 'clickNoTarget' });
     if (isClickNotthingNoChangeMode(this._ctx, e)) return;
     // extend end
     return this.clickAnywhere(state, e); // also tap
   }
   if (CommonSelectors.isOfMetaType(Constants.meta.VERTEX)(e)) return this.clickOnVertex(state, e); //tap
-  if (CommonSelectors.isFeature(e)) return this.clickOnFeature(state, e);
+  if (CommonSelectors.isFeature(e)) {
+    if ((selectedFeatures.length === 1 && selectedFeatures[0].id !== e.featureTarget.properties.id) || selectedFeatures.length) {
+      this.redoUndo.reset();
+    }
+
+    return this.clickOnFeature(state, e);
+  }
 };
 
 SimpleSelect.clickAnywhere = function (state) {

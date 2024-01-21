@@ -79,7 +79,7 @@ export default function (ctx, api) {
     return newIds;
   };
 
-  api.add = function (geojson) {
+  api.add = function (geojson, options = { silent: false }) {
     const featureCollection = JSON.parse(JSON.stringify(normalize(geojson)));
 
     const ids = featureCollection.features.map((feature) => {
@@ -113,8 +113,7 @@ export default function (ctx, api) {
       }
       return feature.id;
     });
-
-    ctx.store.render();
+    if (!options.silent) ctx.store.render();
     return ids;
   };
 

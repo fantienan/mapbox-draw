@@ -2,7 +2,7 @@ import * as turf from '@turf/turf';
 import * as Constants from '../../constants';
 import draw_polygon from '../../modes/draw_polygon';
 import xtend from 'xtend';
-import { mapFireRedoUndo } from '../utils';
+import polygonsplitter from 'polygon-splitter';
 
 const getDefaultOptions = () => ({
   featureIds: [],
@@ -22,25 +22,40 @@ const {
   clickOnVertex: originClickOnVertex,
   onStop: originOnStop,
   onTrash: originOnTrash,
+  onKeyUp: originOnKeyUp,
   ...restOriginMethods
 } = draw_polygon;
 
-const CutPolygonMode = { originOnSetup, originOnMouseMove, originClickOnVertex, originOnStop, originOnTrash, ...restOriginMethods };
+const polyTypes = [Constants.geojsonTypes.POLYGON, Constants.geojsonTypes.MULTI_POLYGON];
+
+const lineTypes = [Constants.geojsonTypes.LINE_STRING, Constants.geojsonTypes.MULTI_LINE_STRING];
+
+const geojsonTypes = [...polyTypes, ...lineTypes];
+
+const CutPolygonMode = {
+  originOnSetup,
+  originOnKeyUp,
+  originOnMouseMove,
+  originClickOnVertex,
+  originOnStop,
+  originOnTrash,
+  ...restOriginMethods,
+};
 
 CutPolygonMode.onSetup = function (opt) {
   const options = xtend(getDefaultOptions(), opt);
   const { highlightColor, featureIds } = options;
+
   let features = [];
   if (featureIds.length) {
     features = featureIds.map((id) => this.getFeature(id).toGeoJSON());
   } else {
     features = this.getSelected().map((f) => f.toGeoJSON());
   }
-  features = features.filter(
-    (f) => f.geometry.type === Constants.geojsonTypes.POLYGON || f.geometry.type === Constants.geojsonTypes.MULTI_POLYGON,
-  );
-  if (features.length < 1) {
-    throw new Error('Please select a feature/features (Polygon or MultiPolygon) to split!');
+
+  features = features.filter((f) => geojsonTypes.includes(f.geometry.type));
+  if (!features.length) {
+    throw new Error('Please select a feature/features (Polygon or MultiPolygon or LineString or MultiLineString) to split!');
   }
   this._features = features;
   this._options = options;
@@ -66,6 +81,11 @@ CutPolygonMode.onStop = function (state) {
     this._cancelCut();
     this.deleteFeature([state.polygon.id], { silent: true });
   });
+};
+
+CutPolygonMode.onKeyUp = function (state, e) {
+  this._cancelCut();
+  this.originOnKeyUp(state, e);
 };
 
 CutPolygonMode.clickOnVertex = function (state) {
@@ -162,19 +182,27 @@ CutPolygonMode._cut = function (cuttingpolygon) {
   const { highlightColor } = this._options;
   const undoStack = { geoJson: cuttingpolygon, collection: [] };
   this._features.forEach((feature) => {
-    if (feature.geometry.type === Constants.geojsonTypes.POLYGON || feature.geometry.type === Constants.geojsonTypes.MULTI_POLYGON) {
+    if (geojsonTypes.includes(feature.geometry.type)) {
+      store.get(feature.id).measure.delete();
+      if (lineTypes.includes(feature.geometry.type)) {
+        const splitter = turf.polygonToLine(cuttingpolygon);
+        const cuted = turf.lineSplit(feature, splitter);
+        cuted.features.sort((a, b) => turf.length(a) - turf.length(b));
+        cuted.features[0].id = feature.id;
+        api.add(cuted).forEach((id, i) => (cuted.features[i].id = id), { silent: true });
+        this._continuous(() => this._batchHighlight(cuted.features, highlightColor));
+        return;
+      }
+
       const afterCut = turf.difference(feature, cuttingpolygon);
       if (!afterCut) return;
       const newFeature = this.newFeature(afterCut);
-      store.get(feature.id).measure.delete();
-      const item = {
-        intersect: turf.intersect(feature, cuttingpolygon),
-      };
+      const item = { intersect: turf.intersect(feature, cuttingpolygon) };
       if (newFeature.features) {
         const [f, ...rest] = newFeature.features.sort((a, b) => turf.area(a) - turf.area(b));
         f.id = feature.id;
         this.addFeature(f);
-        api.add(turf.featureCollection(rest.map((v) => v.toGeoJSON())));
+        api.add(turf.featureCollection(rest.map((v) => v.toGeoJSON())), { silent: true });
         this._execMeasure(f);
         this._continuous(() => this._batchHighlight(newFeature.features, highlightColor));
         if (item.intersect) {

@@ -334,7 +334,7 @@ var types$1 = {
   POINT: 'point',
 };
 
-var geojsonTypes = {
+var geojsonTypes$1 = {
   FEATURE: 'Feature',
   POLYGON: 'Polygon',
   LINE_STRING: 'LineString',
@@ -419,7 +419,7 @@ classes: classes,
 sources: sources,
 cursors: cursors,
 types: types$1,
-geojsonTypes: geojsonTypes,
+geojsonTypes: geojsonTypes$1,
 modes: modes$1,
 events: events$1,
 updateActions: updateActions,
@@ -445,7 +445,7 @@ var FEATURE_SORT_RANKS = {
 function comparator(a, b) {
   var score = FEATURE_SORT_RANKS[a.geometry.type] - FEATURE_SORT_RANKS[b.geometry.type];
 
-  if (score === 0 && a.geometry.type === geojsonTypes.POLYGON) {
+  if (score === 0 && a.geometry.type === geojsonTypes$1.POLYGON) {
     return a.area - b.area;
   }
 
@@ -455,9 +455,9 @@ function comparator(a, b) {
 // Sort in the order above, then sort polygons by area ascending.
 function sortFeatures(features) {
   return features.map(function (feature) {
-    if (feature.geometry.type === geojsonTypes.POLYGON) {
+    if (feature.geometry.type === geojsonTypes$1.POLYGON) {
       feature.area = geojsonArea.geometry({
-        type: geojsonTypes.FEATURE,
+        type: geojsonTypes$1.FEATURE,
         property: {},
         geometry: feature.geometry
       });
@@ -643,7 +643,7 @@ function mapFireAddPoint(modeInstance, eventData) {
  */
 function createLastOrSecondToLastPoint(parentId, coordinates, path, selected, isLast, mode) {
   return {
-    type: geojsonTypes.FEATURE,
+    type: geojsonTypes$1.FEATURE,
     properties: {
       meta: isLast ? meta.LAST_POINT : meta.SECOND_TO_LAST_POINT,
       parent: parentId,
@@ -652,7 +652,7 @@ function createLastOrSecondToLastPoint(parentId, coordinates, path, selected, is
       mode: mode,
     },
     geometry: {
-      type: geojsonTypes.POINT,
+      type: geojsonTypes$1.POINT,
       coordinates: coordinates,
     },
   };
@@ -701,7 +701,7 @@ function isDisabledDragVertexWithSimpleSelectMode(ctx) {
 
 function isDisabledDragVertexUi(ctx, feature, classes) {
   var isSimpleSelect = ctx.api.getMode() === modes$1.SIMPLE_SELECT;
-  var isPoint = feature.geometry.type === geojsonTypes.POINT;
+  var isPoint = feature.geometry.type === geojsonTypes$1.POINT;
   var disabledDragVertex = isDisabledDragVertexWithSimpleSelectMode(ctx);
   var isActive = feature.properties.active === activeStates.ACTIVE;
   if (disabledDragVertex && isSimpleSelect && isPoint) {
@@ -1412,7 +1412,7 @@ Feature.prototype.toGeoJSON = function () {
   return JSON.parse(
     JSON.stringify({
       id: this.id,
-      type: geojsonTypes.FEATURE,
+      type: geojsonTypes$1.FEATURE,
       properties: this.properties,
       geometry: {
         coordinates: this.getCoordinates(),
@@ -1438,7 +1438,7 @@ Feature.prototype.internal = function (mode) {
   }
 
   return {
-    type: geojsonTypes.FEATURE,
+    type: geojsonTypes$1.FEATURE,
     properties: properties,
     geometry: {
       coordinates: this.getCoordinates(),
@@ -1677,7 +1677,7 @@ MultiFeature.prototype._coordinatesToFeatures = function(coordinates) {
   var Model = this.model.bind(this);
   return coordinates.map(function (coords) { return new Model(this$1$1.ctx, {
     id: hat$1(),
-    type: geojsonTypes.FEATURE,
+    type: geojsonTypes$1.FEATURE,
     properties: {},
     geometry: {
       coordinates: coords,
@@ -1701,7 +1701,7 @@ MultiFeature.prototype.getCoordinate = function(path) {
 
 MultiFeature.prototype.getCoordinates = function() {
   return JSON.parse(JSON.stringify(this.features.map(function (f) {
-    if (f.type === geojsonTypes.POLYGON) { return f.getCoordinates(); }
+    if (f.type === geojsonTypes$1.POLYGON) { return f.getCoordinates(); }
     return f.coordinates;
   })));
 };
@@ -1932,11 +1932,11 @@ ModeInterface.prototype.newFeature = function (geojson, options) {
 
   var type = geojson.geometry.type;
   var feature;
-  if (type === geojsonTypes.POINT) {
+  if (type === geojsonTypes$1.POINT) {
     feature = new Point$2(this._ctx, geojson);
-  } else if (type === geojsonTypes.LINE_STRING) {
+  } else if (type === geojsonTypes$1.LINE_STRING) {
     feature = new LineString(this._ctx, geojson);
-  } else if (type === geojsonTypes.POLYGON) {
+  } else if (type === geojsonTypes$1.POLYGON) {
     feature = new Polygon(this._ctx, geojson);
   } else {
     feature = new MultiFeature(this._ctx, geojson);
@@ -1953,9 +1953,9 @@ ModeInterface.prototype.newFeature = function (geojson, options) {
  * @returns {Boolean}
  */
 ModeInterface.prototype.isInstanceOf = function (type, feature) {
-  if (type === geojsonTypes.POINT) { return feature instanceof Point$2; }
-  if (type === geojsonTypes.LINE_STRING) { return feature instanceof LineString; }
-  if (type === geojsonTypes.POLYGON) { return feature instanceof Polygon; }
+  if (type === geojsonTypes$1.POINT) { return feature instanceof Point$2; }
+  if (type === geojsonTypes$1.LINE_STRING) { return feature instanceof LineString; }
+  if (type === geojsonTypes$1.POLYGON) { return feature instanceof Polygon; }
   if (type === 'MultiFeature') { return feature instanceof MultiFeature; }
   throw new Error(("Unknown feature class: " + type));
 };
@@ -2653,13 +2653,13 @@ function render(e) {
 
   if (coldChanged) {
     store.ctx.map.getSource(sources.COLD).setData({
-      type: geojsonTypes.FEATURE_COLLECTION,
+      type: geojsonTypes$1.FEATURE_COLLECTION,
       features: store.sources.cold,
     });
   }
 
   store.ctx.map.getSource(sources.HOT).setData({
-    type: geojsonTypes.FEATURE_COLLECTION,
+    type: geojsonTypes$1.FEATURE_COLLECTION,
     features: store.sources.hot,
   });
 
@@ -2684,10 +2684,10 @@ function render(e) {
     store.ctx.map.fire(events$1.SELECTION_CHANGE, {
       features: store.getSelected().map(function (feature) { return feature.toGeoJSON(); }),
       points: store.getSelectedCoordinates().map(function (coordinate) { return ({
-        type: geojsonTypes.FEATURE,
+        type: geojsonTypes$1.FEATURE,
         properties: {},
         geometry: {
-          type: geojsonTypes.POINT,
+          type: geojsonTypes$1.POINT,
           coordinates: coordinate.coordinates,
         },
       }); }),
@@ -3495,7 +3495,7 @@ function runSetup (ctx) {
       // drawn features style
       ctx.map.addSource(sources.COLD, {
         data: {
-          type: geojsonTypes.FEATURE_COLLECTION,
+          type: geojsonTypes$1.FEATURE_COLLECTION,
           features: [],
         },
         type: 'geojson',
@@ -3504,7 +3504,7 @@ function runSetup (ctx) {
       // hot features style
       ctx.map.addSource(sources.HOT, {
         data: {
-          type: geojsonTypes.FEATURE_COLLECTION,
+          type: geojsonTypes$1.FEATURE_COLLECTION,
           features: [],
         },
         type: 'geojson',
@@ -4146,7 +4146,7 @@ function mouseEventPoint(mouseEvent, container) {
  */
 function createVertex(parentId, coordinates, path, selected, isLast, mode) {
   return {
-    type: geojsonTypes.FEATURE,
+    type: geojsonTypes$1.FEATURE,
     properties: {
       meta: meta.VERTEX,
       parent: parentId,
@@ -4156,7 +4156,7 @@ function createVertex(parentId, coordinates, path, selected, isLast, mode) {
       mode: mode
     },
     geometry: {
-      type: geojsonTypes.POINT,
+      type: geojsonTypes$1.POINT,
       coordinates: coordinates
     }
   };
@@ -4181,7 +4181,7 @@ function createMidpoint(parent, startVertex, endVertex) {
   };
 
   return {
-    type: geojsonTypes.FEATURE,
+    type: geojsonTypes$1.FEATURE,
     properties: {
       meta: meta.MIDPOINT,
       parent: parent,
@@ -4190,7 +4190,7 @@ function createMidpoint(parent, startVertex, endVertex) {
       coord_path: endVertex.properties.coord_path
     },
     geometry: {
-      type: geojsonTypes.POINT,
+      type: geojsonTypes$1.POINT,
       coordinates: [mid.lng, mid.lat]
     }
   };
@@ -4207,18 +4207,18 @@ function createSupplementaryPoints(geojson, options, basePath, mode) {
 
   var supplementaryPoints = [];
 
-  if (type === geojsonTypes.POINT) {
+  if (type === geojsonTypes$1.POINT) {
     // For points, just create a vertex
     supplementaryPoints.push(createVertex(featureId, coordinates, basePath, isSelectedPath(basePath),undefined, mode));
-  } else if (type === geojsonTypes.POLYGON) {
+  } else if (type === geojsonTypes$1.POLYGON) {
     // Cycle through a Polygon's rings and
     // process each line
     coordinates.forEach(function (line, lineIndex) {
       processLine(line, (basePath !== null) ? (basePath + "." + lineIndex) : String(lineIndex));
     });
-  } else if (type === geojsonTypes.LINE_STRING) {
+  } else if (type === geojsonTypes$1.LINE_STRING) {
     processLine(coordinates, basePath);
-  } else if (type.indexOf(geojsonTypes.MULTI_PREFIX) === 0) {
+  } else if (type.indexOf(geojsonTypes$1.MULTI_PREFIX) === 0) {
     processMultiGeometry();
   }
 
@@ -4262,10 +4262,10 @@ function createSupplementaryPoints(geojson, options, basePath, mode) {
   // geometries, and accumulate the supplementary points
   // for each of those constituents
   function processMultiGeometry() {
-    var subType = type.replace(geojsonTypes.MULTI_PREFIX, '');
+    var subType = type.replace(geojsonTypes$1.MULTI_PREFIX, '');
     coordinates.forEach(function (subCoordinates, index) {
       var subFeature = {
-        type: geojsonTypes.FEATURE,
+        type: geojsonTypes$1.FEATURE,
         properties: geojson.properties,
         geometry: {
           type: subType,
@@ -4956,13 +4956,13 @@ function moveFeatures(features, delta, modeInstance) {
     var moveMultiPolygon = function (multi) { return multi.map(function (ring) { return moveRing(ring); }); };
 
     var nextCoordinates;
-    if (feature.type === geojsonTypes.POINT) {
+    if (feature.type === geojsonTypes$1.POINT) {
       nextCoordinates = moveCoordinate(currentCoordinates);
-    } else if (feature.type === geojsonTypes.LINE_STRING || feature.type === geojsonTypes.MULTI_POINT) {
+    } else if (feature.type === geojsonTypes$1.LINE_STRING || feature.type === geojsonTypes$1.MULTI_POINT) {
       nextCoordinates = currentCoordinates.map(moveCoordinate);
-    } else if (feature.type === geojsonTypes.POLYGON || feature.type === geojsonTypes.MULTI_LINE_STRING) {
+    } else if (feature.type === geojsonTypes$1.POLYGON || feature.type === geojsonTypes$1.MULTI_LINE_STRING) {
       nextCoordinates = currentCoordinates.map(moveRing);
-    } else if (feature.type === geojsonTypes.MULTI_POLYGON) {
+    } else if (feature.type === geojsonTypes$1.MULTI_POLYGON) {
       nextCoordinates = currentCoordinates.map(moveMultiPolygon);
     }
 
@@ -5097,19 +5097,26 @@ SimpleSelect.onMouseOut = function (state) {
 
 SimpleSelect.onTap = SimpleSelect.onClick = function (state, e) {
   // Click (with or without shift) on no feature
-
   // extend start
   if (isStopPropagationClickActiveFeature(this._ctx, e)) { return; }
+  var selectedFeatures = this.getSelected();
   // extend end
   if (noTarget(e)) {
     // extend start
+    if (selectedFeatures.length) { this.redoUndo.reset(); }
     mapFireClickOrOnTab(this, { e: e, type: 'clickNoTarget' });
     if (isClickNotthingNoChangeMode(this._ctx)) { return; }
     // extend end
     return this.clickAnywhere(state, e); // also tap
   }
   if (isOfMetaType(meta.VERTEX)(e)) { return this.clickOnVertex(state, e); } //tap
-  if (isFeature(e)) { return this.clickOnFeature(state, e); }
+  if (isFeature(e)) {
+    if ((selectedFeatures.length === 1 && selectedFeatures[0].id !== e.featureTarget.properties.id) || selectedFeatures.length) {
+      this.redoUndo.reset();
+    }
+
+    return this.clickOnFeature(state, e);
+  }
 };
 
 SimpleSelect.clickAnywhere = function (state) {
@@ -5168,7 +5175,7 @@ SimpleSelect.clickOnFeature = function (state, e) {
   var isFeatureSelected = this.isSelected(featureId);
 
   // Click (without shift) on any selected feature but a point
-  if (!isShiftClick && isFeatureSelected && this.getFeature(featureId).type !== geojsonTypes.POINT) {
+  if (!isShiftClick && isFeatureSelected && this.getFeature(featureId).type !== geojsonTypes$1.POINT) {
     // Enter direct select mode
     return this.changeMode(modes$1.DIRECT_SELECT, {
       featureId: featureId,
@@ -5291,7 +5298,7 @@ SimpleSelect.toDisplayFeatures = function (state, geojson, display) {
   geojson.properties.active = this.isSelected(geojson.properties.id) ? activeStates.ACTIVE : activeStates.INACTIVE;
   display(geojson);
   this.fireActionable();
-  if (geojson.properties.active !== activeStates.ACTIVE || geojson.geometry.type === geojsonTypes.POINT) { return; }
+  if (geojson.properties.active !== activeStates.ACTIVE || geojson.geometry.type === geojsonTypes$1.POINT) { return; }
   createSupplementaryPoints(geojson, undefined, undefined, modes$1.SIMPLE_SELECT).forEach(display);
 };
 
@@ -5328,7 +5335,7 @@ SimpleSelect.onCombineFeatures = function () {
 
   if (featuresCombined.length > 1) {
     var multiFeature = this.newFeature({
-      type: geojsonTypes.FEATURE,
+      type: geojsonTypes$1.FEATURE,
       properties: featuresCombined[0].properties,
       geometry: {
         type: ("Multi" + featureType),
@@ -5514,10 +5521,10 @@ DirectSelect.dragVertex = function (state, e, delta) {
   if (isDisabledDragVertexWithTwoFingersZoom(this._ctx, e)) { return; }
   var selectedCoords = state.selectedCoordPaths.map(function (coord_path) { return state.feature.getCoordinate(coord_path); });
   var selectedCoordPoints = selectedCoords.map(function (coords) { return ({
-    type: geojsonTypes.FEATURE,
+    type: geojsonTypes$1.FEATURE,
     properties: {},
     geometry: {
-      type: geojsonTypes.POINT,
+      type: geojsonTypes$1.POINT,
       coordinates: coords,
     },
   }); });
@@ -5557,7 +5564,7 @@ DirectSelect.onSetup = function (opts) {
     throw new Error('You must provide a featureId to enter direct_select mode');
   }
 
-  if (feature.type === geojsonTypes.POINT) {
+  if (feature.type === geojsonTypes$1.POINT) {
     throw new TypeError("direct_select mode doesn't handle point features");
   }
 
@@ -5688,6 +5695,7 @@ DirectSelect.onClick = function (state, e) {
   // extend end
   if (noTarget(e)) {
     // extend start
+    this.redoUndo.reset();
     this.afterRender(function () { return mapFireClickOrOnTab(this$1$1, { e: e, type: 'clickNoTarget' }); });
     if (isClickNotthingNoChangeMode(this._ctx)) {
       return;
@@ -5703,6 +5711,7 @@ DirectSelect.onClick = function (state, e) {
   }
   if (isInactiveFeature(e)) {
     // extend start
+    this.redoUndo.reset();
     this.afterRender(function () { return mapFireClickOrOnTab(this$1$1, { e: e, type: 'clickInactiveFeature' }); });
     // extend end
     return this.clickInactive(state, e);
@@ -5756,6 +5765,7 @@ DirectSelect._reodUndoAdd = function (item) {
   var stack = JSON.parse(JSON.stringify(Object.assign({}, item, {coordinates: this.getState().feature.getCoordinates()})));
   this.redoUndo.undoStack.push(stack);
   this.redoUndo.fireChange({ type: 'add' });
+  console.log('undoStack', this.redoUndo.undoStack);
 };
 
 DirectSelect._redoOrUndo = function (type) {
@@ -5790,10 +5800,10 @@ var DrawPoint = {};
 DrawPoint.onSetup = function () {
   var point = this.newFeature(
     {
-      type: geojsonTypes.FEATURE,
+      type: geojsonTypes$1.FEATURE,
       properties: {},
       geometry: {
-        type: geojsonTypes.POINT,
+        type: geojsonTypes$1.POINT,
         coordinates: [],
       },
     },
@@ -5873,10 +5883,10 @@ DrawPolygon.onSetup = function (opt) {
 
   var polygon = this.newFeature(
     {
-      type: geojsonTypes.FEATURE,
+      type: geojsonTypes$1.FEATURE,
       properties: {},
       geometry: {
-        type: geojsonTypes.POLYGON,
+        type: geojsonTypes$1.POLYGON,
         coordinates: [[]],
       },
     },
@@ -6028,11 +6038,11 @@ DrawPolygon.toDisplayFeatures = function (state, geojson, display) {
       [geojson.geometry.coordinates[0][1][0], geojson.geometry.coordinates[0][1][1]] ];
     // create an initial vertex so that we can track the first point on mobile devices
     display({
-      type: geojsonTypes.FEATURE,
+      type: geojsonTypes$1.FEATURE,
       properties: geojson.properties,
       geometry: {
         coordinates: lineCoordinates,
-        type: geojsonTypes.LINE_STRING,
+        type: geojsonTypes$1.LINE_STRING,
       },
     });
     if (coordinateCount === 3) {
@@ -6095,10 +6105,10 @@ DrawLineString.onSetup = function (opts) {
   } else {
     line = this.newFeature(
       {
-        type: geojsonTypes.FEATURE,
+        type: geojsonTypes$1.FEATURE,
         properties: {},
         geometry: {
-          type: geojsonTypes.LINE_STRING,
+          type: geojsonTypes$1.LINE_STRING,
           coordinates: [],
         },
       },
@@ -6259,10 +6269,23 @@ var originOnMouseMove = DrawPolygon.onMouseMove;
 var originClickOnVertex = DrawPolygon.clickOnVertex;
 var originOnStop = DrawPolygon.onStop;
 var originOnTrash = DrawPolygon.onTrash;
-var rest = objectWithoutProperties( DrawPolygon, ["onSetup", "onMouseMove", "clickOnVertex", "onStop", "onTrash"] );
+var originOnKeyUp = DrawPolygon.onKeyUp;
+var rest = objectWithoutProperties( DrawPolygon, ["onSetup", "onMouseMove", "clickOnVertex", "onStop", "onTrash", "onKeyUp"] );
 var restOriginMethods = rest;
 
-var CutPolygonMode = Object.assign({}, {originOnSetup: originOnSetup, originOnMouseMove: originOnMouseMove, originClickOnVertex: originClickOnVertex, originOnStop: originOnStop, originOnTrash: originOnTrash}, restOriginMethods);
+var polyTypes = [geojsonTypes$1.POLYGON, geojsonTypes$1.MULTI_POLYGON];
+
+var lineTypes = [geojsonTypes$1.LINE_STRING, geojsonTypes$1.MULTI_LINE_STRING];
+
+var geojsonTypes = polyTypes.concat( lineTypes);
+
+var CutPolygonMode = Object.assign({}, {originOnSetup: originOnSetup,
+  originOnKeyUp: originOnKeyUp,
+  originOnMouseMove: originOnMouseMove,
+  originClickOnVertex: originClickOnVertex,
+  originOnStop: originOnStop,
+  originOnTrash: originOnTrash},
+  restOriginMethods);
 
 CutPolygonMode.onSetup = function (opt) {
   var this$1$1 = this;
@@ -6270,17 +6293,17 @@ CutPolygonMode.onSetup = function (opt) {
   var options = xtend(getDefaultOptions(), opt);
   var highlightColor = options.highlightColor;
   var featureIds = options.featureIds;
+
   var features = [];
   if (featureIds.length) {
     features = featureIds.map(function (id) { return this$1$1.getFeature(id).toGeoJSON(); });
   } else {
     features = this.getSelected().map(function (f) { return f.toGeoJSON(); });
   }
-  features = features.filter(
-    function (f) { return f.geometry.type === geojsonTypes.POLYGON || f.geometry.type === geojsonTypes.MULTI_POLYGON; }
-  );
-  if (features.length < 1) {
-    throw new Error('Please select a feature/features (Polygon or MultiPolygon) to split!');
+
+  features = features.filter(function (f) { return geojsonTypes.includes(f.geometry.type); });
+  if (!features.length) {
+    throw new Error('Please select a feature/features (Polygon or MultiPolygon or LineString or MultiLineString) to split!');
   }
   this._features = features;
   this._options = options;
@@ -6308,6 +6331,11 @@ CutPolygonMode.onStop = function (state) {
     this$1$1._cancelCut();
     this$1$1.deleteFeature([state.polygon.id], { silent: true });
   });
+};
+
+CutPolygonMode.onKeyUp = function (state, e) {
+  this._cancelCut();
+  this.originOnKeyUp(state, e);
 };
 
 CutPolygonMode.clickOnVertex = function (state) {
@@ -6424,21 +6452,29 @@ CutPolygonMode._cut = function (cuttingpolygon) {
   var highlightColor = ref$1.highlightColor;
   var undoStack = { geoJson: cuttingpolygon, collection: [] };
   this._features.forEach(function (feature) {
-    if (feature.geometry.type === geojsonTypes.POLYGON || feature.geometry.type === geojsonTypes.MULTI_POLYGON) {
+    if (geojsonTypes.includes(feature.geometry.type)) {
+      store.get(feature.id).measure.delete();
+      if (lineTypes.includes(feature.geometry.type)) {
+        var splitter = turf__namespace.polygonToLine(cuttingpolygon);
+        var cuted = turf__namespace.lineSplit(feature, splitter);
+        cuted.features.sort(function (a, b) { return turf__namespace.length(a) - turf__namespace.length(b); });
+        cuted.features[0].id = feature.id;
+        api.add(cuted).forEach(function (id, i) { return (cuted.features[i].id = id); }, { silent: true });
+        this$1$1._continuous(function () { return this$1$1._batchHighlight(cuted.features, highlightColor); });
+        return;
+      }
+
       var afterCut = turf__namespace.difference(feature, cuttingpolygon);
       if (!afterCut) { return; }
       var newFeature = this$1$1.newFeature(afterCut);
-      store.get(feature.id).measure.delete();
-      var item = {
-        intersect: turf__namespace.intersect(feature, cuttingpolygon),
-      };
+      var item = { intersect: turf__namespace.intersect(feature, cuttingpolygon) };
       if (newFeature.features) {
         var ref = newFeature.features.sort(function (a, b) { return turf__namespace.area(a) - turf__namespace.area(b); });
         var f = ref[0];
         var rest = ref.slice(1);
         f.id = feature.id;
         this$1$1.addFeature(f);
-        api.add(turf__namespace.featureCollection(rest.map(function (v) { return v.toGeoJSON(); })));
+        api.add(turf__namespace.featureCollection(rest.map(function (v) { return v.toGeoJSON(); })), { silent: true });
         this$1$1._execMeasure(f);
         this$1$1._continuous(function () { return this$1$1._batchHighlight(newFeature.features, highlightColor); });
         if (item.intersect) {
@@ -8489,7 +8525,7 @@ function setupAPI (ctx, api) {
 
   api.getSelected = function () {
     return {
-      type: geojsonTypes.FEATURE_COLLECTION,
+      type: geojsonTypes$1.FEATURE_COLLECTION,
       features: ctx.store
         .getSelectedIds()
         .map(function (id) { return ctx.store.get(id); })
@@ -8499,12 +8535,12 @@ function setupAPI (ctx, api) {
 
   api.getSelectedPoints = function () {
     return {
-      type: geojsonTypes.FEATURE_COLLECTION,
+      type: geojsonTypes$1.FEATURE_COLLECTION,
       features: ctx.store.getSelectedCoordinates().map(function (coordinate) { return ({
-        type: geojsonTypes.FEATURE,
+        type: geojsonTypes$1.FEATURE,
         properties: {},
         geometry: {
-          type: geojsonTypes.POINT,
+          type: geojsonTypes$1.POINT,
           coordinates: coordinate.coordinates,
         },
       }); }),
@@ -8514,7 +8550,7 @@ function setupAPI (ctx, api) {
   api.set = function (featureCollection) {
     if (
       featureCollection.type === undefined ||
-      featureCollection.type !== geojsonTypes.FEATURE_COLLECTION ||
+      featureCollection.type !== geojsonTypes$1.FEATURE_COLLECTION ||
       !Array.isArray(featureCollection.features)
     ) {
       throw new Error('Invalid FeatureCollection');
@@ -8533,7 +8569,9 @@ function setupAPI (ctx, api) {
     return newIds;
   };
 
-  api.add = function (geojson) {
+  api.add = function (geojson, options) {
+    if ( options === void 0 ) options = { silent: false };
+
     var featureCollection = JSON.parse(JSON.stringify(normalize$1(geojson)));
 
     var ids = featureCollection.features.map(function (feature) {
@@ -8567,8 +8605,7 @@ function setupAPI (ctx, api) {
       }
       return feature.id;
     });
-
-    ctx.store.render();
+    if (!options.silent) { ctx.store.render(); }
     return ids;
   };
 
@@ -8581,7 +8618,7 @@ function setupAPI (ctx, api) {
 
   api.getAll = function () {
     return {
-      type: geojsonTypes.FEATURE_COLLECTION,
+      type: geojsonTypes$1.FEATURE_COLLECTION,
       features: ctx.store.getAll().map(function (feature) { return feature.toGeoJSON(); }),
     };
   };
@@ -8703,16 +8740,16 @@ function setupAPI (ctx, api) {
     var ids = api.add(geojson);
     var type = geojson.type;
     var feature =
-      type === geojsonTypes.FEATURE
+      type === geojsonTypes$1.FEATURE
         ? geojson
         : GEOMETRYS.includes(type)
-        ? { type: geojsonTypes.FEATURE, properties: {}, geometry: geojson }
+        ? { type: geojsonTypes$1.FEATURE, properties: {}, geometry: geojson }
         : null;
     if (!feature) {
       console.warn('only support edit feature or geometry');
       return api;
     }
-    if (feature.geometry.type === geojsonTypes.POINT) {
+    if (feature.geometry.type === geojsonTypes$1.POINT) {
       api.changeMode('simple_select', { featureIds: ids });
     } else {
       api.changeMode('direct_select', { featureId: ids[0] });

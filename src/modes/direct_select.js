@@ -275,6 +275,7 @@ DirectSelect.onClick = function (state, e) {
   // extend end
   if (noTarget(e)) {
     // extend start
+    this.redoUndo.reset();
     this.afterRender(() => mapFireClickOrOnTab(this, { e, type: 'clickNoTarget' }));
     if (isClickNotthingNoChangeMode(this._ctx, e)) {
       return;
@@ -290,6 +291,7 @@ DirectSelect.onClick = function (state, e) {
   }
   if (isInactiveFeature(e)) {
     // extend start
+    this.redoUndo.reset();
     this.afterRender(() => mapFireClickOrOnTab(this, { e, type: 'clickInactiveFeature' }));
     // extend end
     return this.clickInactive(state, e);
@@ -341,6 +343,7 @@ DirectSelect._reodUndoAdd = function (item) {
   const stack = JSON.parse(JSON.stringify({ ...item, coordinates: this.getState().feature.getCoordinates() }));
   this.redoUndo.undoStack.push(stack);
   this.redoUndo.fireChange({ type: 'add' });
+  console.log('undoStack', this.redoUndo.undoStack);
 };
 
 DirectSelect._redoOrUndo = function (type) {
