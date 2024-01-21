@@ -79,9 +79,9 @@ import '@ttfn/mapbox-gl-draw/dist/mapbox-gl-draw.css';
 
 - 描述：设置测量选项
 
-### 面分割
+### changeMode: (mode: 'cut_polygon', options?: { featureIds?: string[]; highlightColor?: string; continuous?: boolean }) => this;
 
-- 开发中
+- 描述：使用绘制的面图形分割选中的图形
 
 ### 线分割
 
