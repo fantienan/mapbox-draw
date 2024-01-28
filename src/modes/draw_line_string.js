@@ -92,9 +92,10 @@ DrawLineString.clickAnywhere = function (state, e) {
   // extend end
 };
 
-DrawLineString.clickOnVertex = function (state) {
+DrawLineString.clickOnVertex = function (state, cb) {
   // extend start
   if (isDisabledClickOnVertexWithCtx(this._ctx)) return;
+  if (typeof cb === 'function') return cb();
   // extend end
   return this.changeMode(Constants.modes.SIMPLE_SELECT, { featureIds: [state.line.id] });
 };
@@ -123,7 +124,7 @@ DrawLineString.onKeyUp = function (state, e) {
   }
 };
 
-DrawLineString.onStop = function (state) {
+DrawLineString.onStop = function (state, cb) {
   doubleClickZoom.enable(this);
   this.activateUIButton();
   this.destroy();
@@ -132,6 +133,7 @@ DrawLineString.onStop = function (state) {
   if (this.getFeature(state.line.id) === undefined) return;
   //remove last added coordinate
   state.line.removeCoordinate(`${state.currentVertexPosition}`);
+  if (typeof cb === 'function') return cb();
   if (state.line.isValid()) {
     this.map.fire(Constants.events.CREATE, {
       features: [state.line.toGeoJSON()],

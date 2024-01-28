@@ -39,15 +39,7 @@ export class RedoUndoCut {
   }
 
   _fireChange({ cb, ...eventData }) {
-    const e = JSON.parse(
-      JSON.stringify({ ...eventData, undoStack: this._genStacks(this.undoStack), redoStack: this._genStacks(this.redoStack) }),
-    );
-    this._ctx.ui.setDisableButtons((buttonStatus) => {
-      buttonStatus.undo = { disabled: e.undoStack.length === 0 };
-      buttonStatus.redo = { disabled: e.redoStack.length === 0 };
-      return buttonStatus;
-    });
-
+    const e = { ...eventData, undoStack: this._genStacks(this.undoStack), redoStack: this._genStacks(this.redoStack) };
     mapFireRedoUndo(this._modeInstance, JSON.parse(JSON.stringify(e)));
     typeof cb === 'function' && cb();
   }
@@ -56,6 +48,8 @@ export class RedoUndoCut {
     const { undoStack, redoStack } = cb({ undoStack: this.undoStack, redoStack: this.redoStack });
     if (Array.isArray(undoStack)) this.undoStack = JSON.parse(JSON.stringify(undoStack));
     if (Array.isArray(redoStack)) this.redoStack = JSON.parse(JSON.stringify(redoStack));
+    console.log('setRedoUndoStack', this.undoStack, this.redoStack);
+
     this._fireChangeAndRender({ type: 'cut' });
   }
 

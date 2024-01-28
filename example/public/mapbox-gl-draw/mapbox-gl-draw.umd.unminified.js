@@ -2,7 +2,7 @@
 typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('mapbox-gl'), require('@turf/turf')) :
 typeof define === 'function' && define.amd ? define(['mapbox-gl', '@turf/turf'], factory) :
 (global = typeof globalThis !== 'undefined' ? globalThis : global || self, global.MapboxDraw = factory(global.mapboxgl, global.turf));
-})(this, (function (mapboxGl, turf) { 'use strict';
+})(this, (function (mapboxGl, turf$1) { 'use strict';
 
 function _interopNamespace(e) {
 if (e && e.__esModule) return e;
@@ -22,7 +22,7 @@ n["default"] = e;
 return Object.freeze(n);
 }
 
-var turf__namespace = /*#__PURE__*/_interopNamespace(turf);
+var turf__namespace = /*#__PURE__*/_interopNamespace(turf$1);
 
 var ModeHandler = function (mode, DrawContext) {
   var handlers = {
@@ -159,8 +159,18 @@ var ModeHandler = function (mode, DrawContext) {
   };
 };
 
+var commonjsGlobal = typeof globalThis !== 'undefined' ? globalThis : typeof window !== 'undefined' ? window : typeof global !== 'undefined' ? global : typeof self !== 'undefined' ? self : {};
+
 function getDefaultExportFromCjs (x) {
 	return x && x.__esModule && Object.prototype.hasOwnProperty.call(x, 'default') ? x['default'] : x;
+}
+
+function getDefaultExportFromNamespaceIfPresent (n) {
+	return n && Object.prototype.hasOwnProperty.call(n, 'default') ? n['default'] : n;
+}
+
+function getDefaultExportFromNamespaceIfNotNamed (n) {
+	return n && Object.prototype.hasOwnProperty.call(n, 'default') && Object.keys(n).length === 1 ? n['default'] : n;
 }
 
 function getAugmentedNamespace(n) {
@@ -195,14 +205,14 @@ var geojsonArea = {};
 
 var wgs84$1 = {};
 
-wgs84$1.RADIUS = 6378137;
-wgs84$1.FLATTENING = 1/298.257223563;
-wgs84$1.POLAR_RADIUS = 6356752.3142;
+var RADIUS = wgs84$1.RADIUS = 6378137;
+var FLATTENING = wgs84$1.FLATTENING = 1/298.257223563;
+var POLAR_RADIUS = wgs84$1.POLAR_RADIUS = 6356752.3142;
 
 var wgs84 = wgs84$1;
 
-geojsonArea.geometry = geometry;
-geojsonArea.ring = ringArea;
+var geometry_1 = geojsonArea.geometry = geometry;
+var ring = geojsonArea.ring = ringArea;
 
 function geometry(_) {
     var area = 0, i;
@@ -356,7 +366,6 @@ var modes$1 = {
   // extend start
   CUT_POLYGON: 'cut_polygon',
   CUT_LINE: 'cut_line',
-  CUT_SELECT: 'cut_select',
   // extend end
 };
 
@@ -760,7 +769,7 @@ function loadIconImageByTheme(map) {
   batchLoadImages(map, [Object.assign({}, icon1$1), Object.assign({}, icon2$1), Object.assign({}, icon3$1)]);
 }
 
-function objectWithoutProperties$2 (obj, exclude) { var target = {}; for (var k in obj) if (Object.prototype.hasOwnProperty.call(obj, k) && exclude.indexOf(k) === -1) target[k] = obj[k]; return target; }
+function objectWithoutProperties$3 (obj, exclude) { var target = {}; for (var k in obj) if (Object.prototype.hasOwnProperty.call(obj, k) && exclude.indexOf(k) === -1) target[k] = obj[k]; return target; }
 
 var RedoUndo = function RedoUndo(options) {
   this._modeInstance = options.modeInstance;
@@ -795,7 +804,7 @@ RedoUndo.prototype._fireChangeAndRender = function _fireChangeAndRender (eventDa
 
 RedoUndo.prototype.fireChange = function fireChange (ref) {
     var cb = ref.cb;
-    var rest = objectWithoutProperties$2( ref, ["cb"] );
+    var rest = objectWithoutProperties$3( ref, ["cb"] );
     var eventData = rest;
 
   var undoStack = this.undoStack;
@@ -808,14 +817,9 @@ RedoUndo.prototype.fireChange = function fireChange (ref) {
     undoStack = this._modeInstance.feature.getCoordinates()[0] || [];
     if (undoStack.length < 3) { undoStack = []; }
   }
+  this.undoStack = undoStack;
   var e = JSON.parse(JSON.stringify(Object.assign({}, eventData, {undoStack: undoStack, redoStack: this.redoStack})));
-  this._ctx.ui.setDisableButtons(function (buttonStatus) {
-    buttonStatus.undo = { disabled: e.undoStack.length === 0 };
-    buttonStatus.redo = { disabled: e.redoStack.length === 0 };
-    return buttonStatus;
-  });
-
-  mapFireRedoUndo(this._modeInstance, JSON.parse(JSON.stringify(e)));
+  mapFireRedoUndo(this._modeInstance, e);
   typeof cb === 'function' && cb();
 };
 
@@ -837,8 +841,6 @@ RedoUndo.prototype.undo = function undo (cb) {
     state.currentVertexPosition--;
     if (state.currentVertexPosition < 0) { return; }
     this.redoStack.push(coord);
-    console.log(this.redoStack);
-
     this._fireChangeAndRender({ type: 'undo', cb: cb });
   }
 };
@@ -867,7 +869,7 @@ RedoUndo.prototype.reset = function reset () {
   this.redoStack = [];
 };
 
-function objectWithoutProperties$1 (obj, exclude) { var target = {}; for (var k in obj) if (Object.prototype.hasOwnProperty.call(obj, k) && exclude.indexOf(k) === -1) target[k] = obj[k]; return target; }
+function objectWithoutProperties$2 (obj, exclude) { var target = {}; for (var k in obj) if (Object.prototype.hasOwnProperty.call(obj, k) && exclude.indexOf(k) === -1) target[k] = obj[k]; return target; }
 
 var RedoUndoCut = function RedoUndoCut(options) {
   this._modeInstance = options.modeInstance;
@@ -909,18 +911,10 @@ RedoUndoCut.prototype._genStacks = function _genStacks (stacks) {
 
 RedoUndoCut.prototype._fireChange = function _fireChange (ref) {
     var cb = ref.cb;
-    var rest = objectWithoutProperties$1( ref, ["cb"] );
+    var rest = objectWithoutProperties$2( ref, ["cb"] );
     var eventData = rest;
 
-  var e = JSON.parse(
-    JSON.stringify(Object.assign({}, eventData, {undoStack: this._genStacks(this.undoStack), redoStack: this._genStacks(this.redoStack)}))
-  );
-  this._ctx.ui.setDisableButtons(function (buttonStatus) {
-    buttonStatus.undo = { disabled: e.undoStack.length === 0 };
-    buttonStatus.redo = { disabled: e.redoStack.length === 0 };
-    return buttonStatus;
-  });
-
+  var e = Object.assign({}, eventData, {undoStack: this._genStacks(this.undoStack), redoStack: this._genStacks(this.redoStack)});
   mapFireRedoUndo(this._modeInstance, JSON.parse(JSON.stringify(e)));
   typeof cb === 'function' && cb();
 };
@@ -931,6 +925,8 @@ RedoUndoCut.prototype.setRedoUndoStack = function setRedoUndoStack (cb) {
     var redoStack = ref.redoStack;
   if (Array.isArray(undoStack)) { this.undoStack = JSON.parse(JSON.stringify(undoStack)); }
   if (Array.isArray(redoStack)) { this.redoStack = JSON.parse(JSON.stringify(redoStack)); }
+  console.log('setRedoUndoStack', this.undoStack, this.redoStack);
+
   this._fireChangeAndRender({ type: 'cut' });
 };
 
@@ -995,6 +991,473 @@ RedoUndoCut.prototype.reset = function reset () {
 var installRedoUndo = function (options) {
   return options.ctx.events.getMode().includes('cut') ? new RedoUndoCut(options) : new RedoUndo(options);
 };
+
+var theme1 = [
+  {
+    id: "gl-draw-polygon-fill-inactive",
+    type: 'fill',
+    filter: ['all', ['==', 'active', 'false'], ['==', '$type', 'Polygon'], ['!=', 'mode', 'static']],
+    paint: {
+      'fill-color': ['coalesce', ['get', 'user_inactive-fill-color'], '#E1361B'],
+      'fill-outline-color': ['coalesce', ['get', 'user_inactive-fill-outline-color'], '#E1361B'],
+      'fill-opacity': 0.1,
+    },
+  },
+  {
+    id: "gl-draw-polygon-fill-active",
+    type: 'fill',
+    filter: ['all', ['==', 'active', 'true'], ['==', '$type', 'Polygon']],
+    paint: {
+      'fill-color': '#E1361B',
+      'fill-outline-color': '#E1361B',
+      'fill-opacity': 0.1,
+    },
+  },
+  {
+    id: "gl-draw-polygon-midpoint",
+    type: 'circle',
+    filter: ['all', ['==', '$type', 'Point'], ['==', 'meta', 'midpoint']],
+    paint: {
+      'circle-radius': 3,
+      'circle-color': '#E1361B',
+    },
+  },
+  {
+    id: "gl-draw-polygon-stroke-inactive",
+    type: 'line',
+    filter: ['all', ['==', 'active', 'false'], ['==', '$type', 'Polygon'], ['!=', 'mode', 'static']],
+    layout: {
+      'line-cap': 'round',
+      'line-join': 'round',
+    },
+    paint: {
+      'line-color': ['coalesce', ['get', 'user_inactive-line-color'], '#E1361B'],
+      'line-width': 2,
+    },
+  },
+  {
+    id: "gl-draw-polygon-stroke-active",
+    type: 'line',
+    filter: ['all', ['==', 'active', 'true'], ['==', '$type', 'Polygon']],
+    layout: {
+      'line-cap': 'round',
+      'line-join': 'round',
+    },
+    paint: {
+      'line-color': '#E1361B',
+      'line-width': 2,
+    },
+  },
+  {
+    id: "gl-draw-line-inactive",
+    type: 'line',
+    filter: ['all', ['==', 'active', 'false'], ['==', '$type', 'LineString'], ['!=', 'mode', 'static']],
+    layout: {
+      'line-cap': 'round',
+      'line-join': 'round',
+    },
+    paint: {
+      'line-color': ['coalesce', ['get', 'user_inactive-line-color'], '#E1361B'],
+      'line-width': 2,
+    },
+  },
+  {
+    id: "gl-draw-line-active",
+    type: 'line',
+    filter: ['all', ['==', '$type', 'LineString'], ['==', 'active', 'true']],
+    layout: {
+      'line-cap': 'round',
+      'line-join': 'round',
+    },
+    paint: {
+      'line-color': '#E1361B',
+      'line-width': 2,
+    },
+  },
+
+  {
+    id: "gl-draw-polygon-and-line-vertex-stroke-ringlike-inactive",
+    type: 'circle',
+    filter: ['all', ['==', 'meta', 'vertex'], ['==', '$type', 'Point'], ['!=', 'mode', 'static']],
+    paint: {
+      'circle-radius': 8,
+      'circle-color': '#E1361B',
+    },
+  },
+  {
+    id: "gl-draw-polygon-and-line-vertex-stroke-inactive",
+    type: 'circle',
+    filter: ['all', ['==', 'meta', 'vertex'], ['==', '$type', 'Point'], ['!=', 'mode', 'static']],
+    paint: {
+      'circle-radius': 6,
+      'circle-color': '#fff',
+    },
+  },
+  {
+    id: "gl-draw-polygon-and-line-vertex-inactive",
+    type: 'circle',
+    filter: ['all', ['==', 'meta', 'vertex'], ['==', '$type', 'Point'], ['!=', 'mode', 'static']],
+    paint: {
+      'circle-radius': 4,
+      'circle-color': '#E1361B',
+    },
+  },
+  {
+    id: "gl-draw-point-point-stroke-inactive",
+    type: 'circle',
+    filter: ['all', ['==', 'active', 'false'], ['==', '$type', 'Point'], ['==', 'meta', 'feature'], ['!=', 'mode', 'static']],
+    paint: {
+      'circle-radius': 5,
+      'circle-opacity': 1,
+      'circle-color': '#fff',
+    },
+  },
+  {
+    id: "gl-draw-point-inactive",
+    type: 'circle',
+    filter: ['all', ['==', 'active', 'false'], ['==', '$type', 'Point'], ['==', 'meta', 'feature'], ['!=', 'mode', 'static']],
+    paint: {
+      'circle-radius': 5,
+      'circle-color': '#E1361B',
+    },
+  },
+  {
+    id: "gl-draw-point-stroke-ringlike-active",
+    type: 'circle',
+    filter: ['all', ['==', '$type', 'Point'], ['==', 'active', 'true'], ['!=', 'meta', 'midpoint'], ['!has', 'user__edit-point']],
+    paint: {
+      'circle-radius': 9,
+      'circle-color': '#E1361B',
+    },
+  },
+  {
+    id: "gl-draw-point-stroke-active",
+    type: 'circle',
+    filter: ['all', ['==', '$type', 'Point'], ['==', 'active', 'true'], ['!=', 'meta', 'midpoint'], ['!has', 'user__edit-point']],
+    paint: {
+      'circle-radius': 7,
+      'circle-color': '#fff',
+    },
+  },
+  {
+    id: "gl-draw-point-active",
+    type: 'circle',
+    filter: ['all', ['==', '$type', 'Point'], ['!=', 'meta', 'midpoint'], ['==', 'active', 'true'], ['!has', 'user__edit-point']],
+    paint: {
+      'circle-radius': 5,
+      'circle-color': '#E1361B',
+    },
+  },
+  {
+    id: "gl-draw-polygon-fill-static",
+    type: 'fill',
+    filter: ['all', ['==', 'mode', 'static'], ['==', '$type', 'Polygon']],
+    paint: {
+      'fill-color': '#404040',
+      'fill-outline-color': '#404040',
+      'fill-opacity': 0.1,
+    },
+  },
+  {
+    id: "gl-draw-polygon-stroke-static",
+    type: 'line',
+    filter: ['all', ['==', 'mode', 'static'], ['==', '$type', 'Polygon']],
+    layout: {
+      'line-cap': 'round',
+      'line-join': 'round',
+    },
+    paint: {
+      'line-color': '#404040',
+      'line-width': 2,
+    },
+  },
+  {
+    id: "gl-draw-line-static",
+    type: 'line',
+    filter: ['all', ['==', 'mode', 'static'], ['==', '$type', 'LineString']],
+    layout: {
+      'line-cap': 'round',
+      'line-join': 'round',
+    },
+    paint: {
+      'line-color': '#404040',
+      'line-width': 2,
+    },
+  },
+  {
+    id: "gl-draw-point-static",
+    type: 'circle',
+    filter: ['all', ['==', 'mode', 'static'], ['==', '$type', 'Point']],
+    paint: {
+      'circle-radius': 5,
+      'circle-color': '#404040',
+    },
+  },
+  {
+    id: "gl-draw-point-active-symbol",
+    type: 'symbol',
+    filter: ['all', ['==', '$type', 'Point'], ['!=', 'meta', 'midpoint'], ['==', 'active', 'true'], ['==', 'user__edit-point', 'true']],
+    layout: {
+      'icon-anchor': ['coalesce', ['get', 'user__edit-point-icon-anchor'], 'bottom'],
+      'icon-image': ['coalesce', ['get', 'user__edit-point-icon-image'], 'gl-draw-icon2'],
+      // 'icon-anchor': 'bottom',
+      'icon-allow-overlap': true, // 允许图标重叠
+      'text-ignore-placement': true, // 忽略文字的碰撞
+      'icon-ignore-placement': true, // 忽略图标的碰撞
+      'icon-size': ['coalesce', ['get', 'user__edit-point-icon-size'], 1],
+      'icon-offset': ['coalesce', ['get', 'user__edit-point-icon-offset'], [0, 4]],
+    },
+  },
+  {
+    id: "gl-draw-line-second-to-last-point-symbol",
+    type: 'symbol',
+    filter: [
+      'all',
+      ['==', 'meta', 'second_to_last_point'],
+      ['==', '$type', 'Point'],
+      ['any', ['==', 'mode', 'draw_line_string'], ['==', 'mode', 'draw_polygon']] ],
+    layout: {
+      'icon-anchor': 'bottom',
+      'icon-image': 'gl-draw-icon2',
+      'icon-allow-overlap': true, // 允许图标重叠
+      'text-ignore-placement': true, // 忽略文字的碰撞
+      'icon-ignore-placement': true, // 忽略图标的碰撞
+      'icon-size': 0.7,
+    },
+  } ];
+
+var theme2 = [
+  {
+    id: 'gl-draw-polygon-fill-inactive',
+    type: 'fill',
+    filter: ['all', ['==', 'active', 'false'], ['==', '$type', 'Polygon'], ['!=', 'mode', 'static']],
+    paint: {
+      'fill-color': ['coalesce', ['get', 'user_inactive-fill-color'], '#E1361B'],
+      'fill-outline-color': ['coalesce', ['get', 'user_inactive-fill-outline-color'], '#E1361B'],
+      'fill-opacity': 0.1,
+    },
+  },
+  {
+    id: 'gl-draw-polygon-fill-active',
+    type: 'fill',
+    filter: ['all', ['==', 'active', 'true'], ['==', '$type', 'Polygon']],
+    paint: {
+      'fill-color': '#E1361B',
+      'fill-outline-color': '#E1361B',
+      'fill-opacity': 0.1,
+    },
+  },
+  {
+    id: 'gl-draw-polygon-midpoint',
+    type: 'circle',
+    filter: ['all', ['==', '$type', 'Point'], ['==', 'meta', 'midpoint']],
+    paint: {
+      'circle-radius': 3,
+      'circle-color': '#E1361B',
+    },
+  },
+  {
+    id: 'gl-draw-polygon-stroke-inactive',
+    type: 'line',
+    filter: ['all', ['==', 'active', 'false'], ['==', '$type', 'Polygon'], ['!=', 'mode', 'static']],
+    layout: {
+      'line-cap': 'round',
+      'line-join': 'round',
+    },
+    paint: {
+      'line-color': ['coalesce', ['get', 'user_inactive-line-color'], '#E1361B'],
+      'line-width': 2,
+    },
+  },
+  {
+    id: 'gl-draw-polygon-stroke-active',
+    type: 'line',
+    filter: ['all', ['==', 'active', 'true'], ['==', '$type', 'Polygon']],
+    layout: {
+      'line-cap': 'round',
+      'line-join': 'round',
+    },
+    paint: {
+      'line-color': '#FFCF56',
+      'line-width': 2,
+      'line-dasharray': [4, 3],
+    },
+  },
+  {
+    id: 'gl-draw-line-inactive',
+    type: 'line',
+    filter: ['all', ['==', 'active', 'false'], ['==', '$type', 'LineString'], ['!=', 'mode', 'static']],
+    layout: {
+      'line-cap': 'round',
+      'line-join': 'round',
+    },
+    paint: {
+      'line-color': ['coalesce', ['get', 'user_inactive-line-color'], '#E1361B'],
+      'line-width': 2,
+    },
+  },
+  {
+    id: 'gl-draw-line-active',
+    type: 'line',
+    filter: ['all', ['==', '$type', 'LineString'], ['==', 'active', 'true']],
+    layout: {
+      'line-cap': 'round',
+      'line-join': 'round',
+    },
+    paint: {
+      'line-color': '#FFCF56',
+      'line-width': 2,
+      'line-dasharray': [4, 3],
+    },
+  },
+  {
+    id: 'gl-draw-polygon-and-line-vertex-stroke-ringlike-symbol-inactive',
+    type: 'symbol',
+    filter: ['all', ['==', 'meta', 'vertex'], ['==', '$type', 'Point'], ['!=', 'mode', 'static']],
+    layout: {
+      'icon-anchor': 'bottom',
+      'icon-image': 'gl-draw-icon3',
+      'icon-size': 0.45,
+      'icon-offset': [0, 16],
+      'icon-allow-overlap': true,
+      'text-ignore-placement': true,
+      'icon-ignore-placement': true,
+    },
+  },
+  {
+    id: 'gl-draw-polygon-and-line-vertex-stroke-symbol-inactive',
+    type: 'symbol',
+    filter: ['all', ['==', 'meta', 'vertex'], ['==', '$type', 'Point'], ['!=', 'mode', 'static']],
+    layout: {
+      'icon-anchor': 'bottom',
+      'icon-image': 'gl-draw-icon3',
+      'icon-size': 0.45,
+      'icon-offset': [0, 16],
+      'icon-allow-overlap': true,
+      'text-ignore-placement': true,
+      'icon-ignore-placement': true,
+    },
+  },
+
+  {
+    id: 'gl-draw-polygon-and-line-vertex-symbol-inactive',
+    type: 'symbol',
+    filter: ['all', ['==', 'meta', 'vertex'], ['==', '$type', 'Point'], ['!=', 'mode', 'static']],
+    layout: {
+      'icon-anchor': 'bottom',
+      'icon-image': 'gl-draw-icon3',
+      'icon-size': 0.45,
+      'icon-offset': [0, 16],
+      'icon-allow-overlap': true,
+      'text-ignore-placement': true,
+      'icon-ignore-placement': true,
+    },
+  },
+  {
+    id: 'gl-draw-point-point-stroke-inactive',
+    type: 'circle',
+    filter: ['all', ['==', 'active', 'false'], ['==', '$type', 'Point'], ['==', 'meta', 'feature'], ['!=', 'mode', 'static']],
+    paint: {
+      'circle-radius': 5,
+      'circle-opacity': 1,
+      'circle-color': '#fff',
+    },
+  },
+  {
+    id: 'gl-draw-point-inactive',
+    type: 'circle',
+    filter: ['all', ['==', 'active', 'false'], ['==', '$type', 'Point'], ['==', 'meta', 'feature'], ['!=', 'mode', 'static']],
+    paint: {
+      'circle-radius': 5,
+      'circle-color': '#E1361B',
+    },
+  },
+  {
+    id: 'gl-draw-point-stroke-ringlike-active',
+    type: 'circle',
+    filter: ['all', ['==', '$type', 'Point'], ['==', 'active', 'true'], ['!=', 'meta', 'midpoint'], ['!has', 'user__edit-point']],
+    paint: {
+      'circle-radius': 9,
+      'circle-color': '#E1361B',
+    },
+  },
+  {
+    id: 'gl-draw-point-stroke-active',
+    type: 'circle',
+    filter: ['all', ['==', '$type', 'Point'], ['==', 'active', 'true'], ['!=', 'meta', 'midpoint'], ['!has', 'user__edit-point']],
+    paint: {
+      'circle-radius': 7,
+      'circle-color': '#fff',
+    },
+  },
+  {
+    id: 'gl-draw-point-active',
+    type: 'circle',
+    filter: ['all', ['==', '$type', 'Point'], ['!=', 'meta', 'midpoint'], ['==', 'active', 'true'], ['!has', 'user__edit-point']],
+    paint: {
+      'circle-radius': 5,
+      'circle-color': '#E1361B',
+    },
+  },
+  {
+    id: 'gl-draw-polygon-fill-static',
+    type: 'fill',
+    filter: ['all', ['==', 'mode', 'static'], ['==', '$type', 'Polygon']],
+    paint: {
+      'fill-color': '#404040',
+      'fill-outline-color': '#404040',
+      'fill-opacity': 0.1,
+    },
+  },
+  {
+    id: 'gl-draw-polygon-stroke-static',
+    type: 'line',
+    filter: ['all', ['==', 'mode', 'static'], ['==', '$type', 'Polygon']],
+    layout: {
+      'line-cap': 'round',
+      'line-join': 'round',
+    },
+    paint: {
+      'line-color': '#404040',
+      'line-width': 2,
+    },
+  },
+  {
+    id: 'gl-draw-line-static',
+    type: 'line',
+    filter: ['all', ['==', 'mode', 'static'], ['==', '$type', 'LineString']],
+    layout: {
+      'line-cap': 'round',
+      'line-join': 'round',
+    },
+    paint: {
+      'line-color': '#404040',
+      'line-width': 2,
+    },
+  },
+  {
+    id: 'gl-draw-point-static',
+    type: 'circle',
+    filter: ['all', ['==', 'mode', 'static'], ['==', '$type', 'Point']],
+    paint: {
+      'circle-radius': 5,
+      'circle-color': '#404040',
+    },
+  },
+  {
+    id: 'gl-draw-point-symbol-active',
+    type: 'symbol',
+    filter: ['all', ['==', '$type', 'Point'], ['!=', 'meta', 'midpoint'], ['==', 'active', 'true'], ['==', 'user__edit-point', 'true']],
+    layout: {
+      'icon-anchor': ['coalesce', ['get', 'user__edit-point-icon-anchor'], 'bottom'],
+      'icon-image': ['coalesce', ['get', 'user__edit-point-icon-image'], '_edit-point-icon-image'],
+      'icon-allow-overlap': true,
+      'text-ignore-placement': true,
+      'icon-ignore-placement': true,
+      'icon-size': ['coalesce', ['get', 'user__edit-point-icon-size'], 1],
+      'icon-offset': ['coalesce', ['get', 'user__edit-point-icon-offset'], [0, 4]],
+    },
+  } ];
 
 var theme3 = [
   {
@@ -1205,7 +1668,7 @@ function extend() {
 
 var xtend = /*@__PURE__*/getDefaultExportFromCjs(immutable);
 
-var getDefaultOptions$1 = function () { return ({
+var getDefaultOptions = function () { return ({
   unit: { line: 'meters', area: 'meters' },
   precision: 2,
 }); };
@@ -1217,7 +1680,7 @@ var Measure = function Measure(options) {
 };
 
 Measure.prototype.setOptions = function setOptions (options) {
-  this.options = xtend(getDefaultOptions$1(), options);
+  this.options = xtend(getDefaultOptions(), options);
   this[options.enable ? 'enable' : 'cancel']();
 };
 
@@ -1235,6 +1698,8 @@ Measure.prototype.destroy = function destroy () {
 };
 
 Measure.prototype.delete = function delete$1 () {
+  debugger;
+
   this.cancel();
 };
 
@@ -1303,6 +1768,8 @@ function isTap(start, end, options) {
 }
 
 var hat$2 = {exports: {}};
+
+var hat_1 = hat$2.exports;
 
 var hat = hat$2.exports = function (bits, base) {
     if (!base) { base = 16; }
@@ -2665,16 +3132,20 @@ function render(e) {
 
   // extend start
   if (store._emitSelectionChange || !e || e.type !== 'mousemove') {
+    var modeInstance = store.ctx.events.getModeInstance();
     var isSimpleSelectMode = mode === modes$1.SIMPLE_SELECT;
+    var isDirectSelectMode = mode === modes$1.DIRECT_SELECT;
     var isCutMode = mode.includes('cut');
-    var disabled = isSimpleSelectMode
-      ? !store.getSelected().length
-      : isCutMode
-      ? store.ctx.events.getModeInstance().getWaitCutFeatures().length
-      : true;
+    var disabledCut = isSimpleSelectMode ? !store.getSelected().length : isCutMode ? modeInstance.getWaitCutFeatures().length : true;
+    var disableFinish = isSimpleSelectMode || isDirectSelectMode || !modeInstance.feature.isValid();
     store.ctx.ui.setDisableButtons(function (buttonStatus) {
-      buttonStatus.cut_polygon = { disabled: disabled };
-      buttonStatus.cut_line = { disabled: disabled };
+      buttonStatus.cut_polygon = { disabled: disabledCut };
+      buttonStatus.cut_line = { disabled: disabledCut };
+      buttonStatus.draw_center = { disabled: isSimpleSelectMode };
+      buttonStatus.finish = { disabled: disableFinish };
+      buttonStatus.cancel = { disabled: isSimpleSelectMode || isDirectSelectMode };
+      buttonStatus.undo = { disabled: modeInstance.redoUndo.undoStack.length === 0 };
+      buttonStatus.redo = { disabled: modeInstance.redoUndo.redoStack.length === 0 };
       return buttonStatus;
     });
   }
@@ -3380,6 +3851,7 @@ function ui (ctx) {
   // extend start
   function setDisableButtons(cb) {
     if (!buttonElements) { return; }
+
     var orginStatus = Object.entries(buttonElements).reduce(function (prev, ref) {
       var k = ref[0];
       var v = ref[1];
@@ -3447,7 +3919,7 @@ function runSetup (ctx) {
       // extend end
     },
     onAdd: function onAdd(map) {
-      {
+      if ('browser' !== 'test') {
         // Monkey patch to resolve breaking change to `fire` introduced by
         // mapbox-gl-js. See mapbox/mapbox-gl-draw/issues/766.
         var _fire = map.fire;
@@ -3541,7 +4013,7 @@ function runSetup (ctx) {
   return setup;
 }
 
-var styles$1 = [
+var styles = [
   {
     id: 'gl-draw-polygon-fill-inactive',
     type: 'fill',
@@ -3803,6 +4275,8 @@ isEscapeKey: isEscapeKey,
 isEnterKey: isEnterKey,
 isTrue: isTrue
 });
+
+'use strict';
 
 var pointGeometry = Point;
 
@@ -4298,7 +4772,7 @@ var doubleClickZoom = {
   }
 };
 
-var geojsonExtent = {exports: {}};
+var geojsonExtent$1 = {exports: {}};
 
 var geojsonNormalize$1 = normalize;
 
@@ -4374,6 +4848,8 @@ var flatten$1 = function flatten(list) {
     }
 };
 
+var flatten$2 = /*@__PURE__*/getDefaultExportFromCjs(flatten$1);
+
 var geojsonNormalize = geojsonNormalize$1,
     geojsonFlatten = require$$1,
     flatten = flatten$1;
@@ -4390,6 +4866,10 @@ var geojsonCoords$1 = function(_) {
     });
     return coordinates;
 };
+
+var index$2 = /*@__PURE__*/getDefaultExportFromCjs(geojsonCoords$1);
+
+'use strict';
 
 // TODO: use call-bind, is-date, is-regex, is-string, is-boolean-object, is-number-object
 function toS(obj) { return Object.prototype.toString.call(obj); }
@@ -4720,6 +5200,8 @@ forEach(ownEnumerableKeys(Traverse.prototype), function (key) {
 
 var traverse_1 = traverse$1;
 
+var index$1 = /*@__PURE__*/getDefaultExportFromCjs(traverse_1);
+
 var extent$2 = Extent;
 
 function Extent(bbox) {
@@ -4826,6 +5308,10 @@ Extent.prototype.polygon = function() {
     };
 };
 
+var index = /*@__PURE__*/getDefaultExportFromCjs(extent$2);
+
+var geojsonExtent = geojsonExtent$1.exports;
+
 var geojsonCoords = geojsonCoords$1,
     traverse = traverse_1,
     extent = extent$2;
@@ -4839,15 +5325,15 @@ var geojsonTypesByDataAttributes = {
 
 var dataAttributes = Object.keys(geojsonTypesByDataAttributes);
 
-geojsonExtent.exports = function(_) {
+geojsonExtent$1.exports = function(_) {
     return getExtent(_).bbox();
 };
 
-geojsonExtent.exports.polygon = function(_) {
+var polygon = geojsonExtent$1.exports.polygon = function(_) {
     return getExtent(_).polygon();
 };
 
-geojsonExtent.exports.bboxify = function(_) {
+var bboxify = geojsonExtent$1.exports.bboxify = function(_) {
     return traverse(_).map(function(value) {
         if (!value) { return ; }
 
@@ -4873,7 +5359,7 @@ function getExtent(_) {
     return ext;
 }
 
-var geojsonExtentExports = geojsonExtent.exports;
+var geojsonExtentExports = geojsonExtent$1.exports;
 var extent$1 = /*@__PURE__*/getDefaultExportFromCjs(geojsonExtentExports);
 
 var LAT_MIN = LAT_MIN$1;
@@ -5105,7 +5591,7 @@ SimpleSelect.onTap = SimpleSelect.onClick = function (state, e) {
     // extend start
     if (selectedFeatures.length) { this.redoUndo.reset(); }
     mapFireClickOrOnTab(this, { e: e, type: 'clickNoTarget' });
-    if (isClickNotthingNoChangeMode(this._ctx)) { return; }
+    if (isClickNotthingNoChangeMode(this._ctx, e)) { return; }
     // extend end
     return this.clickAnywhere(state, e); // also tap
   }
@@ -5697,7 +6183,7 @@ DirectSelect.onClick = function (state, e) {
     // extend start
     this.redoUndo.reset();
     this.afterRender(function () { return mapFireClickOrOnTab(this$1$1, { e: e, type: 'clickNoTarget' }); });
-    if (isClickNotthingNoChangeMode(this._ctx)) {
+    if (isClickNotthingNoChangeMode(this._ctx, e)) {
       return;
     }
     // extend end
@@ -5730,7 +6216,7 @@ DirectSelect.onTap = function (state, e) {
   if (noTarget(e)) {
     // extend start
     this.afterRender(function () { return mapFireClickOrOnTab(this$1$1, { e: e, type: 'clickNoTarget' }); });
-    if (isClickNotthingNoChangeMode(this._ctx)) {
+    if (isClickNotthingNoChangeMode(this._ctx, e)) {
       return; //this.clickActiveFeature(state, e);
     }
     // extend end
@@ -5927,7 +6413,7 @@ DrawPolygon.clickAnywhere = function (state, e) {
 DrawPolygon.clickOnVertex = function (state, cb) {
   // extend start
   if (isDisabledClickOnVertexWithCtx(this._ctx)) { return; }
-  if (typeof cb === 'function') { return cb(state); }
+  if (typeof cb === 'function') { return cb(); }
   // extend end
   return this.changeMode(modes$1.SIMPLE_SELECT, { featureIds: [state.polygon.id] });
 };
@@ -6155,9 +6641,10 @@ DrawLineString.clickAnywhere = function (state, e) {
   // extend end
 };
 
-DrawLineString.clickOnVertex = function (state) {
+DrawLineString.clickOnVertex = function (state, cb) {
   // extend start
   if (isDisabledClickOnVertexWithCtx(this._ctx)) { return; }
+  if (typeof cb === 'function') { return cb(); }
   // extend end
   return this.changeMode(modes$1.SIMPLE_SELECT, { featureIds: [state.line.id] });
 };
@@ -6186,7 +6673,7 @@ DrawLineString.onKeyUp = function (state, e) {
   }
 };
 
-DrawLineString.onStop = function (state) {
+DrawLineString.onStop = function (state, cb) {
   doubleClickZoom.enable(this);
   this.activateUIButton();
   this.destroy();
@@ -6195,6 +6682,7 @@ DrawLineString.onStop = function (state) {
   if (this.getFeature(state.line.id) === undefined) { return; }
   //remove last added coordinate
   state.line.removeCoordinate(("" + (state.currentVertexPosition)));
+  if (typeof cb === 'function') { return cb(); }
   if (state.line.isValid()) {
     this.map.fire(events$1.CREATE, {
       features: [state.line.toGeoJSON()],
@@ -6250,9 +6738,7 @@ DrawLineString.drawByCoordinate = function (coord) {
   this.afterRender(function () { return mapFireAddPoint(this$1$1); }, true);
 };
 
-function objectWithoutProperties (obj, exclude) { var target = {}; for (var k in obj) if (Object.prototype.hasOwnProperty.call(obj, k) && exclude.indexOf(k) === -1) target[k] = obj[k]; return target; }
-
-var getDefaultOptions = function () { return ({
+var getCutDefaultOptions = function () { return ({
   featureIds: [],
   highlightColor: '#73d13d',
   continuous: true,
@@ -6260,18 +6746,138 @@ var getDefaultOptions = function () { return ({
   lineWidthUnit: 'kilometers',
 }); };
 
-var styles = ['inactive-fill-color', 'inactive-fill-outline-color', 'inactive-line-color'];
-
 var highlightFieldName = 'wait-cut';
 
-var originOnSetup = DrawPolygon.onSetup;
-var originOnMouseMove = DrawPolygon.onMouseMove;
-var originClickOnVertex = DrawPolygon.clickOnVertex;
-var originOnStop = DrawPolygon.onStop;
+function polygonCut(poly, line) {
+  return polygonSplitter(poly, line);
+}
+
+/// https://gis.stackexchange.com/a/344277/145409
+function polygonCutWithSpacing(poly, line, options) {
+  var ref = options || {};
+  var line_width = ref.line_width;
+  var line_width_unit = ref.line_width_unit;
+
+  var offsetLine = [];
+  var retVal = null;
+  var i, j, intersectPoints, forCut, forSelect;
+  var thickLineString, thickLinePolygon, clipped;
+
+  if (
+    typeof line_width === 'undefined' ||
+    typeof line_width_unit === 'undefined' ||
+    (poly.type != geojsonTypes$1.POLYGON && poly.type != geojsonTypes$1.MULTI_POLYGON) ||
+    line.type != geojsonTypes$1.LINE_STRING
+  ) {
+    return retVal;
+  }
+
+  /// if line and polygon don't intersect return.
+  if (turf.booleanDisjoint(line, poly)) {
+    return retVal;
+  }
+
+  intersectPoints = turf.lineIntersect(poly, line);
+  if (intersectPoints.features.length === 0) {
+    return retVal;
+  }
+
+  /// Creating two new lines at sides of the splitting turf.lineString
+  offsetLine[0] = turf.lineOffset(line, line_width, {
+    units: line_width_unit,
+  });
+  offsetLine[1] = turf.lineOffset(line, -line_width, {
+    units: line_width_unit,
+  });
+
+  for (i = 0; i <= 1; i++) {
+    forCut = i;
+    forSelect = (i + 1) % 2;
+    var polyCoords = [];
+    for (j = 0; j < line.coordinates.length; j++) {
+      polyCoords.push(line.coordinates[j]);
+    }
+    for (j = offsetLine[forCut].geometry.coordinates.length - 1; j >= 0; j--) {
+      polyCoords.push(offsetLine[forCut].geometry.coordinates[j]);
+    }
+    polyCoords.push(line.coordinates[0]);
+
+    thickLineString = turf.lineString(polyCoords);
+    thickLinePolygon = turf.lineToPolygon(thickLineString);
+    clipped = turf.difference(poly, thickLinePolygon);
+  }
+
+  return clipped;
+}
+
+var Cut = {
+  _styles: ['inactive-fill-color', 'inactive-fill-outline-color', 'inactive-line-color'],
+};
+
+Cut._execMeasure = function (feature) {
+  var api = this._ctx.api;
+  if (feature && api.options.measureOptions) {
+    feature.measure.setOptions(api.options.measureOptions);
+    feature.execMeasure();
+  }
+};
+Cut._continuous = function (cb) {
+  if (this._options.continuous) {
+    cb();
+    this._updateFeatures();
+  }
+};
+
+Cut._updateFeatures = function () {
+  this._features = this._ctx.store
+    .getAll()
+    .filter(function (f) { return f.getProperty(highlightFieldName); })
+    .map(function (f) { return f.toGeoJSON(); });
+};
+
+Cut._cancelCut = function () {
+  if (this._features.length) {
+    this._batchHighlight(this._features);
+    this._features = [];
+  }
+};
+
+Cut._setHighlight = function (id, color) {
+  var api = this._ctx.api;
+  this._styles.forEach(function (style) { return api.setFeatureProperty(id, style, color); });
+  api.setFeatureProperty(id, highlightFieldName, color ? true : undefined);
+};
+
+Cut._batchHighlight = function (features, color) {
+  var this$1$1 = this;
+
+  if (features.length) { features.forEach(function (feature) { return this$1$1._setHighlight(feature.id, color); }); }
+};
+
+Cut.getWaitCutFeatures = function () {
+  return JSON.parse(JSON.stringify(this._features));
+};
+
+Cut.onTrash = function (state) {
+  this.originOnTrash(state);
+  this._cancelCut();
+};
+
+Cut.onKeyUp = function (state, e) {
+  this._cancelCut();
+  this.originOnKeyUp(state, e);
+};
+
+function objectWithoutProperties$1 (obj, exclude) { var target = {}; for (var k in obj) if (Object.prototype.hasOwnProperty.call(obj, k) && exclude.indexOf(k) === -1) target[k] = obj[k]; return target; }
+
+var originOnSetup$1 = DrawPolygon.onSetup;
+var originOnMouseMove$1 = DrawPolygon.onMouseMove;
+var originClickOnVertex$1 = DrawPolygon.clickOnVertex;
+var originOnStop$1 = DrawPolygon.onStop;
 var originOnTrash = DrawPolygon.onTrash;
-var originOnKeyUp = DrawPolygon.onKeyUp;
-var rest = objectWithoutProperties( DrawPolygon, ["onSetup", "onMouseMove", "clickOnVertex", "onStop", "onTrash", "onKeyUp"] );
-var restOriginMethods = rest;
+var originOnKeyUp$1 = DrawPolygon.onKeyUp;
+var rest$1 = objectWithoutProperties$1( DrawPolygon, ["onSetup", "onMouseMove", "clickOnVertex", "onStop", "onTrash", "onKeyUp"] );
+var restOriginMethods$1 = rest$1;
 
 var polyTypes = [geojsonTypes$1.POLYGON, geojsonTypes$1.MULTI_POLYGON];
 
@@ -6279,18 +6885,19 @@ var lineTypes = [geojsonTypes$1.LINE_STRING, geojsonTypes$1.MULTI_LINE_STRING];
 
 var geojsonTypes = polyTypes.concat( lineTypes);
 
-var CutPolygonMode = Object.assign({}, {originOnSetup: originOnSetup,
-  originOnKeyUp: originOnKeyUp,
-  originOnMouseMove: originOnMouseMove,
-  originClickOnVertex: originClickOnVertex,
-  originOnStop: originOnStop,
+var CutPolygonMode = Object.assign({}, {originOnSetup: originOnSetup$1,
+  originOnKeyUp: originOnKeyUp$1,
+  originOnMouseMove: originOnMouseMove$1,
+  originClickOnVertex: originClickOnVertex$1,
+  originOnStop: originOnStop$1,
   originOnTrash: originOnTrash},
-  restOriginMethods);
+  restOriginMethods$1,
+  Cut);
 
 CutPolygonMode.onSetup = function (opt) {
   var this$1$1 = this;
 
-  var options = xtend(getDefaultOptions(), opt);
+  var options = xtend(getCutDefaultOptions(), opt);
   var highlightColor = options.highlightColor;
   var featureIds = options.featureIds;
 
@@ -6311,7 +6918,6 @@ CutPolygonMode.onSetup = function (opt) {
   this._redoStack = [];
   this._redoType = '';
   this._undoType = '';
-
   this._batchHighlight(features, highlightColor);
   var state = this.originOnSetup({ button: modes$1.CUT_POLYGON });
   window.state = state;
@@ -6333,11 +6939,6 @@ CutPolygonMode.onStop = function (state) {
   });
 };
 
-CutPolygonMode.onKeyUp = function (state, e) {
-  this._cancelCut();
-  this.originOnKeyUp(state, e);
-};
-
 CutPolygonMode.clickOnVertex = function (state) {
   var this$1$1 = this;
 
@@ -6353,22 +6954,6 @@ CutPolygonMode.clickOnVertex = function (state) {
   });
 };
 
-CutPolygonMode.onTrash = function (state) {
-  this.originOnTrash(state);
-  this._cancelCut();
-};
-
-CutPolygonMode.fireUpdate = function (newF) {
-  this.map.fire(events$1.UPDATE, {
-    action: updateActions.CHANGE_COORDINATES,
-    features: newF.toGeoJSON(),
-  });
-};
-
-CutPolygonMode.getWaitCutFeatures = function () {
-  return JSON.parse(JSON.stringify(this._features));
-};
-
 CutPolygonMode.undo = function () {
   var this$1$1 = this;
 
@@ -6381,7 +6966,9 @@ CutPolygonMode.undo = function () {
     var state = this$1$1.getState();
     var redoStack = { geoJson: stack.geoJson };
     stack.collection.forEach(function (item) {
+      // 将features合并为一个feature
       var combine = turf__namespace.combine(item.difference);
+      // 将两个feature合并为一个feature
       var nuion = turf__namespace.union(item.intersect, combine.features[0]);
       var nuionFeature = this$1$1.newFeature(nuion);
       var ref = item.difference.features;
@@ -6394,6 +6981,20 @@ CutPolygonMode.undo = function () {
       this$1$1._execMeasure(nuionFeature);
       this$1$1._setHighlight(nuionFeature.id, this$1$1._options.highlightColor);
     });
+    stack.lines.forEach(function (ref) {
+      var cuted = ref.cuted;
+      var line = ref.line;
+
+      var ref$1 = cuted.features;
+      var f = ref$1[0];
+      var lineFeature = this$1$1.newFeature(line);
+      cuted.features.forEach(function (v) { return this$1$1.deleteFeature(v.id); });
+      lineFeature.id = f.id;
+      this$1$1.addFeature(lineFeature);
+      this$1$1._execMeasure(lineFeature);
+      this$1$1._setHighlight(lineFeature.id, this$1$1._options.highlightColor);
+    });
+
     state.currentVertexPosition = stack.geoJson.geometry.coordinates[0].length - 1;
     state.polygon.setCoordinates(stack.geoJson.geometry.coordinates);
     this$1$1.redoUndo.setRedoUndoStack(function (ref) {
@@ -6412,34 +7013,10 @@ CutPolygonMode.redo = function () {
   var type = res.type;
   var stack = res.stack;
   if (type !== 'cut') { return; }
-
   this.beforeRender(function () {
     this$1$1._cut(stack.geoJson);
     this$1$1._resetState();
   });
-};
-
-CutPolygonMode._setButtonStatus = function (params) {
-  var p = Object.assign({}, {undo: !this._undoStack.length, redo: !this._redoStack.length}, params);
-  this._ctx.ui.setDisableButtons(function (buttonStatus) {
-    buttonStatus.undo = { disabled: p.undo };
-    buttonStatus.redo = { disabled: p.redo };
-    return buttonStatus;
-  });
-};
-
-CutPolygonMode._execMeasure = function (feature) {
-  var api = this._ctx.api;
-  if (feature && api.options.measureOptions) {
-    feature.measure.setOptions(api.options.measureOptions);
-    feature.execMeasure();
-  }
-};
-
-CutPolygonMode._setHighlight = function (id, color) {
-  var api = this._ctx.api;
-  styles.forEach(function (style) { return api.setFeatureProperty(id, style, color); });
-  api.setFeatureProperty(id, highlightFieldName, color ? true : undefined);
 };
 
 CutPolygonMode._cut = function (cuttingpolygon) {
@@ -6450,20 +7027,22 @@ CutPolygonMode._cut = function (cuttingpolygon) {
   var api = ref.api;
   var ref$1 = this._options;
   var highlightColor = ref$1.highlightColor;
-  var undoStack = { geoJson: cuttingpolygon, collection: [] };
+  var undoStack = { geoJson: cuttingpolygon, collection: [], lines: [] };
+
   this._features.forEach(function (feature) {
     if (geojsonTypes.includes(feature.geometry.type)) {
       store.get(feature.id).measure.delete();
       if (lineTypes.includes(feature.geometry.type)) {
         var splitter = turf__namespace.polygonToLine(cuttingpolygon);
         var cuted = turf__namespace.lineSplit(feature, splitter);
+        cuted.features.forEach(function (f) { return (f.id = hat$1()); });
+        undoStack.lines.push({ cuted: cuted, line: feature });
         cuted.features.sort(function (a, b) { return turf__namespace.length(a) - turf__namespace.length(b); });
         cuted.features[0].id = feature.id;
         api.add(cuted).forEach(function (id, i) { return (cuted.features[i].id = id); }, { silent: true });
         this$1$1._continuous(function () { return this$1$1._batchHighlight(cuted.features, highlightColor); });
         return;
       }
-
       var afterCut = turf__namespace.difference(feature, cuttingpolygon);
       if (!afterCut) { return; }
       var newFeature = this$1$1.newFeature(afterCut);
@@ -6500,53 +7079,110 @@ CutPolygonMode._cut = function (cuttingpolygon) {
   store.setDirty();
 };
 
-CutPolygonMode._continuous = function (cb) {
-  if (this._options.continuous) {
-    cb();
-    this._updateFeatures();
-  }
-};
-
-CutPolygonMode._updateFeatures = function () {
-  this._features = this._ctx.store
-    .getAll()
-    .filter(function (f) { return f.getProperty(highlightFieldName); })
-    .map(function (f) { return f.toGeoJSON(); });
-};
-
-CutPolygonMode._cancelCut = function () {
-  if (this._features.length) {
-    this._batchHighlight(this._features);
-    this._features = [];
-  }
-};
-
-CutPolygonMode._batchHighlight = function (features, color) {
-  var this$1$1 = this;
-
-  if (features.length) { features.forEach(function (feature) { return this$1$1._setHighlight(feature.id, color); }); }
-};
-
-CutPolygonMode._resetState = function (coord) {
+CutPolygonMode._resetState = function () {
   var state = this.getState();
   state.currentVertexPosition = 0;
   state.polygon.setCoordinates([[]]);
 };
 
-function genCutPolygonMode(modes) {
-  var obj;
+function objectWithoutProperties (obj, exclude) { var target = {}; for (var k in obj) if (Object.prototype.hasOwnProperty.call(obj, k) && exclude.indexOf(k) === -1) target[k] = obj[k]; return target; }
 
-  return Object.assign({}, modes,
-    ( obj = {}, obj[modes$1.CUT_POLYGON] = CutPolygonMode, obj ));
-}
+var originOnSetup = DrawLineString.onSetup;
+var originOnMouseMove = DrawLineString.onMouseMove;
+var originClickOnVertex = DrawLineString.clickOnVertex;
+var originOnStop = DrawLineString.onStop;
+var originOnKeyUp = DrawLineString.onKeyUp;
+var rest = objectWithoutProperties( DrawLineString, ["onSetup", "onMouseMove", "clickOnVertex", "onStop", "onKeyUp"] );
+var restOriginMethods = rest;
+var CutLineMode = Object.assign({}, {originOnSetup: originOnSetup, originOnKeyUp: originOnKeyUp, originOnStop: originOnStop, originOnMouseMove: originOnMouseMove, originClickOnVertex: originClickOnVertex}, restOriginMethods, Cut);
 
-var modes = genCutPolygonMode({
+CutLineMode.onSetup = function (opt) {
+  var this$1$1 = this;
+
+  var options = xtend(getCutDefaultOptions(), opt);
+  var featureIds = options.featureIds;
+  var highlightColor = options.highlightColor;
+
+  var features = [];
+  if (featureIds.length) {
+    features = featureIds.map(function (id) { return this$1$1.getFeature(id).toGeoJSON(); });
+  } else {
+    features = this.getSelected().map(function (f) { return f.toGeoJSON(); });
+  }
+
+  if (!features.length) {
+    throw new Error('Please select a feature/features (Polygon or MultiPolygon or LineString or MultiLineString) to split!');
+  }
+  this._api = this._ctx.api;
+  this._options = options;
+  this._features = features;
+  var state = this.originOnSetup();
+  this._batchHighlight(features, highlightColor);
+  return this.setState(state);
+};
+
+CutLineMode.clickOnVertex = function (state) {
+  var this$1$1 = this;
+
+  this.originClickOnVertex(state, function () {
+    this$1$1._cut(state);
+  });
+};
+
+CutLineMode._cut = function (state) {
+  var this$1$1 = this;
+
+  var cuttingLineString = state.line.toGeoJSON();
+  var ref = this._options;
+  var lineWidth = ref.lineWidth;
+  var lineWidthUnit = ref.lineWidthUnit;
+
+  var newPolygons = [];
+  this._features.forEach(function (el) {
+    if (turf__namespace.booleanDisjoint(el, cuttingLineString)) {
+      console.info(("Line was outside of Polygon " + (el.id)));
+      newPolygons.push(el);
+      return;
+    } else if (lineWidth === 0) {
+      var polycut = polygonCut(el.geometry, cuttingLineString.geometry);
+      polycut.id = el.id;
+      this$1$1._api.add(polycut);
+      newPolygons.push(polycut);
+    } else {
+      var polycut$1 = polygonCutWithSpacing(el.geometry, cuttingLineString.geometry, {
+        line_width: lineWidth,
+        line_width_unit: lineWidthUnit,
+      });
+      polycut$1.id = el.id;
+      this$1$1._api.add(polycut$1);
+      newPolygons.push(polycut$1);
+    }
+  });
+};
+
+CutLineMode.onMouseMove = function (state, e) {
+  this.updateUIClasses({ mouse: cursors.ADD });
+  this.originOnMouseMove(state, e);
+};
+
+CutLineMode.onStop = function (state) {
+  var this$1$1 = this;
+
+  this.originOnStop(state, function () {
+    this$1$1._cancelCut();
+    this$1$1.deleteFeature([state.polygon.id], { silent: true });
+  });
+};
+
+var modes = {
   simple_select: SimpleSelect,
   direct_select: DirectSelect,
   draw_point: DrawPoint,
   draw_polygon: DrawPolygon,
   draw_line_string: DrawLineString,
-});
+  cut_polygon: CutPolygonMode,
+  cut_line: CutLineMode,
+};
 
 var defaultOptions = {
   defaultMode: modes$1.SIMPLE_SELECT,
@@ -6556,7 +7192,7 @@ var defaultOptions = {
   touchBuffer: 25,
   boxSelect: true,
   displayControlsDefault: true,
-  styles: styles$1,
+  styles: styles,
   modes: modes,
   controls: {},
   userProperties: false,
@@ -6640,7 +7276,7 @@ function setupOptions (options) {
   return withDefaults;
 }
 
-var lodash_isequal = {exports: {}};
+var lodash_isequal$1 = {exports: {}};
 
 /**
  * Lodash (Custom Build) <https://lodash.com/>
@@ -6650,7 +7286,7 @@ var lodash_isequal = {exports: {}};
  * Based on Underscore.js 1.8.3 <http://underscorejs.org/LICENSE>
  * Copyright Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
  */
-lodash_isequal.exports;
+var lodash_isequal = lodash_isequal$1.exports;
 
 (function (module, exports) {
 	/** Used as the size to enable large array optimizations. */
@@ -6738,7 +7374,7 @@ lodash_isequal.exports;
 	var root = freeGlobal || freeSelf || Function('return this')();
 
 	/** Detect free variable `exports`. */
-	var freeExports = exports && !exports.nodeType && exports;
+	var freeExports = 'object' == 'object' && exports && !exports.nodeType && exports;
 
 	/** Detect free variable `module`. */
 	var freeModule = freeExports && 'object' == 'object' && module && !module.nodeType && module;
@@ -8492,9 +9128,9 @@ lodash_isequal.exports;
 	}
 
 	module.exports = isEqual; 
-} (lodash_isequal, lodash_isequal.exports));
+} (lodash_isequal$1, lodash_isequal$1.exports));
 
-var lodash_isequalExports = lodash_isequal.exports;
+var lodash_isequalExports = lodash_isequal$1.exports;
 var isEqual = /*@__PURE__*/getDefaultExportFromCjs(lodash_isequalExports);
 
 function stringSetsAreEqual(a, b) {
@@ -8784,7 +9420,7 @@ moveFeatures: moveFeatures,
 sortFeatures: sortFeatures,
 stringSetsAreEqual: stringSetsAreEqual,
 StringSet: StringSet,
-theme: styles$1,
+theme: styles,
 theme3: theme3,
 toDenseArray: toDenseArray
 });
@@ -8817,4 +9453,3 @@ MapboxDraw.lib = lib;
 return MapboxDraw;
 
 }));
-//# sourceMappingURL=mapbox-gl-draw.umd.unminified.js.map

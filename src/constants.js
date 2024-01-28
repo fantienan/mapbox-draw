@@ -65,7 +65,6 @@ export const modes = {
   // extend start
   CUT_POLYGON: 'cut_polygon',
   CUT_LINE: 'cut_line',
-  CUT_SELECT: 'cut_select',
   // extend end
 };
 

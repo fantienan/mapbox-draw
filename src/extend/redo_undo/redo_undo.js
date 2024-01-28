@@ -42,14 +42,9 @@ export class RedoUndo {
       undoStack = this._modeInstance.feature.getCoordinates()[0] || [];
       if (undoStack.length < 3) undoStack = [];
     }
+    this.undoStack = undoStack;
     const e = JSON.parse(JSON.stringify({ ...eventData, undoStack, redoStack: this.redoStack }));
-    this._ctx.ui.setDisableButtons((buttonStatus) => {
-      buttonStatus.undo = { disabled: e.undoStack.length === 0 };
-      buttonStatus.redo = { disabled: e.redoStack.length === 0 };
-      return buttonStatus;
-    });
-
-    mapFireRedoUndo(this._modeInstance, JSON.parse(JSON.stringify(e)));
+    mapFireRedoUndo(this._modeInstance, e);
     typeof cb === 'function' && cb();
   }
 
@@ -68,8 +63,6 @@ export class RedoUndo {
       state.currentVertexPosition--;
       if (state.currentVertexPosition < 0) return;
       this.redoStack.push(coord);
-      console.log(this.redoStack);
-
       this._fireChangeAndRender({ type: 'undo', cb });
     }
   }

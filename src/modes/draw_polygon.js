@@ -52,7 +52,7 @@ DrawPolygon.clickAnywhere = function (state, e) {
 DrawPolygon.clickOnVertex = function (state, cb) {
   // extend start
   if (isDisabledClickOnVertexWithCtx(this._ctx)) return;
-  if (typeof cb === 'function') return cb(state);
+  if (typeof cb === 'function') return cb();
   // extend end
   return this.changeMode(Constants.modes.SIMPLE_SELECT, { featureIds: [state.polygon.id] });
 };

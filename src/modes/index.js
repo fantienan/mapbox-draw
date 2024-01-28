@@ -3,12 +3,15 @@ import direct_select from './direct_select';
 import draw_point from './draw_point';
 import draw_polygon from './draw_polygon';
 import draw_line_string from './draw_line_string';
-import { genCutPolygonMode } from '../extend/modes/cut_polygon';
+import cut_polygon from '../extend/modes/cut_polygon';
+import cut_line from '../extend/modes/cut_line';
 
-export default genCutPolygonMode({
+export default {
   simple_select,
   direct_select,
   draw_point,
   draw_polygon,
   draw_line_string,
-});
+  cut_polygon,
+  cut_line,
+};

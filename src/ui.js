@@ -263,6 +263,7 @@ export default function (ctx) {
   // extend start
   function setDisableButtons(cb) {
     if (!buttonElements) return;
+
     const orginStatus = Object.entries(buttonElements).reduce((prev, [k, v]) => {
       prev[k] = { disabled: !!v.disabled };
       return prev;

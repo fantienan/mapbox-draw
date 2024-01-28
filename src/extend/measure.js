@@ -31,6 +31,8 @@ export class Measure {
   }
 
   delete() {
+    debugger;
+
     this.cancel();
   }
 }
