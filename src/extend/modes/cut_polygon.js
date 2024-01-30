@@ -2,8 +2,7 @@ import * as turf from '@turf/turf';
 import * as Constants from '../../constants';
 import draw_polygon from '../../modes/draw_polygon';
 import xtend from 'xtend';
-import hat from 'hat';
-import cut, { getCutDefaultOptions, highlightFieldName } from './utils';
+import cut, { geojsonTypes, getCutDefaultOptions, lineTypes } from './utils';
 
 const {
   onSetup: originOnSetup,
@@ -14,12 +13,6 @@ const {
   onKeyUp: originOnKeyUp,
   ...restOriginMethods
 } = draw_polygon;
-
-const polyTypes = [Constants.geojsonTypes.POLYGON, Constants.geojsonTypes.MULTI_POLYGON];
-
-const lineTypes = [Constants.geojsonTypes.LINE_STRING, Constants.geojsonTypes.MULTI_LINE_STRING];
-
-const geojsonTypes = [...polyTypes, ...lineTypes];
 
 const CutPolygonMode = {
   originOnSetup,
@@ -144,11 +137,10 @@ CutPolygonMode._cut = function (cuttingpolygon) {
       if (lineTypes.includes(feature.geometry.type)) {
         const splitter = turf.polygonToLine(cuttingpolygon);
         const cuted = turf.lineSplit(feature, splitter);
-        cuted.features.forEach((f) => (f.id = hat()));
         undoStack.lines.push({ cuted, line: feature });
         cuted.features.sort((a, b) => turf.length(a) - turf.length(b));
         cuted.features[0].id = feature.id;
-        api.add(cuted).forEach((id, i) => (cuted.features[i].id = id), { silent: true });
+        api.add(cuted, { silent: true }).forEach((id, i) => (cuted.features[i].id = id));
         this._continuous(() => this._batchHighlight(cuted.features, highlightColor));
         return;
       }

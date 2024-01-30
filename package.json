@@ -1,6 +1,6 @@
 {
   "name": "@ttfn/mapbox-gl-draw",
-  "version": "1.4.2-beta.78",
+  "version": "1.4.2-beta.79",
   "private": false,
   "description": "A drawing component for Mapbox GL JS",
   "keywords": [

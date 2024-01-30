@@ -26,13 +26,12 @@ export class Measure {
     this.markers = [];
     this.enabled = false;
   }
+
   destroy() {
     this.cancel();
   }
 
   delete() {
-    debugger;
-
     this.cancel();
   }
 }

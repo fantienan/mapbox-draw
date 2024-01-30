@@ -2,7 +2,7 @@
 typeof exports === 'object' && typeof module !== 'undefined' ? module.exports = factory(require('mapbox-gl'), require('@turf/turf')) :
 typeof define === 'function' && define.amd ? define(['mapbox-gl', '@turf/turf'], factory) :
 (global = typeof globalThis !== 'undefined' ? globalThis : global || self, global.MapboxDraw = factory(global.mapboxgl, global.turf));
-})(this, (function (mapboxGl, turf$1) { 'use strict';
+})(this, (function (mapboxGl, turf) { 'use strict';
 
 function _interopNamespace(e) {
 if (e && e.__esModule) return e;
@@ -22,7 +22,7 @@ n["default"] = e;
 return Object.freeze(n);
 }
 
-var turf__namespace = /*#__PURE__*/_interopNamespace(turf$1);
+var turf__namespace = /*#__PURE__*/_interopNamespace(turf);
 
 var ModeHandler = function (mode, DrawContext) {
   var handlers = {
@@ -211,10 +211,10 @@ var POLAR_RADIUS = wgs84$1.POLAR_RADIUS = 6356752.3142;
 
 var wgs84 = wgs84$1;
 
-var geometry_1 = geojsonArea.geometry = geometry;
+var geometry_1 = geojsonArea.geometry = geometry$1;
 var ring = geojsonArea.ring = ringArea;
 
-function geometry(_) {
+function geometry$1(_) {
     var area = 0, i;
     switch (_.type) {
         case 'Polygon':
@@ -231,7 +231,7 @@ function geometry(_) {
             return 0;
         case 'GeometryCollection':
             for (i = 0; i < _.geometries.length; i++) {
-                area += geometry(_.geometries[i]);
+                area += geometry$1(_.geometries[i]);
             }
             return area;
     }
@@ -1693,13 +1693,12 @@ Measure.prototype.cancel = function cancel () {
   this.markers = [];
   this.enabled = false;
 };
+
 Measure.prototype.destroy = function destroy () {
   this.cancel();
 };
 
 Measure.prototype.delete = function delete$1 () {
-  debugger;
-
   this.cancel();
 };
 
@@ -1927,18 +1926,18 @@ Feature.prototype.execMeasure = function () {
   throw new Error('execMeasure method must be implemented');
 };
 
-var Point$2 = function(ctx, geojson) {
+var Point$3 = function(ctx, geojson) {
   Feature.call(this, ctx, geojson);
 };
 
-Point$2.prototype = Object.create(Feature.prototype);
+Point$3.prototype = Object.create(Feature.prototype);
 
-Point$2.prototype.isValid = function() {
+Point$3.prototype.isValid = function() {
   return typeof this.coordinates[0] === 'number' &&
     typeof this.coordinates[1] === 'number';
 };
 
-Point$2.prototype.updateCoordinate = function(pathOrLng, lngOrLat, lat) {
+Point$3.prototype.updateCoordinate = function(pathOrLng, lngOrLat, lat) {
   if (arguments.length === 3) {
     this.coordinates = [lngOrLat, lat];
   } else {
@@ -1947,12 +1946,12 @@ Point$2.prototype.updateCoordinate = function(pathOrLng, lngOrLat, lat) {
   this.changed();
 };
 
-Point$2.prototype.getCoordinate = function() {
+Point$3.prototype.getCoordinate = function() {
   return this.getCoordinates();
 };
 
 // extend start
-Point$2.prototype.execMeasure = function() {};
+Point$3.prototype.execMeasure = function() {};
 
 /* eslint-disable import/no-unresolved */
 
@@ -2115,7 +2114,7 @@ Polygon.prototype.execMeasure = function()  {
 };
 
 var models = {
-  MultiPoint: Point$2,
+  MultiPoint: Point$3,
   MultiLineString: LineString,
   MultiPolygon: Polygon
 };
@@ -2400,7 +2399,7 @@ ModeInterface.prototype.newFeature = function (geojson, options) {
   var type = geojson.geometry.type;
   var feature;
   if (type === geojsonTypes$1.POINT) {
-    feature = new Point$2(this._ctx, geojson);
+    feature = new Point$3(this._ctx, geojson);
   } else if (type === geojsonTypes$1.LINE_STRING) {
     feature = new LineString(this._ctx, geojson);
   } else if (type === geojsonTypes$1.POLYGON) {
@@ -2420,7 +2419,7 @@ ModeInterface.prototype.newFeature = function (geojson, options) {
  * @returns {Boolean}
  */
 ModeInterface.prototype.isInstanceOf = function (type, feature) {
-  if (type === geojsonTypes$1.POINT) { return feature instanceof Point$2; }
+  if (type === geojsonTypes$1.POINT) { return feature instanceof Point$3; }
   if (type === geojsonTypes$1.LINE_STRING) { return feature instanceof LineString; }
   if (type === geojsonTypes$1.POLYGON) { return feature instanceof Polygon; }
   if (type === 'MultiFeature') { return feature instanceof MultiFeature; }
@@ -4278,7 +4277,7 @@ isTrue: isTrue
 
 'use strict';
 
-var pointGeometry = Point;
+var pointGeometry = Point$1;
 
 /**
  * A standalone point geometry with useful accessor, comparison, and
@@ -4292,19 +4291,19 @@ var pointGeometry = Point;
  * @example
  * var point = new Point(-77, 38);
  */
-function Point(x, y) {
+function Point$1(x, y) {
     this.x = x;
     this.y = y;
 }
 
-Point.prototype = {
+Point$1.prototype = {
 
     /**
      * Clone this point, returning a new point that can be modified
      * without affecting the old one.
      * @return {Point} the clone
      */
-    clone: function() { return new Point(this.x, this.y); },
+    clone: function() { return new Point$1(this.x, this.y); },
 
     /**
      * Add this point's x & y coordinates to another point,
@@ -4579,17 +4578,17 @@ Point.prototype = {
  * // is equivalent to
  * var point = new Point(0, 1);
  */
-Point.convert = function (a) {
-    if (a instanceof Point) {
+Point$1.convert = function (a) {
+    if (a instanceof Point$1) {
         return a;
     }
     if (Array.isArray(a)) {
-        return new Point(a[0], a[1]);
+        return new Point$1(a[0], a[1]);
     }
     return a;
 };
 
-var Point$1 = /*@__PURE__*/getDefaultExportFromCjs(pointGeometry);
+var Point$2 = /*@__PURE__*/getDefaultExportFromCjs(pointGeometry);
 
 /**
  * Returns a Point representing a mouse event's position
@@ -4601,7 +4600,7 @@ var Point$1 = /*@__PURE__*/getDefaultExportFromCjs(pointGeometry);
  */
 function mouseEventPoint(mouseEvent, container) {
   var rect = container.getBoundingClientRect();
-  return new Point$1(
+  return new Point$2(
     mouseEvent.clientX - rect.left - (container.clientLeft || 0),
     mouseEvent.clientY - rect.top - (container.clientTop || 0)
   );
@@ -4867,7 +4866,7 @@ var geojsonCoords$1 = function(_) {
     return coordinates;
 };
 
-var index$2 = /*@__PURE__*/getDefaultExportFromCjs(geojsonCoords$1);
+var index$3 = /*@__PURE__*/getDefaultExportFromCjs(geojsonCoords$1);
 
 'use strict';
 
@@ -4877,7 +4876,7 @@ function isDate(obj) { return toS(obj) === '[object Date]'; }
 function isRegExp(obj) { return toS(obj) === '[object RegExp]'; }
 function isError(obj) { return toS(obj) === '[object Error]'; }
 function isBoolean(obj) { return toS(obj) === '[object Boolean]'; }
-function isNumber(obj) { return toS(obj) === '[object Number]'; }
+function isNumber$1(obj) { return toS(obj) === '[object Number]'; }
 function isString(obj) { return toS(obj) === '[object String]'; }
 
 // TODO: use isarray
@@ -4937,7 +4936,7 @@ function copy(src) {
 			dst = new RegExp(src);
 		} else if (isError(src)) {
 			dst = { message: src.message };
-		} else if (isBoolean(src) || isNumber(src) || isString(src)) {
+		} else if (isBoolean(src) || isNumber$1(src) || isString(src)) {
 			dst = Object(src);
 		} else if (Object.create && Object.getPrototypeOf) {
 			dst = Object.create(Object.getPrototypeOf(src));
@@ -5200,7 +5199,7 @@ forEach(ownEnumerableKeys(Traverse.prototype), function (key) {
 
 var traverse_1 = traverse$1;
 
-var index$1 = /*@__PURE__*/getDefaultExportFromCjs(traverse_1);
+var index$2 = /*@__PURE__*/getDefaultExportFromCjs(traverse_1);
 
 var extent$2 = Extent;
 
@@ -5308,7 +5307,7 @@ Extent.prototype.polygon = function() {
     };
 };
 
-var index = /*@__PURE__*/getDefaultExportFromCjs(extent$2);
+var index$1 = /*@__PURE__*/getDefaultExportFromCjs(extent$2);
 
 var geojsonExtent = geojsonExtent$1.exports;
 
@@ -5329,7 +5328,7 @@ geojsonExtent$1.exports = function(_) {
     return getExtent(_).bbox();
 };
 
-var polygon = geojsonExtent$1.exports.polygon = function(_) {
+var polygon$1 = geojsonExtent$1.exports.polygon = function(_) {
     return getExtent(_).polygon();
 };
 
@@ -6738,77 +6737,22 @@ DrawLineString.drawByCoordinate = function (coord) {
   this.afterRender(function () { return mapFireAddPoint(this$1$1); }, true);
 };
 
+var polyTypes = [geojsonTypes$1.POLYGON, geojsonTypes$1.MULTI_POLYGON];
+
+var lineTypes = [geojsonTypes$1.LINE_STRING, geojsonTypes$1.MULTI_LINE_STRING];
+
+var geojsonTypes = polyTypes.concat( lineTypes);
+
 var getCutDefaultOptions = function () { return ({
   featureIds: [],
   highlightColor: '#73d13d',
   continuous: true,
+  // lineWidth: 0,
   lineWidth: 0.001,
   lineWidthUnit: 'kilometers',
 }); };
 
 var highlightFieldName = 'wait-cut';
-
-function polygonCut(poly, line) {
-  return polygonSplitter(poly, line);
-}
-
-/// https://gis.stackexchange.com/a/344277/145409
-function polygonCutWithSpacing(poly, line, options) {
-  var ref = options || {};
-  var line_width = ref.line_width;
-  var line_width_unit = ref.line_width_unit;
-
-  var offsetLine = [];
-  var retVal = null;
-  var i, j, intersectPoints, forCut, forSelect;
-  var thickLineString, thickLinePolygon, clipped;
-
-  if (
-    typeof line_width === 'undefined' ||
-    typeof line_width_unit === 'undefined' ||
-    (poly.type != geojsonTypes$1.POLYGON && poly.type != geojsonTypes$1.MULTI_POLYGON) ||
-    line.type != geojsonTypes$1.LINE_STRING
-  ) {
-    return retVal;
-  }
-
-  /// if line and polygon don't intersect return.
-  if (turf.booleanDisjoint(line, poly)) {
-    return retVal;
-  }
-
-  intersectPoints = turf.lineIntersect(poly, line);
-  if (intersectPoints.features.length === 0) {
-    return retVal;
-  }
-
-  /// Creating two new lines at sides of the splitting turf.lineString
-  offsetLine[0] = turf.lineOffset(line, line_width, {
-    units: line_width_unit,
-  });
-  offsetLine[1] = turf.lineOffset(line, -line_width, {
-    units: line_width_unit,
-  });
-
-  for (i = 0; i <= 1; i++) {
-    forCut = i;
-    forSelect = (i + 1) % 2;
-    var polyCoords = [];
-    for (j = 0; j < line.coordinates.length; j++) {
-      polyCoords.push(line.coordinates[j]);
-    }
-    for (j = offsetLine[forCut].geometry.coordinates.length - 1; j >= 0; j--) {
-      polyCoords.push(offsetLine[forCut].geometry.coordinates[j]);
-    }
-    polyCoords.push(line.coordinates[0]);
-
-    thickLineString = turf.lineString(polyCoords);
-    thickLinePolygon = turf.lineToPolygon(thickLineString);
-    clipped = turf.difference(poly, thickLinePolygon);
-  }
-
-  return clipped;
-}
 
 var Cut = {
   _styles: ['inactive-fill-color', 'inactive-fill-outline-color', 'inactive-line-color'],
@@ -6864,8 +6808,8 @@ Cut.onTrash = function (state) {
 };
 
 Cut.onKeyUp = function (state, e) {
-  this._cancelCut();
   this.originOnKeyUp(state, e);
+  if (isEscapeKey(e)) { this._cancelCut(); }
 };
 
 function objectWithoutProperties$1 (obj, exclude) { var target = {}; for (var k in obj) if (Object.prototype.hasOwnProperty.call(obj, k) && exclude.indexOf(k) === -1) target[k] = obj[k]; return target; }
@@ -6878,12 +6822,6 @@ var originOnTrash = DrawPolygon.onTrash;
 var originOnKeyUp$1 = DrawPolygon.onKeyUp;
 var rest$1 = objectWithoutProperties$1( DrawPolygon, ["onSetup", "onMouseMove", "clickOnVertex", "onStop", "onTrash", "onKeyUp"] );
 var restOriginMethods$1 = rest$1;
-
-var polyTypes = [geojsonTypes$1.POLYGON, geojsonTypes$1.MULTI_POLYGON];
-
-var lineTypes = [geojsonTypes$1.LINE_STRING, geojsonTypes$1.MULTI_LINE_STRING];
-
-var geojsonTypes = polyTypes.concat( lineTypes);
 
 var CutPolygonMode = Object.assign({}, {originOnSetup: originOnSetup$1,
   originOnKeyUp: originOnKeyUp$1,
@@ -7035,11 +6973,10 @@ CutPolygonMode._cut = function (cuttingpolygon) {
       if (lineTypes.includes(feature.geometry.type)) {
         var splitter = turf__namespace.polygonToLine(cuttingpolygon);
         var cuted = turf__namespace.lineSplit(feature, splitter);
-        cuted.features.forEach(function (f) { return (f.id = hat$1()); });
         undoStack.lines.push({ cuted: cuted, line: feature });
         cuted.features.sort(function (a, b) { return turf__namespace.length(a) - turf__namespace.length(b); });
         cuted.features[0].id = feature.id;
-        api.add(cuted).forEach(function (id, i) { return (cuted.features[i].id = id); }, { silent: true });
+        api.add(cuted, { silent: true }).forEach(function (id, i) { return (cuted.features[i].id = id); });
         this$1$1._continuous(function () { return this$1$1._batchHighlight(cuted.features, highlightColor); });
         return;
       }
@@ -7085,6 +7022,5577 @@ CutPolygonMode._resetState = function () {
   state.polygon.setCoordinates([[]]);
 };
 
+/**
+ * Returns a cloned copy of the passed GeoJSON Object, including possible 'Foreign Members'.
+ * ~3-5x faster than the common JSON.parse + JSON.stringify combo method.
+ *
+ * @name clone
+ * @param {GeoJSON} geojson GeoJSON Object
+ * @returns {GeoJSON} cloned GeoJSON Object
+ * @example
+ * var line = turf.lineString([[-74, 40], [-78, 42], [-82, 35]], {color: 'red'});
+ *
+ * var lineCloned = turf.clone(line);
+ */
+function clone(geojson) {
+    if (!geojson) {
+        throw new Error("geojson is required");
+    }
+    switch (geojson.type) {
+        case "Feature":
+            return cloneFeature(geojson);
+        case "FeatureCollection":
+            return cloneFeatureCollection(geojson);
+        case "Point":
+        case "LineString":
+        case "Polygon":
+        case "MultiPoint":
+        case "MultiLineString":
+        case "MultiPolygon":
+        case "GeometryCollection":
+            return cloneGeometry(geojson);
+        default:
+            throw new Error("unknown GeoJSON type");
+    }
+}
+/**
+ * Clone Feature
+ *
+ * @private
+ * @param {Feature<any>} geojson GeoJSON Feature
+ * @returns {Feature<any>} cloned Feature
+ */
+function cloneFeature(geojson) {
+    var cloned = { type: "Feature" };
+    // Preserve Foreign Members
+    Object.keys(geojson).forEach(function (key) {
+        switch (key) {
+            case "type":
+            case "properties":
+            case "geometry":
+                return;
+            default:
+                cloned[key] = geojson[key];
+        }
+    });
+    // Add properties & geometry last
+    cloned.properties = cloneProperties(geojson.properties);
+    cloned.geometry = cloneGeometry(geojson.geometry);
+    return cloned;
+}
+/**
+ * Clone Properties
+ *
+ * @private
+ * @param {Object} properties GeoJSON Properties
+ * @returns {Object} cloned Properties
+ */
+function cloneProperties(properties) {
+    var cloned = {};
+    if (!properties) {
+        return cloned;
+    }
+    Object.keys(properties).forEach(function (key) {
+        var value = properties[key];
+        if (typeof value === "object") {
+            if (value === null) {
+                // handle null
+                cloned[key] = null;
+            }
+            else if (Array.isArray(value)) {
+                // handle Array
+                cloned[key] = value.map(function (item) {
+                    return item;
+                });
+            }
+            else {
+                // handle generic Object
+                cloned[key] = cloneProperties(value);
+            }
+        }
+        else {
+            cloned[key] = value;
+        }
+    });
+    return cloned;
+}
+/**
+ * Clone Feature Collection
+ *
+ * @private
+ * @param {FeatureCollection<any>} geojson GeoJSON Feature Collection
+ * @returns {FeatureCollection<any>} cloned Feature Collection
+ */
+function cloneFeatureCollection(geojson) {
+    var cloned = { type: "FeatureCollection" };
+    // Preserve Foreign Members
+    Object.keys(geojson).forEach(function (key) {
+        switch (key) {
+            case "type":
+            case "features":
+                return;
+            default:
+                cloned[key] = geojson[key];
+        }
+    });
+    // Add features
+    cloned.features = geojson.features.map(function (feature) {
+        return cloneFeature(feature);
+    });
+    return cloned;
+}
+/**
+ * Clone Geometry
+ *
+ * @private
+ * @param {Geometry<any>} geometry GeoJSON Geometry
+ * @returns {Geometry<any>} cloned Geometry
+ */
+function cloneGeometry(geometry) {
+    var geom = { type: geometry.type };
+    if (geometry.bbox) {
+        geom.bbox = geometry.bbox;
+    }
+    if (geometry.type === "GeometryCollection") {
+        geom.geometries = geometry.geometries.map(function (g) {
+            return cloneGeometry(g);
+        });
+        return geom;
+    }
+    geom.coordinates = deepSlice(geometry.coordinates);
+    return geom;
+}
+/**
+ * Deep Slice coordinates
+ *
+ * @private
+ * @param {Coordinates} coords Coordinates
+ * @returns {Coordinates} all coordinates sliced
+ */
+function deepSlice(coords) {
+    var cloned = coords;
+    if (typeof cloned[0] !== "object") {
+        return cloned.slice();
+    }
+    return cloned.map(function (coord) {
+        return deepSlice(coord);
+    });
+}
+
+/**
+ * @module helpers
+ */
+/**
+ * Earth Radius used with the Harvesine formula and approximates using a spherical (non-ellipsoid) Earth.
+ *
+ * @memberof helpers
+ * @type {number}
+ */
+var earthRadius = 6371008.8;
+/**
+ * Unit of measurement factors using a spherical (non-ellipsoid) earth radius.
+ *
+ * @memberof helpers
+ * @type {Object}
+ */
+var factors = {
+    centimeters: earthRadius * 100,
+    centimetres: earthRadius * 100,
+    degrees: earthRadius / 111325,
+    feet: earthRadius * 3.28084,
+    inches: earthRadius * 39.37,
+    kilometers: earthRadius / 1000,
+    kilometres: earthRadius / 1000,
+    meters: earthRadius,
+    metres: earthRadius,
+    miles: earthRadius / 1609.344,
+    millimeters: earthRadius * 1000,
+    millimetres: earthRadius * 1000,
+    nauticalmiles: earthRadius / 1852,
+    radians: 1,
+    yards: earthRadius * 1.0936,
+};
+/**
+ * Units of measurement factors based on 1 meter.
+ *
+ * @memberof helpers
+ * @type {Object}
+ */
+var unitsFactors = {
+    centimeters: 100,
+    centimetres: 100,
+    degrees: 1 / 111325,
+    feet: 3.28084,
+    inches: 39.37,
+    kilometers: 1 / 1000,
+    kilometres: 1 / 1000,
+    meters: 1,
+    metres: 1,
+    miles: 1 / 1609.344,
+    millimeters: 1000,
+    millimetres: 1000,
+    nauticalmiles: 1 / 1852,
+    radians: 1 / earthRadius,
+    yards: 1.0936133,
+};
+/**
+ * Area of measurement factors based on 1 square meter.
+ *
+ * @memberof helpers
+ * @type {Object}
+ */
+var areaFactors = {
+    acres: 0.000247105,
+    centimeters: 10000,
+    centimetres: 10000,
+    feet: 10.763910417,
+    hectares: 0.0001,
+    inches: 1550.003100006,
+    kilometers: 0.000001,
+    kilometres: 0.000001,
+    meters: 1,
+    metres: 1,
+    miles: 3.86e-7,
+    millimeters: 1000000,
+    millimetres: 1000000,
+    yards: 1.195990046,
+};
+/**
+ * Wraps a GeoJSON {@link Geometry} in a GeoJSON {@link Feature}.
+ *
+ * @name feature
+ * @param {Geometry} geometry input geometry
+ * @param {Object} [properties={}] an Object of key-value pairs to add as properties
+ * @param {Object} [options={}] Optional Parameters
+ * @param {Array<number>} [options.bbox] Bounding Box Array [west, south, east, north] associated with the Feature
+ * @param {string|number} [options.id] Identifier associated with the Feature
+ * @returns {Feature} a GeoJSON Feature
+ * @example
+ * var geometry = {
+ *   "type": "Point",
+ *   "coordinates": [110, 50]
+ * };
+ *
+ * var feature = turf.feature(geometry);
+ *
+ * //=feature
+ */
+function feature(geom, properties, options) {
+    if (options === void 0) { options = {}; }
+    var feat = { type: "Feature" };
+    if (options.id === 0 || options.id) {
+        feat.id = options.id;
+    }
+    if (options.bbox) {
+        feat.bbox = options.bbox;
+    }
+    feat.properties = properties || {};
+    feat.geometry = geom;
+    return feat;
+}
+/**
+ * Creates a GeoJSON {@link Geometry} from a Geometry string type & coordinates.
+ * For GeometryCollection type use `helpers.geometryCollection`
+ *
+ * @name geometry
+ * @param {string} type Geometry Type
+ * @param {Array<any>} coordinates Coordinates
+ * @param {Object} [options={}] Optional Parameters
+ * @returns {Geometry} a GeoJSON Geometry
+ * @example
+ * var type = "Point";
+ * var coordinates = [110, 50];
+ * var geometry = turf.geometry(type, coordinates);
+ * // => geometry
+ */
+function geometry(type, coordinates, _options) {
+    if (_options === void 0) { _options = {}; }
+    switch (type) {
+        case "Point":
+            return point(coordinates).geometry;
+        case "LineString":
+            return lineString(coordinates).geometry;
+        case "Polygon":
+            return polygon(coordinates).geometry;
+        case "MultiPoint":
+            return multiPoint(coordinates).geometry;
+        case "MultiLineString":
+            return multiLineString(coordinates).geometry;
+        case "MultiPolygon":
+            return multiPolygon(coordinates).geometry;
+        default:
+            throw new Error(type + " is invalid");
+    }
+}
+/**
+ * Creates a {@link Point} {@link Feature} from a Position.
+ *
+ * @name point
+ * @param {Array<number>} coordinates longitude, latitude position (each in decimal degrees)
+ * @param {Object} [properties={}] an Object of key-value pairs to add as properties
+ * @param {Object} [options={}] Optional Parameters
+ * @param {Array<number>} [options.bbox] Bounding Box Array [west, south, east, north] associated with the Feature
+ * @param {string|number} [options.id] Identifier associated with the Feature
+ * @returns {Feature<Point>} a Point feature
+ * @example
+ * var point = turf.point([-75.343, 39.984]);
+ *
+ * //=point
+ */
+function point(coordinates, properties, options) {
+    if (options === void 0) { options = {}; }
+    if (!coordinates) {
+        throw new Error("coordinates is required");
+    }
+    if (!Array.isArray(coordinates)) {
+        throw new Error("coordinates must be an Array");
+    }
+    if (coordinates.length < 2) {
+        throw new Error("coordinates must be at least 2 numbers long");
+    }
+    if (!isNumber(coordinates[0]) || !isNumber(coordinates[1])) {
+        throw new Error("coordinates must contain numbers");
+    }
+    var geom = {
+        type: "Point",
+        coordinates: coordinates,
+    };
+    return feature(geom, properties, options);
+}
+/**
+ * Creates a {@link Point} {@link FeatureCollection} from an Array of Point coordinates.
+ *
+ * @name points
+ * @param {Array<Array<number>>} coordinates an array of Points
+ * @param {Object} [properties={}] Translate these properties to each Feature
+ * @param {Object} [options={}] Optional Parameters
+ * @param {Array<number>} [options.bbox] Bounding Box Array [west, south, east, north]
+ * associated with the FeatureCollection
+ * @param {string|number} [options.id] Identifier associated with the FeatureCollection
+ * @returns {FeatureCollection<Point>} Point Feature
+ * @example
+ * var points = turf.points([
+ *   [-75, 39],
+ *   [-80, 45],
+ *   [-78, 50]
+ * ]);
+ *
+ * //=points
+ */
+function points(coordinates, properties, options) {
+    if (options === void 0) { options = {}; }
+    return featureCollection(coordinates.map(function (coords) {
+        return point(coords, properties);
+    }), options);
+}
+/**
+ * Creates a {@link Polygon} {@link Feature} from an Array of LinearRings.
+ *
+ * @name polygon
+ * @param {Array<Array<Array<number>>>} coordinates an array of LinearRings
+ * @param {Object} [properties={}] an Object of key-value pairs to add as properties
+ * @param {Object} [options={}] Optional Parameters
+ * @param {Array<number>} [options.bbox] Bounding Box Array [west, south, east, north] associated with the Feature
+ * @param {string|number} [options.id] Identifier associated with the Feature
+ * @returns {Feature<Polygon>} Polygon Feature
+ * @example
+ * var polygon = turf.polygon([[[-5, 52], [-4, 56], [-2, 51], [-7, 54], [-5, 52]]], { name: 'poly1' });
+ *
+ * //=polygon
+ */
+function polygon(coordinates, properties, options) {
+    if (options === void 0) { options = {}; }
+    for (var _i = 0, coordinates_1 = coordinates; _i < coordinates_1.length; _i++) {
+        var ring = coordinates_1[_i];
+        if (ring.length < 4) {
+            throw new Error("Each LinearRing of a Polygon must have 4 or more Positions.");
+        }
+        for (var j = 0; j < ring[ring.length - 1].length; j++) {
+            // Check if first point of Polygon contains two numbers
+            if (ring[ring.length - 1][j] !== ring[0][j]) {
+                throw new Error("First and last Position are not equivalent.");
+            }
+        }
+    }
+    var geom = {
+        type: "Polygon",
+        coordinates: coordinates,
+    };
+    return feature(geom, properties, options);
+}
+/**
+ * Creates a {@link Polygon} {@link FeatureCollection} from an Array of Polygon coordinates.
+ *
+ * @name polygons
+ * @param {Array<Array<Array<Array<number>>>>} coordinates an array of Polygon coordinates
+ * @param {Object} [properties={}] an Object of key-value pairs to add as properties
+ * @param {Object} [options={}] Optional Parameters
+ * @param {Array<number>} [options.bbox] Bounding Box Array [west, south, east, north] associated with the Feature
+ * @param {string|number} [options.id] Identifier associated with the FeatureCollection
+ * @returns {FeatureCollection<Polygon>} Polygon FeatureCollection
+ * @example
+ * var polygons = turf.polygons([
+ *   [[[-5, 52], [-4, 56], [-2, 51], [-7, 54], [-5, 52]]],
+ *   [[[-15, 42], [-14, 46], [-12, 41], [-17, 44], [-15, 42]]],
+ * ]);
+ *
+ * //=polygons
+ */
+function polygons(coordinates, properties, options) {
+    if (options === void 0) { options = {}; }
+    return featureCollection(coordinates.map(function (coords) {
+        return polygon(coords, properties);
+    }), options);
+}
+/**
+ * Creates a {@link LineString} {@link Feature} from an Array of Positions.
+ *
+ * @name lineString
+ * @param {Array<Array<number>>} coordinates an array of Positions
+ * @param {Object} [properties={}] an Object of key-value pairs to add as properties
+ * @param {Object} [options={}] Optional Parameters
+ * @param {Array<number>} [options.bbox] Bounding Box Array [west, south, east, north] associated with the Feature
+ * @param {string|number} [options.id] Identifier associated with the Feature
+ * @returns {Feature<LineString>} LineString Feature
+ * @example
+ * var linestring1 = turf.lineString([[-24, 63], [-23, 60], [-25, 65], [-20, 69]], {name: 'line 1'});
+ * var linestring2 = turf.lineString([[-14, 43], [-13, 40], [-15, 45], [-10, 49]], {name: 'line 2'});
+ *
+ * //=linestring1
+ * //=linestring2
+ */
+function lineString(coordinates, properties, options) {
+    if (options === void 0) { options = {}; }
+    if (coordinates.length < 2) {
+        throw new Error("coordinates must be an array of two or more positions");
+    }
+    var geom = {
+        type: "LineString",
+        coordinates: coordinates,
+    };
+    return feature(geom, properties, options);
+}
+/**
+ * Creates a {@link LineString} {@link FeatureCollection} from an Array of LineString coordinates.
+ *
+ * @name lineStrings
+ * @param {Array<Array<Array<number>>>} coordinates an array of LinearRings
+ * @param {Object} [properties={}] an Object of key-value pairs to add as properties
+ * @param {Object} [options={}] Optional Parameters
+ * @param {Array<number>} [options.bbox] Bounding Box Array [west, south, east, north]
+ * associated with the FeatureCollection
+ * @param {string|number} [options.id] Identifier associated with the FeatureCollection
+ * @returns {FeatureCollection<LineString>} LineString FeatureCollection
+ * @example
+ * var linestrings = turf.lineStrings([
+ *   [[-24, 63], [-23, 60], [-25, 65], [-20, 69]],
+ *   [[-14, 43], [-13, 40], [-15, 45], [-10, 49]]
+ * ]);
+ *
+ * //=linestrings
+ */
+function lineStrings(coordinates, properties, options) {
+    if (options === void 0) { options = {}; }
+    return featureCollection(coordinates.map(function (coords) {
+        return lineString(coords, properties);
+    }), options);
+}
+/**
+ * Takes one or more {@link Feature|Features} and creates a {@link FeatureCollection}.
+ *
+ * @name featureCollection
+ * @param {Feature[]} features input features
+ * @param {Object} [options={}] Optional Parameters
+ * @param {Array<number>} [options.bbox] Bounding Box Array [west, south, east, north] associated with the Feature
+ * @param {string|number} [options.id] Identifier associated with the Feature
+ * @returns {FeatureCollection} FeatureCollection of Features
+ * @example
+ * var locationA = turf.point([-75.343, 39.984], {name: 'Location A'});
+ * var locationB = turf.point([-75.833, 39.284], {name: 'Location B'});
+ * var locationC = turf.point([-75.534, 39.123], {name: 'Location C'});
+ *
+ * var collection = turf.featureCollection([
+ *   locationA,
+ *   locationB,
+ *   locationC
+ * ]);
+ *
+ * //=collection
+ */
+function featureCollection(features, options) {
+    if (options === void 0) { options = {}; }
+    var fc = { type: "FeatureCollection" };
+    if (options.id) {
+        fc.id = options.id;
+    }
+    if (options.bbox) {
+        fc.bbox = options.bbox;
+    }
+    fc.features = features;
+    return fc;
+}
+/**
+ * Creates a {@link Feature<MultiLineString>} based on a
+ * coordinate array. Properties can be added optionally.
+ *
+ * @name multiLineString
+ * @param {Array<Array<Array<number>>>} coordinates an array of LineStrings
+ * @param {Object} [properties={}] an Object of key-value pairs to add as properties
+ * @param {Object} [options={}] Optional Parameters
+ * @param {Array<number>} [options.bbox] Bounding Box Array [west, south, east, north] associated with the Feature
+ * @param {string|number} [options.id] Identifier associated with the Feature
+ * @returns {Feature<MultiLineString>} a MultiLineString feature
+ * @throws {Error} if no coordinates are passed
+ * @example
+ * var multiLine = turf.multiLineString([[[0,0],[10,10]]]);
+ *
+ * //=multiLine
+ */
+function multiLineString(coordinates, properties, options) {
+    if (options === void 0) { options = {}; }
+    var geom = {
+        type: "MultiLineString",
+        coordinates: coordinates,
+    };
+    return feature(geom, properties, options);
+}
+/**
+ * Creates a {@link Feature<MultiPoint>} based on a
+ * coordinate array. Properties can be added optionally.
+ *
+ * @name multiPoint
+ * @param {Array<Array<number>>} coordinates an array of Positions
+ * @param {Object} [properties={}] an Object of key-value pairs to add as properties
+ * @param {Object} [options={}] Optional Parameters
+ * @param {Array<number>} [options.bbox] Bounding Box Array [west, south, east, north] associated with the Feature
+ * @param {string|number} [options.id] Identifier associated with the Feature
+ * @returns {Feature<MultiPoint>} a MultiPoint feature
+ * @throws {Error} if no coordinates are passed
+ * @example
+ * var multiPt = turf.multiPoint([[0,0],[10,10]]);
+ *
+ * //=multiPt
+ */
+function multiPoint(coordinates, properties, options) {
+    if (options === void 0) { options = {}; }
+    var geom = {
+        type: "MultiPoint",
+        coordinates: coordinates,
+    };
+    return feature(geom, properties, options);
+}
+/**
+ * Creates a {@link Feature<MultiPolygon>} based on a
+ * coordinate array. Properties can be added optionally.
+ *
+ * @name multiPolygon
+ * @param {Array<Array<Array<Array<number>>>>} coordinates an array of Polygons
+ * @param {Object} [properties={}] an Object of key-value pairs to add as properties
+ * @param {Object} [options={}] Optional Parameters
+ * @param {Array<number>} [options.bbox] Bounding Box Array [west, south, east, north] associated with the Feature
+ * @param {string|number} [options.id] Identifier associated with the Feature
+ * @returns {Feature<MultiPolygon>} a multipolygon feature
+ * @throws {Error} if no coordinates are passed
+ * @example
+ * var multiPoly = turf.multiPolygon([[[[0,0],[0,10],[10,10],[10,0],[0,0]]]]);
+ *
+ * //=multiPoly
+ *
+ */
+function multiPolygon(coordinates, properties, options) {
+    if (options === void 0) { options = {}; }
+    var geom = {
+        type: "MultiPolygon",
+        coordinates: coordinates,
+    };
+    return feature(geom, properties, options);
+}
+/**
+ * Creates a {@link Feature<GeometryCollection>} based on a
+ * coordinate array. Properties can be added optionally.
+ *
+ * @name geometryCollection
+ * @param {Array<Geometry>} geometries an array of GeoJSON Geometries
+ * @param {Object} [properties={}] an Object of key-value pairs to add as properties
+ * @param {Object} [options={}] Optional Parameters
+ * @param {Array<number>} [options.bbox] Bounding Box Array [west, south, east, north] associated with the Feature
+ * @param {string|number} [options.id] Identifier associated with the Feature
+ * @returns {Feature<GeometryCollection>} a GeoJSON GeometryCollection Feature
+ * @example
+ * var pt = turf.geometry("Point", [100, 0]);
+ * var line = turf.geometry("LineString", [[101, 0], [102, 1]]);
+ * var collection = turf.geometryCollection([pt, line]);
+ *
+ * // => collection
+ */
+function geometryCollection(geometries, properties, options) {
+    if (options === void 0) { options = {}; }
+    var geom = {
+        type: "GeometryCollection",
+        geometries: geometries,
+    };
+    return feature(geom, properties, options);
+}
+/**
+ * Round number to precision
+ *
+ * @param {number} num Number
+ * @param {number} [precision=0] Precision
+ * @returns {number} rounded number
+ * @example
+ * turf.round(120.4321)
+ * //=120
+ *
+ * turf.round(120.4321, 2)
+ * //=120.43
+ */
+function round(num, precision) {
+    if (precision === void 0) { precision = 0; }
+    if (precision && !(precision >= 0)) {
+        throw new Error("precision must be a positive number");
+    }
+    var multiplier = Math.pow(10, precision || 0);
+    return Math.round(num * multiplier) / multiplier;
+}
+/**
+ * Convert a distance measurement (assuming a spherical Earth) from radians to a more friendly unit.
+ * Valid units: miles, nauticalmiles, inches, yards, meters, metres, kilometers, centimeters, feet
+ *
+ * @name radiansToLength
+ * @param {number} radians in radians across the sphere
+ * @param {string} [units="kilometers"] can be degrees, radians, miles, inches, yards, metres,
+ * meters, kilometres, kilometers.
+ * @returns {number} distance
+ */
+function radiansToLength(radians, units) {
+    if (units === void 0) { units = "kilometers"; }
+    var factor = factors[units];
+    if (!factor) {
+        throw new Error(units + " units is invalid");
+    }
+    return radians * factor;
+}
+/**
+ * Convert a distance measurement (assuming a spherical Earth) from a real-world unit into radians
+ * Valid units: miles, nauticalmiles, inches, yards, meters, metres, kilometers, centimeters, feet
+ *
+ * @name lengthToRadians
+ * @param {number} distance in real units
+ * @param {string} [units="kilometers"] can be degrees, radians, miles, inches, yards, metres,
+ * meters, kilometres, kilometers.
+ * @returns {number} radians
+ */
+function lengthToRadians(distance, units) {
+    if (units === void 0) { units = "kilometers"; }
+    var factor = factors[units];
+    if (!factor) {
+        throw new Error(units + " units is invalid");
+    }
+    return distance / factor;
+}
+/**
+ * Convert a distance measurement (assuming a spherical Earth) from a real-world unit into degrees
+ * Valid units: miles, nauticalmiles, inches, yards, meters, metres, centimeters, kilometres, feet
+ *
+ * @name lengthToDegrees
+ * @param {number} distance in real units
+ * @param {string} [units="kilometers"] can be degrees, radians, miles, inches, yards, metres,
+ * meters, kilometres, kilometers.
+ * @returns {number} degrees
+ */
+function lengthToDegrees(distance, units) {
+    return radiansToDegrees(lengthToRadians(distance, units));
+}
+/**
+ * Converts any bearing angle from the north line direction (positive clockwise)
+ * and returns an angle between 0-360 degrees (positive clockwise), 0 being the north line
+ *
+ * @name bearingToAzimuth
+ * @param {number} bearing angle, between -180 and +180 degrees
+ * @returns {number} angle between 0 and 360 degrees
+ */
+function bearingToAzimuth(bearing) {
+    var angle = bearing % 360;
+    if (angle < 0) {
+        angle += 360;
+    }
+    return angle;
+}
+/**
+ * Converts an angle in radians to degrees
+ *
+ * @name radiansToDegrees
+ * @param {number} radians angle in radians
+ * @returns {number} degrees between 0 and 360 degrees
+ */
+function radiansToDegrees(radians) {
+    var degrees = radians % (2 * Math.PI);
+    return (degrees * 180) / Math.PI;
+}
+/**
+ * Converts an angle in degrees to radians
+ *
+ * @name degreesToRadians
+ * @param {number} degrees angle between 0 and 360 degrees
+ * @returns {number} angle in radians
+ */
+function degreesToRadians(degrees) {
+    var radians = degrees % 360;
+    return (radians * Math.PI) / 180;
+}
+/**
+ * Converts a length to the requested unit.
+ * Valid units: miles, nauticalmiles, inches, yards, meters, metres, kilometers, centimeters, feet
+ *
+ * @param {number} length to be converted
+ * @param {Units} [originalUnit="kilometers"] of the length
+ * @param {Units} [finalUnit="kilometers"] returned unit
+ * @returns {number} the converted length
+ */
+function convertLength(length, originalUnit, finalUnit) {
+    if (originalUnit === void 0) { originalUnit = "kilometers"; }
+    if (finalUnit === void 0) { finalUnit = "kilometers"; }
+    if (!(length >= 0)) {
+        throw new Error("length must be a positive number");
+    }
+    return radiansToLength(lengthToRadians(length, originalUnit), finalUnit);
+}
+/**
+ * Converts a area to the requested unit.
+ * Valid units: kilometers, kilometres, meters, metres, centimetres, millimeters, acres, miles, yards, feet, inches, hectares
+ * @param {number} area to be converted
+ * @param {Units} [originalUnit="meters"] of the distance
+ * @param {Units} [finalUnit="kilometers"] returned unit
+ * @returns {number} the converted area
+ */
+function convertArea(area, originalUnit, finalUnit) {
+    if (originalUnit === void 0) { originalUnit = "meters"; }
+    if (finalUnit === void 0) { finalUnit = "kilometers"; }
+    if (!(area >= 0)) {
+        throw new Error("area must be a positive number");
+    }
+    var startFactor = areaFactors[originalUnit];
+    if (!startFactor) {
+        throw new Error("invalid original units");
+    }
+    var finalFactor = areaFactors[finalUnit];
+    if (!finalFactor) {
+        throw new Error("invalid final units");
+    }
+    return (area / startFactor) * finalFactor;
+}
+/**
+ * isNumber
+ *
+ * @param {*} num Number to validate
+ * @returns {boolean} true/false
+ * @example
+ * turf.isNumber(123)
+ * //=true
+ * turf.isNumber('foo')
+ * //=false
+ */
+function isNumber(num) {
+    return !isNaN(num) && num !== null && !Array.isArray(num);
+}
+/**
+ * isObject
+ *
+ * @param {*} input variable to validate
+ * @returns {boolean} true/false
+ * @example
+ * turf.isObject({elevation: 10})
+ * //=true
+ * turf.isObject('foo')
+ * //=false
+ */
+function isObject(input) {
+    return !!input && input.constructor === Object;
+}
+/**
+ * Validate BBox
+ *
+ * @private
+ * @param {Array<number>} bbox BBox to validate
+ * @returns {void}
+ * @throws Error if BBox is not valid
+ * @example
+ * validateBBox([-180, -40, 110, 50])
+ * //=OK
+ * validateBBox([-180, -40])
+ * //=Error
+ * validateBBox('Foo')
+ * //=Error
+ * validateBBox(5)
+ * //=Error
+ * validateBBox(null)
+ * //=Error
+ * validateBBox(undefined)
+ * //=Error
+ */
+function validateBBox(bbox) {
+    if (!bbox) {
+        throw new Error("bbox is required");
+    }
+    if (!Array.isArray(bbox)) {
+        throw new Error("bbox must be an Array");
+    }
+    if (bbox.length !== 4 && bbox.length !== 6) {
+        throw new Error("bbox must be an Array of 4 or 6 numbers");
+    }
+    bbox.forEach(function (num) {
+        if (!isNumber(num)) {
+            throw new Error("bbox must only contain numbers");
+        }
+    });
+}
+/**
+ * Validate Id
+ *
+ * @private
+ * @param {string|number} id Id to validate
+ * @returns {void}
+ * @throws Error if Id is not valid
+ * @example
+ * validateId([-180, -40, 110, 50])
+ * //=Error
+ * validateId([-180, -40])
+ * //=Error
+ * validateId('Foo')
+ * //=OK
+ * validateId(5)
+ * //=OK
+ * validateId(null)
+ * //=Error
+ * validateId(undefined)
+ * //=Error
+ */
+function validateId(id) {
+    if (!id) {
+        throw new Error("id is required");
+    }
+    if (["string", "number"].indexOf(typeof id) === -1) {
+        throw new Error("id must be a number or a string");
+    }
+}
+
+/**
+ * Unwrap a coordinate from a Point Feature, Geometry or a single coordinate.
+ *
+ * @name getCoord
+ * @param {Array<number>|Geometry<Point>|Feature<Point>} coord GeoJSON Point or an Array of numbers
+ * @returns {Array<number>} coordinates
+ * @example
+ * var pt = turf.point([10, 10]);
+ *
+ * var coord = turf.getCoord(pt);
+ * //= [10, 10]
+ */
+function getCoord(coord) {
+    if (!coord) {
+        throw new Error("coord is required");
+    }
+    if (!Array.isArray(coord)) {
+        if (coord.type === "Feature" &&
+            coord.geometry !== null &&
+            coord.geometry.type === "Point") {
+            return coord.geometry.coordinates;
+        }
+        if (coord.type === "Point") {
+            return coord.coordinates;
+        }
+    }
+    if (Array.isArray(coord) &&
+        coord.length >= 2 &&
+        !Array.isArray(coord[0]) &&
+        !Array.isArray(coord[1])) {
+        return coord;
+    }
+    throw new Error("coord must be GeoJSON Point or an Array of numbers");
+}
+/**
+ * Unwrap coordinates from a Feature, Geometry Object or an Array
+ *
+ * @name getCoords
+ * @param {Array<any>|Geometry|Feature} coords Feature, Geometry Object or an Array
+ * @returns {Array<any>} coordinates
+ * @example
+ * var poly = turf.polygon([[[119.32, -8.7], [119.55, -8.69], [119.51, -8.54], [119.32, -8.7]]]);
+ *
+ * var coords = turf.getCoords(poly);
+ * //= [[[119.32, -8.7], [119.55, -8.69], [119.51, -8.54], [119.32, -8.7]]]
+ */
+function getCoords(coords) {
+    if (Array.isArray(coords)) {
+        return coords;
+    }
+    // Feature
+    if (coords.type === "Feature") {
+        if (coords.geometry !== null) {
+            return coords.geometry.coordinates;
+        }
+    }
+    else {
+        // Geometry
+        if (coords.coordinates) {
+            return coords.coordinates;
+        }
+    }
+    throw new Error("coords must be GeoJSON Feature, Geometry Object or an Array");
+}
+/**
+ * Checks if coordinates contains a number
+ *
+ * @name containsNumber
+ * @param {Array<any>} coordinates GeoJSON Coordinates
+ * @returns {boolean} true if Array contains a number
+ */
+function containsNumber(coordinates) {
+    if (coordinates.length > 1 &&
+        isNumber(coordinates[0]) &&
+        isNumber(coordinates[1])) {
+        return true;
+    }
+    if (Array.isArray(coordinates[0]) && coordinates[0].length) {
+        return containsNumber(coordinates[0]);
+    }
+    throw new Error("coordinates must only contain numbers");
+}
+/**
+ * Enforce expectations about types of GeoJSON objects for Turf.
+ *
+ * @name geojsonType
+ * @param {GeoJSON} value any GeoJSON object
+ * @param {string} type expected GeoJSON type
+ * @param {string} name name of calling function
+ * @throws {Error} if value is not the expected type.
+ */
+function geojsonType(value, type, name) {
+    if (!type || !name) {
+        throw new Error("type and name required");
+    }
+    if (!value || value.type !== type) {
+        throw new Error("Invalid input to " +
+            name +
+            ": must be a " +
+            type +
+            ", given " +
+            value.type);
+    }
+}
+/**
+ * Enforce expectations about types of {@link Feature} inputs for Turf.
+ * Internally this uses {@link geojsonType} to judge geometry types.
+ *
+ * @name featureOf
+ * @param {Feature} feature a feature with an expected geometry type
+ * @param {string} type expected GeoJSON type
+ * @param {string} name name of calling function
+ * @throws {Error} error if value is not the expected type.
+ */
+function featureOf(feature, type, name) {
+    if (!feature) {
+        throw new Error("No feature passed");
+    }
+    if (!name) {
+        throw new Error(".featureOf() requires a name");
+    }
+    if (!feature || feature.type !== "Feature" || !feature.geometry) {
+        throw new Error("Invalid input to " + name + ", Feature with geometry required");
+    }
+    if (!feature.geometry || feature.geometry.type !== type) {
+        throw new Error("Invalid input to " +
+            name +
+            ": must be a " +
+            type +
+            ", given " +
+            feature.geometry.type);
+    }
+}
+/**
+ * Enforce expectations about types of {@link FeatureCollection} inputs for Turf.
+ * Internally this uses {@link geojsonType} to judge geometry types.
+ *
+ * @name collectionOf
+ * @param {FeatureCollection} featureCollection a FeatureCollection for which features will be judged
+ * @param {string} type expected GeoJSON type
+ * @param {string} name name of calling function
+ * @throws {Error} if value is not the expected type.
+ */
+function collectionOf(featureCollection, type, name) {
+    if (!featureCollection) {
+        throw new Error("No featureCollection passed");
+    }
+    if (!name) {
+        throw new Error(".collectionOf() requires a name");
+    }
+    if (!featureCollection || featureCollection.type !== "FeatureCollection") {
+        throw new Error("Invalid input to " + name + ", FeatureCollection required");
+    }
+    for (var _i = 0, _a = featureCollection.features; _i < _a.length; _i++) {
+        var feature = _a[_i];
+        if (!feature || feature.type !== "Feature" || !feature.geometry) {
+            throw new Error("Invalid input to " + name + ", Feature with geometry required");
+        }
+        if (!feature.geometry || feature.geometry.type !== type) {
+            throw new Error("Invalid input to " +
+                name +
+                ": must be a " +
+                type +
+                ", given " +
+                feature.geometry.type);
+        }
+    }
+}
+/**
+ * Get Geometry from Feature or Geometry Object
+ *
+ * @param {Feature|Geometry} geojson GeoJSON Feature or Geometry Object
+ * @returns {Geometry|null} GeoJSON Geometry Object
+ * @throws {Error} if geojson is not a Feature or Geometry Object
+ * @example
+ * var point = {
+ *   "type": "Feature",
+ *   "properties": {},
+ *   "geometry": {
+ *     "type": "Point",
+ *     "coordinates": [110, 40]
+ *   }
+ * }
+ * var geom = turf.getGeom(point)
+ * //={"type": "Point", "coordinates": [110, 40]}
+ */
+function getGeom(geojson) {
+    if (geojson.type === "Feature") {
+        return geojson.geometry;
+    }
+    return geojson;
+}
+/**
+ * Get GeoJSON object's type, Geometry type is prioritize.
+ *
+ * @param {GeoJSON} geojson GeoJSON object
+ * @param {string} [name="geojson"] name of the variable to display in error message (unused)
+ * @returns {string} GeoJSON type
+ * @example
+ * var point = {
+ *   "type": "Feature",
+ *   "properties": {},
+ *   "geometry": {
+ *     "type": "Point",
+ *     "coordinates": [110, 40]
+ *   }
+ * }
+ * var geom = turf.getType(point)
+ * //="Point"
+ */
+function getType(geojson, _name) {
+    if (geojson.type === "FeatureCollection") {
+        return "FeatureCollection";
+    }
+    if (geojson.type === "GeometryCollection") {
+        return "GeometryCollection";
+    }
+    if (geojson.type === "Feature" && geojson.geometry !== null) {
+        return geojson.geometry.type;
+    }
+    return geojson.type;
+}
+
+/**
+ * Takes a ring and return true or false whether or not the ring is clockwise or counter-clockwise.
+ *
+ * @name booleanClockwise
+ * @param {Feature<LineString>|LineString|Array<Array<number>>} line to be evaluated
+ * @returns {boolean} true/false
+ * @example
+ * var clockwiseRing = turf.lineString([[0,0],[1,1],[1,0],[0,0]]);
+ * var counterClockwiseRing = turf.lineString([[0,0],[1,0],[1,1],[0,0]]);
+ *
+ * turf.booleanClockwise(clockwiseRing)
+ * //=true
+ * turf.booleanClockwise(counterClockwiseRing)
+ * //=false
+ */
+function booleanClockwise(line) {
+    var ring = getCoords(line);
+    var sum = 0;
+    var i = 1;
+    var prev;
+    var cur;
+    while (i < ring.length) {
+        prev = cur || ring[0];
+        cur = ring[i];
+        sum += (cur[0] - prev[0]) * (cur[1] + prev[1]);
+        i++;
+    }
+    return sum > 0;
+}
+
+/**
+ * Callback for coordEach
+ *
+ * @callback coordEachCallback
+ * @param {Array<number>} currentCoord The current coordinate being processed.
+ * @param {number} coordIndex The current index of the coordinate being processed.
+ * @param {number} featureIndex The current index of the Feature being processed.
+ * @param {number} multiFeatureIndex The current index of the Multi-Feature being processed.
+ * @param {number} geometryIndex The current index of the Geometry being processed.
+ */
+
+/**
+ * Iterate over coordinates in any GeoJSON object, similar to Array.forEach()
+ *
+ * @name coordEach
+ * @param {FeatureCollection|Feature|Geometry} geojson any GeoJSON object
+ * @param {Function} callback a method that takes (currentCoord, coordIndex, featureIndex, multiFeatureIndex)
+ * @param {boolean} [excludeWrapCoord=false] whether or not to include the final coordinate of LinearRings that wraps the ring in its iteration.
+ * @returns {void}
+ * @example
+ * var features = turf.featureCollection([
+ *   turf.point([26, 37], {"foo": "bar"}),
+ *   turf.point([36, 53], {"hello": "world"})
+ * ]);
+ *
+ * turf.coordEach(features, function (currentCoord, coordIndex, featureIndex, multiFeatureIndex, geometryIndex) {
+ *   //=currentCoord
+ *   //=coordIndex
+ *   //=featureIndex
+ *   //=multiFeatureIndex
+ *   //=geometryIndex
+ * });
+ */
+function coordEach(geojson, callback, excludeWrapCoord) {
+  // Handles null Geometry -- Skips this GeoJSON
+  if (geojson === null) { return; }
+  var j,
+    k,
+    l,
+    geometry,
+    stopG,
+    coords,
+    geometryMaybeCollection,
+    wrapShrink = 0,
+    coordIndex = 0,
+    isGeometryCollection,
+    type = geojson.type,
+    isFeatureCollection = type === "FeatureCollection",
+    isFeature = type === "Feature",
+    stop = isFeatureCollection ? geojson.features.length : 1;
+
+  // This logic may look a little weird. The reason why it is that way
+  // is because it's trying to be fast. GeoJSON supports multiple kinds
+  // of objects at its root: FeatureCollection, Features, Geometries.
+  // This function has the responsibility of handling all of them, and that
+  // means that some of the `for` loops you see below actually just don't apply
+  // to certain inputs. For instance, if you give this just a
+  // Point geometry, then both loops are short-circuited and all we do
+  // is gradually rename the input until it's called 'geometry'.
+  //
+  // This also aims to allocate as few resources as possible: just a
+  // few numbers and booleans, rather than any temporary arrays as would
+  // be required with the normalization approach.
+  for (var featureIndex = 0; featureIndex < stop; featureIndex++) {
+    geometryMaybeCollection = isFeatureCollection
+      ? geojson.features[featureIndex].geometry
+      : isFeature
+      ? geojson.geometry
+      : geojson;
+    isGeometryCollection = geometryMaybeCollection
+      ? geometryMaybeCollection.type === "GeometryCollection"
+      : false;
+    stopG = isGeometryCollection
+      ? geometryMaybeCollection.geometries.length
+      : 1;
+
+    for (var geomIndex = 0; geomIndex < stopG; geomIndex++) {
+      var multiFeatureIndex = 0;
+      var geometryIndex = 0;
+      geometry = isGeometryCollection
+        ? geometryMaybeCollection.geometries[geomIndex]
+        : geometryMaybeCollection;
+
+      // Handles null Geometry -- Skips this geometry
+      if (geometry === null) { continue; }
+      coords = geometry.coordinates;
+      var geomType = geometry.type;
+
+      wrapShrink =
+        excludeWrapCoord &&
+        (geomType === "Polygon" || geomType === "MultiPolygon")
+          ? 1
+          : 0;
+
+      switch (geomType) {
+        case null:
+          break;
+        case "Point":
+          if (
+            callback(
+              coords,
+              coordIndex,
+              featureIndex,
+              multiFeatureIndex,
+              geometryIndex
+            ) === false
+          )
+            { return false; }
+          coordIndex++;
+          multiFeatureIndex++;
+          break;
+        case "LineString":
+        case "MultiPoint":
+          for (j = 0; j < coords.length; j++) {
+            if (
+              callback(
+                coords[j],
+                coordIndex,
+                featureIndex,
+                multiFeatureIndex,
+                geometryIndex
+              ) === false
+            )
+              { return false; }
+            coordIndex++;
+            if (geomType === "MultiPoint") { multiFeatureIndex++; }
+          }
+          if (geomType === "LineString") { multiFeatureIndex++; }
+          break;
+        case "Polygon":
+        case "MultiLineString":
+          for (j = 0; j < coords.length; j++) {
+            for (k = 0; k < coords[j].length - wrapShrink; k++) {
+              if (
+                callback(
+                  coords[j][k],
+                  coordIndex,
+                  featureIndex,
+                  multiFeatureIndex,
+                  geometryIndex
+                ) === false
+              )
+                { return false; }
+              coordIndex++;
+            }
+            if (geomType === "MultiLineString") { multiFeatureIndex++; }
+            if (geomType === "Polygon") { geometryIndex++; }
+          }
+          if (geomType === "Polygon") { multiFeatureIndex++; }
+          break;
+        case "MultiPolygon":
+          for (j = 0; j < coords.length; j++) {
+            geometryIndex = 0;
+            for (k = 0; k < coords[j].length; k++) {
+              for (l = 0; l < coords[j][k].length - wrapShrink; l++) {
+                if (
+                  callback(
+                    coords[j][k][l],
+                    coordIndex,
+                    featureIndex,
+                    multiFeatureIndex,
+                    geometryIndex
+                  ) === false
+                )
+                  { return false; }
+                coordIndex++;
+              }
+              geometryIndex++;
+            }
+            multiFeatureIndex++;
+          }
+          break;
+        case "GeometryCollection":
+          for (j = 0; j < geometry.geometries.length; j++)
+            { if (
+              coordEach(geometry.geometries[j], callback, excludeWrapCoord) ===
+              false
+            )
+              { return false; } }
+          break;
+        default:
+          throw new Error("Unknown Geometry Type");
+      }
+    }
+  }
+}
+
+/**
+ * Callback for coordReduce
+ *
+ * The first time the callback function is called, the values provided as arguments depend
+ * on whether the reduce method has an initialValue argument.
+ *
+ * If an initialValue is provided to the reduce method:
+ *  - The previousValue argument is initialValue.
+ *  - The currentValue argument is the value of the first element present in the array.
+ *
+ * If an initialValue is not provided:
+ *  - The previousValue argument is the value of the first element present in the array.
+ *  - The currentValue argument is the value of the second element present in the array.
+ *
+ * @callback coordReduceCallback
+ * @param {*} previousValue The accumulated value previously returned in the last invocation
+ * of the callback, or initialValue, if supplied.
+ * @param {Array<number>} currentCoord The current coordinate being processed.
+ * @param {number} coordIndex The current index of the coordinate being processed.
+ * Starts at index 0, if an initialValue is provided, and at index 1 otherwise.
+ * @param {number} featureIndex The current index of the Feature being processed.
+ * @param {number} multiFeatureIndex The current index of the Multi-Feature being processed.
+ * @param {number} geometryIndex The current index of the Geometry being processed.
+ */
+
+/**
+ * Reduce coordinates in any GeoJSON object, similar to Array.reduce()
+ *
+ * @name coordReduce
+ * @param {FeatureCollection|Geometry|Feature} geojson any GeoJSON object
+ * @param {Function} callback a method that takes (previousValue, currentCoord, coordIndex)
+ * @param {*} [initialValue] Value to use as the first argument to the first call of the callback.
+ * @param {boolean} [excludeWrapCoord=false] whether or not to include the final coordinate of LinearRings that wraps the ring in its iteration.
+ * @returns {*} The value that results from the reduction.
+ * @example
+ * var features = turf.featureCollection([
+ *   turf.point([26, 37], {"foo": "bar"}),
+ *   turf.point([36, 53], {"hello": "world"})
+ * ]);
+ *
+ * turf.coordReduce(features, function (previousValue, currentCoord, coordIndex, featureIndex, multiFeatureIndex, geometryIndex) {
+ *   //=previousValue
+ *   //=currentCoord
+ *   //=coordIndex
+ *   //=featureIndex
+ *   //=multiFeatureIndex
+ *   //=geometryIndex
+ *   return currentCoord;
+ * });
+ */
+function coordReduce(geojson, callback, initialValue, excludeWrapCoord) {
+  var previousValue = initialValue;
+  coordEach(
+    geojson,
+    function (
+      currentCoord,
+      coordIndex,
+      featureIndex,
+      multiFeatureIndex,
+      geometryIndex
+    ) {
+      if (coordIndex === 0 && initialValue === undefined)
+        { previousValue = currentCoord; }
+      else
+        { previousValue = callback(
+          previousValue,
+          currentCoord,
+          coordIndex,
+          featureIndex,
+          multiFeatureIndex,
+          geometryIndex
+        ); }
+    },
+    excludeWrapCoord
+  );
+  return previousValue;
+}
+
+/**
+ * Callback for propEach
+ *
+ * @callback propEachCallback
+ * @param {Object} currentProperties The current Properties being processed.
+ * @param {number} featureIndex The current index of the Feature being processed.
+ */
+
+/**
+ * Iterate over properties in any GeoJSON object, similar to Array.forEach()
+ *
+ * @name propEach
+ * @param {FeatureCollection|Feature} geojson any GeoJSON object
+ * @param {Function} callback a method that takes (currentProperties, featureIndex)
+ * @returns {void}
+ * @example
+ * var features = turf.featureCollection([
+ *     turf.point([26, 37], {foo: 'bar'}),
+ *     turf.point([36, 53], {hello: 'world'})
+ * ]);
+ *
+ * turf.propEach(features, function (currentProperties, featureIndex) {
+ *   //=currentProperties
+ *   //=featureIndex
+ * });
+ */
+function propEach(geojson, callback) {
+  var i;
+  switch (geojson.type) {
+    case "FeatureCollection":
+      for (i = 0; i < geojson.features.length; i++) {
+        if (callback(geojson.features[i].properties, i) === false) { break; }
+      }
+      break;
+    case "Feature":
+      callback(geojson.properties, 0);
+      break;
+  }
+}
+
+/**
+ * Callback for propReduce
+ *
+ * The first time the callback function is called, the values provided as arguments depend
+ * on whether the reduce method has an initialValue argument.
+ *
+ * If an initialValue is provided to the reduce method:
+ *  - The previousValue argument is initialValue.
+ *  - The currentValue argument is the value of the first element present in the array.
+ *
+ * If an initialValue is not provided:
+ *  - The previousValue argument is the value of the first element present in the array.
+ *  - The currentValue argument is the value of the second element present in the array.
+ *
+ * @callback propReduceCallback
+ * @param {*} previousValue The accumulated value previously returned in the last invocation
+ * of the callback, or initialValue, if supplied.
+ * @param {*} currentProperties The current Properties being processed.
+ * @param {number} featureIndex The current index of the Feature being processed.
+ */
+
+/**
+ * Reduce properties in any GeoJSON object into a single value,
+ * similar to how Array.reduce works. However, in this case we lazily run
+ * the reduction, so an array of all properties is unnecessary.
+ *
+ * @name propReduce
+ * @param {FeatureCollection|Feature} geojson any GeoJSON object
+ * @param {Function} callback a method that takes (previousValue, currentProperties, featureIndex)
+ * @param {*} [initialValue] Value to use as the first argument to the first call of the callback.
+ * @returns {*} The value that results from the reduction.
+ * @example
+ * var features = turf.featureCollection([
+ *     turf.point([26, 37], {foo: 'bar'}),
+ *     turf.point([36, 53], {hello: 'world'})
+ * ]);
+ *
+ * turf.propReduce(features, function (previousValue, currentProperties, featureIndex) {
+ *   //=previousValue
+ *   //=currentProperties
+ *   //=featureIndex
+ *   return currentProperties
+ * });
+ */
+function propReduce(geojson, callback, initialValue) {
+  var previousValue = initialValue;
+  propEach(geojson, function (currentProperties, featureIndex) {
+    if (featureIndex === 0 && initialValue === undefined)
+      { previousValue = currentProperties; }
+    else
+      { previousValue = callback(previousValue, currentProperties, featureIndex); }
+  });
+  return previousValue;
+}
+
+/**
+ * Callback for featureEach
+ *
+ * @callback featureEachCallback
+ * @param {Feature<any>} currentFeature The current Feature being processed.
+ * @param {number} featureIndex The current index of the Feature being processed.
+ */
+
+/**
+ * Iterate over features in any GeoJSON object, similar to
+ * Array.forEach.
+ *
+ * @name featureEach
+ * @param {FeatureCollection|Feature|Geometry} geojson any GeoJSON object
+ * @param {Function} callback a method that takes (currentFeature, featureIndex)
+ * @returns {void}
+ * @example
+ * var features = turf.featureCollection([
+ *   turf.point([26, 37], {foo: 'bar'}),
+ *   turf.point([36, 53], {hello: 'world'})
+ * ]);
+ *
+ * turf.featureEach(features, function (currentFeature, featureIndex) {
+ *   //=currentFeature
+ *   //=featureIndex
+ * });
+ */
+function featureEach(geojson, callback) {
+  if (geojson.type === "Feature") {
+    callback(geojson, 0);
+  } else if (geojson.type === "FeatureCollection") {
+    for (var i = 0; i < geojson.features.length; i++) {
+      if (callback(geojson.features[i], i) === false) { break; }
+    }
+  }
+}
+
+/**
+ * Callback for featureReduce
+ *
+ * The first time the callback function is called, the values provided as arguments depend
+ * on whether the reduce method has an initialValue argument.
+ *
+ * If an initialValue is provided to the reduce method:
+ *  - The previousValue argument is initialValue.
+ *  - The currentValue argument is the value of the first element present in the array.
+ *
+ * If an initialValue is not provided:
+ *  - The previousValue argument is the value of the first element present in the array.
+ *  - The currentValue argument is the value of the second element present in the array.
+ *
+ * @callback featureReduceCallback
+ * @param {*} previousValue The accumulated value previously returned in the last invocation
+ * of the callback, or initialValue, if supplied.
+ * @param {Feature} currentFeature The current Feature being processed.
+ * @param {number} featureIndex The current index of the Feature being processed.
+ */
+
+/**
+ * Reduce features in any GeoJSON object, similar to Array.reduce().
+ *
+ * @name featureReduce
+ * @param {FeatureCollection|Feature|Geometry} geojson any GeoJSON object
+ * @param {Function} callback a method that takes (previousValue, currentFeature, featureIndex)
+ * @param {*} [initialValue] Value to use as the first argument to the first call of the callback.
+ * @returns {*} The value that results from the reduction.
+ * @example
+ * var features = turf.featureCollection([
+ *   turf.point([26, 37], {"foo": "bar"}),
+ *   turf.point([36, 53], {"hello": "world"})
+ * ]);
+ *
+ * turf.featureReduce(features, function (previousValue, currentFeature, featureIndex) {
+ *   //=previousValue
+ *   //=currentFeature
+ *   //=featureIndex
+ *   return currentFeature
+ * });
+ */
+function featureReduce(geojson, callback, initialValue) {
+  var previousValue = initialValue;
+  featureEach(geojson, function (currentFeature, featureIndex) {
+    if (featureIndex === 0 && initialValue === undefined)
+      { previousValue = currentFeature; }
+    else { previousValue = callback(previousValue, currentFeature, featureIndex); }
+  });
+  return previousValue;
+}
+
+/**
+ * Get all coordinates from any GeoJSON object.
+ *
+ * @name coordAll
+ * @param {FeatureCollection|Feature|Geometry} geojson any GeoJSON object
+ * @returns {Array<Array<number>>} coordinate position array
+ * @example
+ * var features = turf.featureCollection([
+ *   turf.point([26, 37], {foo: 'bar'}),
+ *   turf.point([36, 53], {hello: 'world'})
+ * ]);
+ *
+ * var coords = turf.coordAll(features);
+ * //= [[26, 37], [36, 53]]
+ */
+function coordAll(geojson) {
+  var coords = [];
+  coordEach(geojson, function (coord) {
+    coords.push(coord);
+  });
+  return coords;
+}
+
+/**
+ * Callback for geomEach
+ *
+ * @callback geomEachCallback
+ * @param {Geometry} currentGeometry The current Geometry being processed.
+ * @param {number} featureIndex The current index of the Feature being processed.
+ * @param {Object} featureProperties The current Feature Properties being processed.
+ * @param {Array<number>} featureBBox The current Feature BBox being processed.
+ * @param {number|string} featureId The current Feature Id being processed.
+ */
+
+/**
+ * Iterate over each geometry in any GeoJSON object, similar to Array.forEach()
+ *
+ * @name geomEach
+ * @param {FeatureCollection|Feature|Geometry} geojson any GeoJSON object
+ * @param {Function} callback a method that takes (currentGeometry, featureIndex, featureProperties, featureBBox, featureId)
+ * @returns {void}
+ * @example
+ * var features = turf.featureCollection([
+ *     turf.point([26, 37], {foo: 'bar'}),
+ *     turf.point([36, 53], {hello: 'world'})
+ * ]);
+ *
+ * turf.geomEach(features, function (currentGeometry, featureIndex, featureProperties, featureBBox, featureId) {
+ *   //=currentGeometry
+ *   //=featureIndex
+ *   //=featureProperties
+ *   //=featureBBox
+ *   //=featureId
+ * });
+ */
+function geomEach(geojson, callback) {
+  var i,
+    j,
+    g,
+    geometry,
+    stopG,
+    geometryMaybeCollection,
+    isGeometryCollection,
+    featureProperties,
+    featureBBox,
+    featureId,
+    featureIndex = 0,
+    isFeatureCollection = geojson.type === "FeatureCollection",
+    isFeature = geojson.type === "Feature",
+    stop = isFeatureCollection ? geojson.features.length : 1;
+
+  // This logic may look a little weird. The reason why it is that way
+  // is because it's trying to be fast. GeoJSON supports multiple kinds
+  // of objects at its root: FeatureCollection, Features, Geometries.
+  // This function has the responsibility of handling all of them, and that
+  // means that some of the `for` loops you see below actually just don't apply
+  // to certain inputs. For instance, if you give this just a
+  // Point geometry, then both loops are short-circuited and all we do
+  // is gradually rename the input until it's called 'geometry'.
+  //
+  // This also aims to allocate as few resources as possible: just a
+  // few numbers and booleans, rather than any temporary arrays as would
+  // be required with the normalization approach.
+  for (i = 0; i < stop; i++) {
+    geometryMaybeCollection = isFeatureCollection
+      ? geojson.features[i].geometry
+      : isFeature
+      ? geojson.geometry
+      : geojson;
+    featureProperties = isFeatureCollection
+      ? geojson.features[i].properties
+      : isFeature
+      ? geojson.properties
+      : {};
+    featureBBox = isFeatureCollection
+      ? geojson.features[i].bbox
+      : isFeature
+      ? geojson.bbox
+      : undefined;
+    featureId = isFeatureCollection
+      ? geojson.features[i].id
+      : isFeature
+      ? geojson.id
+      : undefined;
+    isGeometryCollection = geometryMaybeCollection
+      ? geometryMaybeCollection.type === "GeometryCollection"
+      : false;
+    stopG = isGeometryCollection
+      ? geometryMaybeCollection.geometries.length
+      : 1;
+
+    for (g = 0; g < stopG; g++) {
+      geometry = isGeometryCollection
+        ? geometryMaybeCollection.geometries[g]
+        : geometryMaybeCollection;
+
+      // Handle null Geometry
+      if (geometry === null) {
+        if (
+          callback(
+            null,
+            featureIndex,
+            featureProperties,
+            featureBBox,
+            featureId
+          ) === false
+        )
+          { return false; }
+        continue;
+      }
+      switch (geometry.type) {
+        case "Point":
+        case "LineString":
+        case "MultiPoint":
+        case "Polygon":
+        case "MultiLineString":
+        case "MultiPolygon": {
+          if (
+            callback(
+              geometry,
+              featureIndex,
+              featureProperties,
+              featureBBox,
+              featureId
+            ) === false
+          )
+            { return false; }
+          break;
+        }
+        case "GeometryCollection": {
+          for (j = 0; j < geometry.geometries.length; j++) {
+            if (
+              callback(
+                geometry.geometries[j],
+                featureIndex,
+                featureProperties,
+                featureBBox,
+                featureId
+              ) === false
+            )
+              { return false; }
+          }
+          break;
+        }
+        default:
+          throw new Error("Unknown Geometry Type");
+      }
+    }
+    // Only increase `featureIndex` per each feature
+    featureIndex++;
+  }
+}
+
+/**
+ * Callback for geomReduce
+ *
+ * The first time the callback function is called, the values provided as arguments depend
+ * on whether the reduce method has an initialValue argument.
+ *
+ * If an initialValue is provided to the reduce method:
+ *  - The previousValue argument is initialValue.
+ *  - The currentValue argument is the value of the first element present in the array.
+ *
+ * If an initialValue is not provided:
+ *  - The previousValue argument is the value of the first element present in the array.
+ *  - The currentValue argument is the value of the second element present in the array.
+ *
+ * @callback geomReduceCallback
+ * @param {*} previousValue The accumulated value previously returned in the last invocation
+ * of the callback, or initialValue, if supplied.
+ * @param {Geometry} currentGeometry The current Geometry being processed.
+ * @param {number} featureIndex The current index of the Feature being processed.
+ * @param {Object} featureProperties The current Feature Properties being processed.
+ * @param {Array<number>} featureBBox The current Feature BBox being processed.
+ * @param {number|string} featureId The current Feature Id being processed.
+ */
+
+/**
+ * Reduce geometry in any GeoJSON object, similar to Array.reduce().
+ *
+ * @name geomReduce
+ * @param {FeatureCollection|Feature|Geometry} geojson any GeoJSON object
+ * @param {Function} callback a method that takes (previousValue, currentGeometry, featureIndex, featureProperties, featureBBox, featureId)
+ * @param {*} [initialValue] Value to use as the first argument to the first call of the callback.
+ * @returns {*} The value that results from the reduction.
+ * @example
+ * var features = turf.featureCollection([
+ *     turf.point([26, 37], {foo: 'bar'}),
+ *     turf.point([36, 53], {hello: 'world'})
+ * ]);
+ *
+ * turf.geomReduce(features, function (previousValue, currentGeometry, featureIndex, featureProperties, featureBBox, featureId) {
+ *   //=previousValue
+ *   //=currentGeometry
+ *   //=featureIndex
+ *   //=featureProperties
+ *   //=featureBBox
+ *   //=featureId
+ *   return currentGeometry
+ * });
+ */
+function geomReduce(geojson, callback, initialValue) {
+  var previousValue = initialValue;
+  geomEach(
+    geojson,
+    function (
+      currentGeometry,
+      featureIndex,
+      featureProperties,
+      featureBBox,
+      featureId
+    ) {
+      if (featureIndex === 0 && initialValue === undefined)
+        { previousValue = currentGeometry; }
+      else
+        { previousValue = callback(
+          previousValue,
+          currentGeometry,
+          featureIndex,
+          featureProperties,
+          featureBBox,
+          featureId
+        ); }
+    }
+  );
+  return previousValue;
+}
+
+/**
+ * Callback for flattenEach
+ *
+ * @callback flattenEachCallback
+ * @param {Feature} currentFeature The current flattened feature being processed.
+ * @param {number} featureIndex The current index of the Feature being processed.
+ * @param {number} multiFeatureIndex The current index of the Multi-Feature being processed.
+ */
+
+/**
+ * Iterate over flattened features in any GeoJSON object, similar to
+ * Array.forEach.
+ *
+ * @name flattenEach
+ * @param {FeatureCollection|Feature|Geometry} geojson any GeoJSON object
+ * @param {Function} callback a method that takes (currentFeature, featureIndex, multiFeatureIndex)
+ * @example
+ * var features = turf.featureCollection([
+ *     turf.point([26, 37], {foo: 'bar'}),
+ *     turf.multiPoint([[40, 30], [36, 53]], {hello: 'world'})
+ * ]);
+ *
+ * turf.flattenEach(features, function (currentFeature, featureIndex, multiFeatureIndex) {
+ *   //=currentFeature
+ *   //=featureIndex
+ *   //=multiFeatureIndex
+ * });
+ */
+function flattenEach(geojson, callback) {
+  geomEach(geojson, function (geometry, featureIndex, properties, bbox, id) {
+    // Callback for single geometry
+    var type = geometry === null ? null : geometry.type;
+    switch (type) {
+      case null:
+      case "Point":
+      case "LineString":
+      case "Polygon":
+        if (
+          callback(
+            feature(geometry, properties, { bbox: bbox, id: id }),
+            featureIndex,
+            0
+          ) === false
+        )
+          { return false; }
+        return;
+    }
+
+    var geomType;
+
+    // Callback for multi-geometry
+    switch (type) {
+      case "MultiPoint":
+        geomType = "Point";
+        break;
+      case "MultiLineString":
+        geomType = "LineString";
+        break;
+      case "MultiPolygon":
+        geomType = "Polygon";
+        break;
+    }
+
+    for (
+      var multiFeatureIndex = 0;
+      multiFeatureIndex < geometry.coordinates.length;
+      multiFeatureIndex++
+    ) {
+      var coordinate = geometry.coordinates[multiFeatureIndex];
+      var geom = {
+        type: geomType,
+        coordinates: coordinate,
+      };
+      if (
+        callback(feature(geom, properties), featureIndex, multiFeatureIndex) ===
+        false
+      )
+        { return false; }
+    }
+  });
+}
+
+/**
+ * Callback for flattenReduce
+ *
+ * The first time the callback function is called, the values provided as arguments depend
+ * on whether the reduce method has an initialValue argument.
+ *
+ * If an initialValue is provided to the reduce method:
+ *  - The previousValue argument is initialValue.
+ *  - The currentValue argument is the value of the first element present in the array.
+ *
+ * If an initialValue is not provided:
+ *  - The previousValue argument is the value of the first element present in the array.
+ *  - The currentValue argument is the value of the second element present in the array.
+ *
+ * @callback flattenReduceCallback
+ * @param {*} previousValue The accumulated value previously returned in the last invocation
+ * of the callback, or initialValue, if supplied.
+ * @param {Feature} currentFeature The current Feature being processed.
+ * @param {number} featureIndex The current index of the Feature being processed.
+ * @param {number} multiFeatureIndex The current index of the Multi-Feature being processed.
+ */
+
+/**
+ * Reduce flattened features in any GeoJSON object, similar to Array.reduce().
+ *
+ * @name flattenReduce
+ * @param {FeatureCollection|Feature|Geometry} geojson any GeoJSON object
+ * @param {Function} callback a method that takes (previousValue, currentFeature, featureIndex, multiFeatureIndex)
+ * @param {*} [initialValue] Value to use as the first argument to the first call of the callback.
+ * @returns {*} The value that results from the reduction.
+ * @example
+ * var features = turf.featureCollection([
+ *     turf.point([26, 37], {foo: 'bar'}),
+ *     turf.multiPoint([[40, 30], [36, 53]], {hello: 'world'})
+ * ]);
+ *
+ * turf.flattenReduce(features, function (previousValue, currentFeature, featureIndex, multiFeatureIndex) {
+ *   //=previousValue
+ *   //=currentFeature
+ *   //=featureIndex
+ *   //=multiFeatureIndex
+ *   return currentFeature
+ * });
+ */
+function flattenReduce(geojson, callback, initialValue) {
+  var previousValue = initialValue;
+  flattenEach(
+    geojson,
+    function (currentFeature, featureIndex, multiFeatureIndex) {
+      if (
+        featureIndex === 0 &&
+        multiFeatureIndex === 0 &&
+        initialValue === undefined
+      )
+        { previousValue = currentFeature; }
+      else
+        { previousValue = callback(
+          previousValue,
+          currentFeature,
+          featureIndex,
+          multiFeatureIndex
+        ); }
+    }
+  );
+  return previousValue;
+}
+
+/**
+ * Callback for segmentEach
+ *
+ * @callback segmentEachCallback
+ * @param {Feature<LineString>} currentSegment The current Segment being processed.
+ * @param {number} featureIndex The current index of the Feature being processed.
+ * @param {number} multiFeatureIndex The current index of the Multi-Feature being processed.
+ * @param {number} geometryIndex The current index of the Geometry being processed.
+ * @param {number} segmentIndex The current index of the Segment being processed.
+ * @returns {void}
+ */
+
+/**
+ * Iterate over 2-vertex line segment in any GeoJSON object, similar to Array.forEach()
+ * (Multi)Point geometries do not contain segments therefore they are ignored during this operation.
+ *
+ * @param {FeatureCollection|Feature|Geometry} geojson any GeoJSON
+ * @param {Function} callback a method that takes (currentSegment, featureIndex, multiFeatureIndex, geometryIndex, segmentIndex)
+ * @returns {void}
+ * @example
+ * var polygon = turf.polygon([[[-50, 5], [-40, -10], [-50, -10], [-40, 5], [-50, 5]]]);
+ *
+ * // Iterate over GeoJSON by 2-vertex segments
+ * turf.segmentEach(polygon, function (currentSegment, featureIndex, multiFeatureIndex, geometryIndex, segmentIndex) {
+ *   //=currentSegment
+ *   //=featureIndex
+ *   //=multiFeatureIndex
+ *   //=geometryIndex
+ *   //=segmentIndex
+ * });
+ *
+ * // Calculate the total number of segments
+ * var total = 0;
+ * turf.segmentEach(polygon, function () {
+ *     total++;
+ * });
+ */
+function segmentEach(geojson, callback) {
+  flattenEach(geojson, function (feature, featureIndex, multiFeatureIndex) {
+    var segmentIndex = 0;
+
+    // Exclude null Geometries
+    if (!feature.geometry) { return; }
+    // (Multi)Point geometries do not contain segments therefore they are ignored during this operation.
+    var type = feature.geometry.type;
+    if (type === "Point" || type === "MultiPoint") { return; }
+
+    // Generate 2-vertex line segments
+    var previousCoords;
+    var previousFeatureIndex = 0;
+    var previousMultiIndex = 0;
+    var prevGeomIndex = 0;
+    if (
+      coordEach(
+        feature,
+        function (
+          currentCoord,
+          coordIndex,
+          featureIndexCoord,
+          multiPartIndexCoord,
+          geometryIndex
+        ) {
+          // Simulating a meta.coordReduce() since `reduce` operations cannot be stopped by returning `false`
+          if (
+            previousCoords === undefined ||
+            featureIndex > previousFeatureIndex ||
+            multiPartIndexCoord > previousMultiIndex ||
+            geometryIndex > prevGeomIndex
+          ) {
+            previousCoords = currentCoord;
+            previousFeatureIndex = featureIndex;
+            previousMultiIndex = multiPartIndexCoord;
+            prevGeomIndex = geometryIndex;
+            segmentIndex = 0;
+            return;
+          }
+          var currentSegment = lineString(
+            [previousCoords, currentCoord],
+            feature.properties
+          );
+          if (
+            callback(
+              currentSegment,
+              featureIndex,
+              multiFeatureIndex,
+              geometryIndex,
+              segmentIndex
+            ) === false
+          )
+            { return false; }
+          segmentIndex++;
+          previousCoords = currentCoord;
+        }
+      ) === false
+    )
+      { return false; }
+  });
+}
+
+/**
+ * Callback for segmentReduce
+ *
+ * The first time the callback function is called, the values provided as arguments depend
+ * on whether the reduce method has an initialValue argument.
+ *
+ * If an initialValue is provided to the reduce method:
+ *  - The previousValue argument is initialValue.
+ *  - The currentValue argument is the value of the first element present in the array.
+ *
+ * If an initialValue is not provided:
+ *  - The previousValue argument is the value of the first element present in the array.
+ *  - The currentValue argument is the value of the second element present in the array.
+ *
+ * @callback segmentReduceCallback
+ * @param {*} previousValue The accumulated value previously returned in the last invocation
+ * of the callback, or initialValue, if supplied.
+ * @param {Feature<LineString>} currentSegment The current Segment being processed.
+ * @param {number} featureIndex The current index of the Feature being processed.
+ * @param {number} multiFeatureIndex The current index of the Multi-Feature being processed.
+ * @param {number} geometryIndex The current index of the Geometry being processed.
+ * @param {number} segmentIndex The current index of the Segment being processed.
+ */
+
+/**
+ * Reduce 2-vertex line segment in any GeoJSON object, similar to Array.reduce()
+ * (Multi)Point geometries do not contain segments therefore they are ignored during this operation.
+ *
+ * @param {FeatureCollection|Feature|Geometry} geojson any GeoJSON
+ * @param {Function} callback a method that takes (previousValue, currentSegment, currentIndex)
+ * @param {*} [initialValue] Value to use as the first argument to the first call of the callback.
+ * @returns {void}
+ * @example
+ * var polygon = turf.polygon([[[-50, 5], [-40, -10], [-50, -10], [-40, 5], [-50, 5]]]);
+ *
+ * // Iterate over GeoJSON by 2-vertex segments
+ * turf.segmentReduce(polygon, function (previousSegment, currentSegment, featureIndex, multiFeatureIndex, geometryIndex, segmentIndex) {
+ *   //= previousSegment
+ *   //= currentSegment
+ *   //= featureIndex
+ *   //= multiFeatureIndex
+ *   //= geometryIndex
+ *   //= segmentIndex
+ *   return currentSegment
+ * });
+ *
+ * // Calculate the total number of segments
+ * var initialValue = 0
+ * var total = turf.segmentReduce(polygon, function (previousValue) {
+ *     previousValue++;
+ *     return previousValue;
+ * }, initialValue);
+ */
+function segmentReduce(geojson, callback, initialValue) {
+  var previousValue = initialValue;
+  var started = false;
+  segmentEach(
+    geojson,
+    function (
+      currentSegment,
+      featureIndex,
+      multiFeatureIndex,
+      geometryIndex,
+      segmentIndex
+    ) {
+      if (started === false && initialValue === undefined)
+        { previousValue = currentSegment; }
+      else
+        { previousValue = callback(
+          previousValue,
+          currentSegment,
+          featureIndex,
+          multiFeatureIndex,
+          geometryIndex,
+          segmentIndex
+        ); }
+      started = true;
+    }
+  );
+  return previousValue;
+}
+
+/**
+ * Callback for lineEach
+ *
+ * @callback lineEachCallback
+ * @param {Feature<LineString>} currentLine The current LineString|LinearRing being processed
+ * @param {number} featureIndex The current index of the Feature being processed
+ * @param {number} multiFeatureIndex The current index of the Multi-Feature being processed
+ * @param {number} geometryIndex The current index of the Geometry being processed
+ */
+
+/**
+ * Iterate over line or ring coordinates in LineString, Polygon, MultiLineString, MultiPolygon Features or Geometries,
+ * similar to Array.forEach.
+ *
+ * @name lineEach
+ * @param {Geometry|Feature<LineString|Polygon|MultiLineString|MultiPolygon>} geojson object
+ * @param {Function} callback a method that takes (currentLine, featureIndex, multiFeatureIndex, geometryIndex)
+ * @example
+ * var multiLine = turf.multiLineString([
+ *   [[26, 37], [35, 45]],
+ *   [[36, 53], [38, 50], [41, 55]]
+ * ]);
+ *
+ * turf.lineEach(multiLine, function (currentLine, featureIndex, multiFeatureIndex, geometryIndex) {
+ *   //=currentLine
+ *   //=featureIndex
+ *   //=multiFeatureIndex
+ *   //=geometryIndex
+ * });
+ */
+function lineEach(geojson, callback) {
+  // validation
+  if (!geojson) { throw new Error("geojson is required"); }
+
+  flattenEach(geojson, function (feature, featureIndex, multiFeatureIndex) {
+    if (feature.geometry === null) { return; }
+    var type = feature.geometry.type;
+    var coords = feature.geometry.coordinates;
+    switch (type) {
+      case "LineString":
+        if (callback(feature, featureIndex, multiFeatureIndex, 0, 0) === false)
+          { return false; }
+        break;
+      case "Polygon":
+        for (
+          var geometryIndex = 0;
+          geometryIndex < coords.length;
+          geometryIndex++
+        ) {
+          if (
+            callback(
+              lineString(coords[geometryIndex], feature.properties),
+              featureIndex,
+              multiFeatureIndex,
+              geometryIndex
+            ) === false
+          )
+            { return false; }
+        }
+        break;
+    }
+  });
+}
+
+/**
+ * Callback for lineReduce
+ *
+ * The first time the callback function is called, the values provided as arguments depend
+ * on whether the reduce method has an initialValue argument.
+ *
+ * If an initialValue is provided to the reduce method:
+ *  - The previousValue argument is initialValue.
+ *  - The currentValue argument is the value of the first element present in the array.
+ *
+ * If an initialValue is not provided:
+ *  - The previousValue argument is the value of the first element present in the array.
+ *  - The currentValue argument is the value of the second element present in the array.
+ *
+ * @callback lineReduceCallback
+ * @param {*} previousValue The accumulated value previously returned in the last invocation
+ * of the callback, or initialValue, if supplied.
+ * @param {Feature<LineString>} currentLine The current LineString|LinearRing being processed.
+ * @param {number} featureIndex The current index of the Feature being processed
+ * @param {number} multiFeatureIndex The current index of the Multi-Feature being processed
+ * @param {number} geometryIndex The current index of the Geometry being processed
+ */
+
+/**
+ * Reduce features in any GeoJSON object, similar to Array.reduce().
+ *
+ * @name lineReduce
+ * @param {Geometry|Feature<LineString|Polygon|MultiLineString|MultiPolygon>} geojson object
+ * @param {Function} callback a method that takes (previousValue, currentLine, featureIndex, multiFeatureIndex, geometryIndex)
+ * @param {*} [initialValue] Value to use as the first argument to the first call of the callback.
+ * @returns {*} The value that results from the reduction.
+ * @example
+ * var multiPoly = turf.multiPolygon([
+ *   turf.polygon([[[12,48],[2,41],[24,38],[12,48]], [[9,44],[13,41],[13,45],[9,44]]]),
+ *   turf.polygon([[[5, 5], [0, 0], [2, 2], [4, 4], [5, 5]]])
+ * ]);
+ *
+ * turf.lineReduce(multiPoly, function (previousValue, currentLine, featureIndex, multiFeatureIndex, geometryIndex) {
+ *   //=previousValue
+ *   //=currentLine
+ *   //=featureIndex
+ *   //=multiFeatureIndex
+ *   //=geometryIndex
+ *   return currentLine
+ * });
+ */
+function lineReduce(geojson, callback, initialValue) {
+  var previousValue = initialValue;
+  lineEach(
+    geojson,
+    function (currentLine, featureIndex, multiFeatureIndex, geometryIndex) {
+      if (featureIndex === 0 && initialValue === undefined)
+        { previousValue = currentLine; }
+      else
+        { previousValue = callback(
+          previousValue,
+          currentLine,
+          featureIndex,
+          multiFeatureIndex,
+          geometryIndex
+        ); }
+    }
+  );
+  return previousValue;
+}
+
+/**
+ * Finds a particular 2-vertex LineString Segment from a GeoJSON using `@turf/meta` indexes.
+ *
+ * Negative indexes are permitted.
+ * Point & MultiPoint will always return null.
+ *
+ * @param {FeatureCollection|Feature|Geometry} geojson Any GeoJSON Feature or Geometry
+ * @param {Object} [options={}] Optional parameters
+ * @param {number} [options.featureIndex=0] Feature Index
+ * @param {number} [options.multiFeatureIndex=0] Multi-Feature Index
+ * @param {number} [options.geometryIndex=0] Geometry Index
+ * @param {number} [options.segmentIndex=0] Segment Index
+ * @param {Object} [options.properties={}] Translate Properties to output LineString
+ * @param {BBox} [options.bbox={}] Translate BBox to output LineString
+ * @param {number|string} [options.id={}] Translate Id to output LineString
+ * @returns {Feature<LineString>} 2-vertex GeoJSON Feature LineString
+ * @example
+ * var multiLine = turf.multiLineString([
+ *     [[10, 10], [50, 30], [30, 40]],
+ *     [[-10, -10], [-50, -30], [-30, -40]]
+ * ]);
+ *
+ * // First Segment (defaults are 0)
+ * turf.findSegment(multiLine);
+ * // => Feature<LineString<[[10, 10], [50, 30]]>>
+ *
+ * // First Segment of 2nd Multi Feature
+ * turf.findSegment(multiLine, {multiFeatureIndex: 1});
+ * // => Feature<LineString<[[-10, -10], [-50, -30]]>>
+ *
+ * // Last Segment of Last Multi Feature
+ * turf.findSegment(multiLine, {multiFeatureIndex: -1, segmentIndex: -1});
+ * // => Feature<LineString<[[-50, -30], [-30, -40]]>>
+ */
+function findSegment(geojson, options) {
+  // Optional Parameters
+  options = options || {};
+  if (!isObject(options)) { throw new Error("options is invalid"); }
+  var featureIndex = options.featureIndex || 0;
+  var multiFeatureIndex = options.multiFeatureIndex || 0;
+  var geometryIndex = options.geometryIndex || 0;
+  var segmentIndex = options.segmentIndex || 0;
+
+  // Find FeatureIndex
+  var properties = options.properties;
+  var geometry;
+
+  switch (geojson.type) {
+    case "FeatureCollection":
+      if (featureIndex < 0)
+        { featureIndex = geojson.features.length + featureIndex; }
+      properties = properties || geojson.features[featureIndex].properties;
+      geometry = geojson.features[featureIndex].geometry;
+      break;
+    case "Feature":
+      properties = properties || geojson.properties;
+      geometry = geojson.geometry;
+      break;
+    case "Point":
+    case "MultiPoint":
+      return null;
+    case "LineString":
+    case "Polygon":
+    case "MultiLineString":
+    case "MultiPolygon":
+      geometry = geojson;
+      break;
+    default:
+      throw new Error("geojson is invalid");
+  }
+
+  // Find SegmentIndex
+  if (geometry === null) { return null; }
+  var coords = geometry.coordinates;
+  switch (geometry.type) {
+    case "Point":
+    case "MultiPoint":
+      return null;
+    case "LineString":
+      if (segmentIndex < 0) { segmentIndex = coords.length + segmentIndex - 1; }
+      return lineString(
+        [coords[segmentIndex], coords[segmentIndex + 1]],
+        properties,
+        options
+      );
+    case "Polygon":
+      if (geometryIndex < 0) { geometryIndex = coords.length + geometryIndex; }
+      if (segmentIndex < 0)
+        { segmentIndex = coords[geometryIndex].length + segmentIndex - 1; }
+      return lineString(
+        [
+          coords[geometryIndex][segmentIndex],
+          coords[geometryIndex][segmentIndex + 1] ],
+        properties,
+        options
+      );
+    case "MultiLineString":
+      if (multiFeatureIndex < 0)
+        { multiFeatureIndex = coords.length + multiFeatureIndex; }
+      if (segmentIndex < 0)
+        { segmentIndex = coords[multiFeatureIndex].length + segmentIndex - 1; }
+      return lineString(
+        [
+          coords[multiFeatureIndex][segmentIndex],
+          coords[multiFeatureIndex][segmentIndex + 1] ],
+        properties,
+        options
+      );
+    case "MultiPolygon":
+      if (multiFeatureIndex < 0)
+        { multiFeatureIndex = coords.length + multiFeatureIndex; }
+      if (geometryIndex < 0)
+        { geometryIndex = coords[multiFeatureIndex].length + geometryIndex; }
+      if (segmentIndex < 0)
+        { segmentIndex =
+          coords[multiFeatureIndex][geometryIndex].length - segmentIndex - 1; }
+      return lineString(
+        [
+          coords[multiFeatureIndex][geometryIndex][segmentIndex],
+          coords[multiFeatureIndex][geometryIndex][segmentIndex + 1] ],
+        properties,
+        options
+      );
+  }
+  throw new Error("geojson is invalid");
+}
+
+/**
+ * Finds a particular Point from a GeoJSON using `@turf/meta` indexes.
+ *
+ * Negative indexes are permitted.
+ *
+ * @param {FeatureCollection|Feature|Geometry} geojson Any GeoJSON Feature or Geometry
+ * @param {Object} [options={}] Optional parameters
+ * @param {number} [options.featureIndex=0] Feature Index
+ * @param {number} [options.multiFeatureIndex=0] Multi-Feature Index
+ * @param {number} [options.geometryIndex=0] Geometry Index
+ * @param {number} [options.coordIndex=0] Coord Index
+ * @param {Object} [options.properties={}] Translate Properties to output Point
+ * @param {BBox} [options.bbox={}] Translate BBox to output Point
+ * @param {number|string} [options.id={}] Translate Id to output Point
+ * @returns {Feature<Point>} 2-vertex GeoJSON Feature Point
+ * @example
+ * var multiLine = turf.multiLineString([
+ *     [[10, 10], [50, 30], [30, 40]],
+ *     [[-10, -10], [-50, -30], [-30, -40]]
+ * ]);
+ *
+ * // First Segment (defaults are 0)
+ * turf.findPoint(multiLine);
+ * // => Feature<Point<[10, 10]>>
+ *
+ * // First Segment of the 2nd Multi-Feature
+ * turf.findPoint(multiLine, {multiFeatureIndex: 1});
+ * // => Feature<Point<[-10, -10]>>
+ *
+ * // Last Segment of last Multi-Feature
+ * turf.findPoint(multiLine, {multiFeatureIndex: -1, coordIndex: -1});
+ * // => Feature<Point<[-30, -40]>>
+ */
+function findPoint(geojson, options) {
+  // Optional Parameters
+  options = options || {};
+  if (!isObject(options)) { throw new Error("options is invalid"); }
+  var featureIndex = options.featureIndex || 0;
+  var multiFeatureIndex = options.multiFeatureIndex || 0;
+  var geometryIndex = options.geometryIndex || 0;
+  var coordIndex = options.coordIndex || 0;
+
+  // Find FeatureIndex
+  var properties = options.properties;
+  var geometry;
+
+  switch (geojson.type) {
+    case "FeatureCollection":
+      if (featureIndex < 0)
+        { featureIndex = geojson.features.length + featureIndex; }
+      properties = properties || geojson.features[featureIndex].properties;
+      geometry = geojson.features[featureIndex].geometry;
+      break;
+    case "Feature":
+      properties = properties || geojson.properties;
+      geometry = geojson.geometry;
+      break;
+    case "Point":
+    case "MultiPoint":
+      return null;
+    case "LineString":
+    case "Polygon":
+    case "MultiLineString":
+    case "MultiPolygon":
+      geometry = geojson;
+      break;
+    default:
+      throw new Error("geojson is invalid");
+  }
+
+  // Find Coord Index
+  if (geometry === null) { return null; }
+  var coords = geometry.coordinates;
+  switch (geometry.type) {
+    case "Point":
+      return point(coords, properties, options);
+    case "MultiPoint":
+      if (multiFeatureIndex < 0)
+        { multiFeatureIndex = coords.length + multiFeatureIndex; }
+      return point(coords[multiFeatureIndex], properties, options);
+    case "LineString":
+      if (coordIndex < 0) { coordIndex = coords.length + coordIndex; }
+      return point(coords[coordIndex], properties, options);
+    case "Polygon":
+      if (geometryIndex < 0) { geometryIndex = coords.length + geometryIndex; }
+      if (coordIndex < 0)
+        { coordIndex = coords[geometryIndex].length + coordIndex; }
+      return point(coords[geometryIndex][coordIndex], properties, options);
+    case "MultiLineString":
+      if (multiFeatureIndex < 0)
+        { multiFeatureIndex = coords.length + multiFeatureIndex; }
+      if (coordIndex < 0)
+        { coordIndex = coords[multiFeatureIndex].length + coordIndex; }
+      return point(coords[multiFeatureIndex][coordIndex], properties, options);
+    case "MultiPolygon":
+      if (multiFeatureIndex < 0)
+        { multiFeatureIndex = coords.length + multiFeatureIndex; }
+      if (geometryIndex < 0)
+        { geometryIndex = coords[multiFeatureIndex].length + geometryIndex; }
+      if (coordIndex < 0)
+        { coordIndex =
+          coords[multiFeatureIndex][geometryIndex].length - coordIndex; }
+      return point(
+        coords[multiFeatureIndex][geometryIndex][coordIndex],
+        properties,
+        options
+      );
+  }
+  throw new Error("geojson is invalid");
+}
+
+/**
+ * Rewind {@link LineString|(Multi)LineString} or {@link Polygon|(Multi)Polygon} outer ring counterclockwise and inner rings clockwise (Uses {@link http://en.wikipedia.org/wiki/Shoelace_formula|Shoelace Formula}).
+ *
+ * @name rewind
+ * @param {GeoJSON} geojson input GeoJSON Polygon
+ * @param {Object} [options={}] Optional parameters
+ * @param {boolean} [options.reverse=false] enable reverse winding
+ * @param {boolean} [options.mutate=false] allows GeoJSON input to be mutated (significant performance increase if true)
+ * @returns {GeoJSON} rewind Polygon
+ * @example
+ * var polygon = turf.polygon([[[121, -29], [138, -29], [138, -18], [121, -18], [121, -29]]]);
+ *
+ * var rewind = turf.rewind(polygon);
+ *
+ * //addToMap
+ * var addToMap = [rewind];
+ */
+function rewind(geojson, options) {
+  // Optional parameters
+  options = options || {};
+  if (!isObject(options)) { throw new Error("options is invalid"); }
+  var reverse = options.reverse || false;
+  var mutate = options.mutate || false;
+
+  // validation
+  if (!geojson) { throw new Error("<geojson> is required"); }
+  if (typeof reverse !== "boolean")
+    { throw new Error("<reverse> must be a boolean"); }
+  if (typeof mutate !== "boolean")
+    { throw new Error("<mutate> must be a boolean"); }
+
+  // prevent input mutation
+  if (mutate === false) { geojson = clone(geojson); }
+
+  // Support Feature Collection or Geometry Collection
+  var results = [];
+  switch (geojson.type) {
+    case "GeometryCollection":
+      geomEach(geojson, function (geometry) {
+        rewindFeature(geometry, reverse);
+      });
+      return geojson;
+    case "FeatureCollection":
+      featureEach(geojson, function (feature) {
+        featureEach(rewindFeature(feature, reverse), function (result) {
+          results.push(result);
+        });
+      });
+      return featureCollection(results);
+  }
+  // Support Feature or Geometry Objects
+  return rewindFeature(geojson, reverse);
+}
+
+/**
+ * Rewind
+ *
+ * @private
+ * @param {Geometry|Feature<any>} geojson Geometry or Feature
+ * @param {Boolean} [reverse=false] enable reverse winding
+ * @returns {Geometry|Feature<any>} rewind Geometry or Feature
+ */
+function rewindFeature(geojson, reverse) {
+  var type = geojson.type === "Feature" ? geojson.geometry.type : geojson.type;
+
+  // Support all GeoJSON Geometry Objects
+  switch (type) {
+    case "GeometryCollection":
+      geomEach(geojson, function (geometry) {
+        rewindFeature(geometry, reverse);
+      });
+      return geojson;
+    case "LineString":
+      rewindLineString(getCoords(geojson), reverse);
+      return geojson;
+    case "Polygon":
+      rewindPolygon(getCoords(geojson), reverse);
+      return geojson;
+    case "MultiLineString":
+      getCoords(geojson).forEach(function (lineCoords) {
+        rewindLineString(lineCoords, reverse);
+      });
+      return geojson;
+    case "MultiPolygon":
+      getCoords(geojson).forEach(function (lineCoords) {
+        rewindPolygon(lineCoords, reverse);
+      });
+      return geojson;
+    case "Point":
+    case "MultiPoint":
+      return geojson;
+  }
+}
+
+/**
+ * Rewind LineString - outer ring clockwise
+ *
+ * @private
+ * @param {Array<Array<number>>} coords GeoJSON LineString geometry coordinates
+ * @param {Boolean} [reverse=false] enable reverse winding
+ * @returns {void} mutates coordinates
+ */
+function rewindLineString(coords, reverse) {
+  if (booleanClockwise(coords) === reverse) { coords.reverse(); }
+}
+
+/**
+ * Rewind Polygon - outer ring counterclockwise and inner rings clockwise.
+ *
+ * @private
+ * @param {Array<Array<Array<number>>>} coords GeoJSON Polygon geometry coordinates
+ * @param {Boolean} [reverse=false] enable reverse winding
+ * @returns {void} mutates coordinates
+ */
+function rewindPolygon(coords, reverse) {
+  // outer ring
+  if (booleanClockwise(coords[0]) !== reverse) {
+    coords[0].reverse();
+  }
+  // inner rings
+  for (var i = 1; i < coords.length; i++) {
+    if (booleanClockwise(coords[i]) === reverse) {
+      coords[i].reverse();
+    }
+  }
+}
+
+function pointInPolygon(p, polygon) {
+    var i = 0;
+    var ii = 0;
+    var k = 0;
+    var f = 0;
+    var u1 = 0;
+    var v1 = 0;
+    var u2 = 0;
+    var v2 = 0;
+    var currentP = null;
+    var nextP = null;
+
+    var x = p[0];
+    var y = p[1];
+
+    var numContours = polygon.length;
+    for (i; i < numContours; i++) {
+        ii = 0;
+        var contourLen = polygon[i].length - 1;
+        var contour = polygon[i];
+
+        currentP = contour[0];
+        if (currentP[0] !== contour[contourLen][0] &&
+            currentP[1] !== contour[contourLen][1]) {
+            throw new Error('First and last coordinates in a ring must be the same')
+        }
+
+        u1 = currentP[0] - x;
+        v1 = currentP[1] - y;
+
+        for (ii; ii < contourLen; ii++) {
+            nextP = contour[ii + 1];
+
+            v2 = nextP[1] - y;
+
+            if ((v1 < 0 && v2 < 0) || (v1 > 0 && v2 > 0)) {
+                currentP = nextP;
+                v1 = v2;
+                u1 = currentP[0] - x;
+                continue
+            }
+
+            u2 = nextP[0] - p[0];
+
+            if (v2 > 0 && v1 <= 0) {
+                f = (u1 * v2) - (u2 * v1);
+                if (f > 0) { k = k + 1; }
+                else if (f === 0) { return 0 }
+            } else if (v1 > 0 && v2 <= 0) {
+                f = (u1 * v2) - (u2 * v1);
+                if (f < 0) { k = k + 1; }
+                else if (f === 0) { return 0 }
+            } else if (v2 === 0 && v1 < 0) {
+                f = (u1 * v2) - (u2 * v1);
+                if (f === 0) { return 0 }
+            } else if (v1 === 0 && v2 < 0) {
+                f = u1 * v2 - u2 * v1;
+                if (f === 0) { return 0 }
+            } else if (v1 === 0 && v2 === 0) {
+                if (u2 <= 0 && u1 >= 0) {
+                    return 0
+                } else if (u1 <= 0 && u2 >= 0) {
+                    return 0
+                }
+            }
+            currentP = nextP;
+            v1 = v2;
+            u1 = u2;
+        }
+    }
+
+    if (k % 2 === 0) { return false }
+    return true
+}
+
+var epsilon = 1.1102230246251565e-16;
+var splitter = 134217729;
+var resulterrbound = (3 + 8 * epsilon) * epsilon;
+
+// fast_expansion_sum_zeroelim routine from oritinal code
+function sum(elen, e, flen, f, h) {
+    var Q, Qnew, hh, bvirt;
+    var enow = e[0];
+    var fnow = f[0];
+    var eindex = 0;
+    var findex = 0;
+    if ((fnow > enow) === (fnow > -enow)) {
+        Q = enow;
+        enow = e[++eindex];
+    } else {
+        Q = fnow;
+        fnow = f[++findex];
+    }
+    var hindex = 0;
+    if (eindex < elen && findex < flen) {
+        if ((fnow > enow) === (fnow > -enow)) {
+            Qnew = enow + Q;
+            hh = Q - (Qnew - enow);
+            enow = e[++eindex];
+        } else {
+            Qnew = fnow + Q;
+            hh = Q - (Qnew - fnow);
+            fnow = f[++findex];
+        }
+        Q = Qnew;
+        if (hh !== 0) {
+            h[hindex++] = hh;
+        }
+        while (eindex < elen && findex < flen) {
+            if ((fnow > enow) === (fnow > -enow)) {
+                Qnew = Q + enow;
+                bvirt = Qnew - Q;
+                hh = Q - (Qnew - bvirt) + (enow - bvirt);
+                enow = e[++eindex];
+            } else {
+                Qnew = Q + fnow;
+                bvirt = Qnew - Q;
+                hh = Q - (Qnew - bvirt) + (fnow - bvirt);
+                fnow = f[++findex];
+            }
+            Q = Qnew;
+            if (hh !== 0) {
+                h[hindex++] = hh;
+            }
+        }
+    }
+    while (eindex < elen) {
+        Qnew = Q + enow;
+        bvirt = Qnew - Q;
+        hh = Q - (Qnew - bvirt) + (enow - bvirt);
+        enow = e[++eindex];
+        Q = Qnew;
+        if (hh !== 0) {
+            h[hindex++] = hh;
+        }
+    }
+    while (findex < flen) {
+        Qnew = Q + fnow;
+        bvirt = Qnew - Q;
+        hh = Q - (Qnew - bvirt) + (fnow - bvirt);
+        fnow = f[++findex];
+        Q = Qnew;
+        if (hh !== 0) {
+            h[hindex++] = hh;
+        }
+    }
+    if (Q !== 0 || hindex === 0) {
+        h[hindex++] = Q;
+    }
+    return hindex;
+}
+
+function sum_three(alen, a, blen, b, clen, c, tmp, out) {
+    return sum(sum(alen, a, blen, b, tmp), tmp, clen, c, out);
+}
+
+// scale_expansion_zeroelim routine from oritinal code
+function scale(elen, e, b, h) {
+    var Q, sum, hh, product1, product0;
+    var bvirt, c, ahi, alo, bhi, blo;
+
+    c = splitter * b;
+    bhi = c - (c - b);
+    blo = b - bhi;
+    var enow = e[0];
+    Q = enow * b;
+    c = splitter * enow;
+    ahi = c - (c - enow);
+    alo = enow - ahi;
+    hh = alo * blo - (Q - ahi * bhi - alo * bhi - ahi * blo);
+    var hindex = 0;
+    if (hh !== 0) {
+        h[hindex++] = hh;
+    }
+    for (var i = 1; i < elen; i++) {
+        enow = e[i];
+        product1 = enow * b;
+        c = splitter * enow;
+        ahi = c - (c - enow);
+        alo = enow - ahi;
+        product0 = alo * blo - (product1 - ahi * bhi - alo * bhi - ahi * blo);
+        sum = Q + product0;
+        bvirt = sum - Q;
+        hh = Q - (sum - bvirt) + (product0 - bvirt);
+        if (hh !== 0) {
+            h[hindex++] = hh;
+        }
+        Q = product1 + sum;
+        hh = sum - (Q - product1);
+        if (hh !== 0) {
+            h[hindex++] = hh;
+        }
+    }
+    if (Q !== 0 || hindex === 0) {
+        h[hindex++] = Q;
+    }
+    return hindex;
+}
+
+function negate(elen, e) {
+    for (var i = 0; i < elen; i++) { e[i] = -e[i]; }
+    return elen;
+}
+
+function estimate(elen, e) {
+    var Q = e[0];
+    for (var i = 1; i < elen; i++) { Q += e[i]; }
+    return Q;
+}
+
+function vec(n) {
+    return new Float64Array(n);
+}
+
+var ccwerrboundA = (3 + 16 * epsilon) * epsilon;
+var ccwerrboundB = (2 + 12 * epsilon) * epsilon;
+var ccwerrboundC = (9 + 64 * epsilon) * epsilon * epsilon;
+
+var B = vec(4);
+var C1 = vec(8);
+var C2 = vec(12);
+var D = vec(16);
+var u$2 = vec(4);
+
+function orient2dadapt(ax, ay, bx, by, cx, cy, detsum) {
+    var acxtail, acytail, bcxtail, bcytail;
+    var bvirt, c, ahi, alo, bhi, blo, _i, _j, _0, s1, s0, t1, t0, u3;
+
+    var acx = ax - cx;
+    var bcx = bx - cx;
+    var acy = ay - cy;
+    var bcy = by - cy;
+
+    s1 = acx * bcy;
+    c = splitter * acx;
+    ahi = c - (c - acx);
+    alo = acx - ahi;
+    c = splitter * bcy;
+    bhi = c - (c - bcy);
+    blo = bcy - bhi;
+    s0 = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
+    t1 = acy * bcx;
+    c = splitter * acy;
+    ahi = c - (c - acy);
+    alo = acy - ahi;
+    c = splitter * bcx;
+    bhi = c - (c - bcx);
+    blo = bcx - bhi;
+    t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
+    _i = s0 - t0;
+    bvirt = s0 - _i;
+    B[0] = s0 - (_i + bvirt) + (bvirt - t0);
+    _j = s1 + _i;
+    bvirt = _j - s1;
+    _0 = s1 - (_j - bvirt) + (_i - bvirt);
+    _i = _0 - t1;
+    bvirt = _0 - _i;
+    B[1] = _0 - (_i + bvirt) + (bvirt - t1);
+    u3 = _j + _i;
+    bvirt = u3 - _j;
+    B[2] = _j - (u3 - bvirt) + (_i - bvirt);
+    B[3] = u3;
+
+    var det = estimate(4, B);
+    var errbound = ccwerrboundB * detsum;
+    if (det >= errbound || -det >= errbound) {
+        return det;
+    }
+
+    bvirt = ax - acx;
+    acxtail = ax - (acx + bvirt) + (bvirt - cx);
+    bvirt = bx - bcx;
+    bcxtail = bx - (bcx + bvirt) + (bvirt - cx);
+    bvirt = ay - acy;
+    acytail = ay - (acy + bvirt) + (bvirt - cy);
+    bvirt = by - bcy;
+    bcytail = by - (bcy + bvirt) + (bvirt - cy);
+
+    if (acxtail === 0 && acytail === 0 && bcxtail === 0 && bcytail === 0) {
+        return det;
+    }
+
+    errbound = ccwerrboundC * detsum + resulterrbound * Math.abs(det);
+    det += (acx * bcytail + bcy * acxtail) - (acy * bcxtail + bcx * acytail);
+    if (det >= errbound || -det >= errbound) { return det; }
+
+    s1 = acxtail * bcy;
+    c = splitter * acxtail;
+    ahi = c - (c - acxtail);
+    alo = acxtail - ahi;
+    c = splitter * bcy;
+    bhi = c - (c - bcy);
+    blo = bcy - bhi;
+    s0 = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
+    t1 = acytail * bcx;
+    c = splitter * acytail;
+    ahi = c - (c - acytail);
+    alo = acytail - ahi;
+    c = splitter * bcx;
+    bhi = c - (c - bcx);
+    blo = bcx - bhi;
+    t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
+    _i = s0 - t0;
+    bvirt = s0 - _i;
+    u$2[0] = s0 - (_i + bvirt) + (bvirt - t0);
+    _j = s1 + _i;
+    bvirt = _j - s1;
+    _0 = s1 - (_j - bvirt) + (_i - bvirt);
+    _i = _0 - t1;
+    bvirt = _0 - _i;
+    u$2[1] = _0 - (_i + bvirt) + (bvirt - t1);
+    u3 = _j + _i;
+    bvirt = u3 - _j;
+    u$2[2] = _j - (u3 - bvirt) + (_i - bvirt);
+    u$2[3] = u3;
+    var C1len = sum(4, B, 4, u$2, C1);
+
+    s1 = acx * bcytail;
+    c = splitter * acx;
+    ahi = c - (c - acx);
+    alo = acx - ahi;
+    c = splitter * bcytail;
+    bhi = c - (c - bcytail);
+    blo = bcytail - bhi;
+    s0 = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
+    t1 = acy * bcxtail;
+    c = splitter * acy;
+    ahi = c - (c - acy);
+    alo = acy - ahi;
+    c = splitter * bcxtail;
+    bhi = c - (c - bcxtail);
+    blo = bcxtail - bhi;
+    t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
+    _i = s0 - t0;
+    bvirt = s0 - _i;
+    u$2[0] = s0 - (_i + bvirt) + (bvirt - t0);
+    _j = s1 + _i;
+    bvirt = _j - s1;
+    _0 = s1 - (_j - bvirt) + (_i - bvirt);
+    _i = _0 - t1;
+    bvirt = _0 - _i;
+    u$2[1] = _0 - (_i + bvirt) + (bvirt - t1);
+    u3 = _j + _i;
+    bvirt = u3 - _j;
+    u$2[2] = _j - (u3 - bvirt) + (_i - bvirt);
+    u$2[3] = u3;
+    var C2len = sum(C1len, C1, 4, u$2, C2);
+
+    s1 = acxtail * bcytail;
+    c = splitter * acxtail;
+    ahi = c - (c - acxtail);
+    alo = acxtail - ahi;
+    c = splitter * bcytail;
+    bhi = c - (c - bcytail);
+    blo = bcytail - bhi;
+    s0 = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
+    t1 = acytail * bcxtail;
+    c = splitter * acytail;
+    ahi = c - (c - acytail);
+    alo = acytail - ahi;
+    c = splitter * bcxtail;
+    bhi = c - (c - bcxtail);
+    blo = bcxtail - bhi;
+    t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
+    _i = s0 - t0;
+    bvirt = s0 - _i;
+    u$2[0] = s0 - (_i + bvirt) + (bvirt - t0);
+    _j = s1 + _i;
+    bvirt = _j - s1;
+    _0 = s1 - (_j - bvirt) + (_i - bvirt);
+    _i = _0 - t1;
+    bvirt = _0 - _i;
+    u$2[1] = _0 - (_i + bvirt) + (bvirt - t1);
+    u3 = _j + _i;
+    bvirt = u3 - _j;
+    u$2[2] = _j - (u3 - bvirt) + (_i - bvirt);
+    u$2[3] = u3;
+    var Dlen = sum(C2len, C2, 4, u$2, D);
+
+    return D[Dlen - 1];
+}
+
+function orient2d(ax, ay, bx, by, cx, cy) {
+    var detleft = (ay - cy) * (bx - cx);
+    var detright = (ax - cx) * (by - cy);
+    var det = detleft - detright;
+
+    if (detleft === 0 || detright === 0 || (detleft > 0) !== (detright > 0)) { return det; }
+
+    var detsum = Math.abs(detleft + detright);
+    if (Math.abs(det) >= ccwerrboundA * detsum) { return det; }
+
+    return -orient2dadapt(ax, ay, bx, by, cx, cy, detsum);
+}
+
+function orient2dfast(ax, ay, bx, by, cx, cy) {
+    return (ay - cy) * (bx - cx) - (ax - cx) * (by - cy);
+}
+
+var o3derrboundA = (7 + 56 * epsilon) * epsilon;
+var o3derrboundB = (3 + 28 * epsilon) * epsilon;
+var o3derrboundC = (26 + 288 * epsilon) * epsilon * epsilon;
+
+var bc$2 = vec(4);
+var ca$1 = vec(4);
+var ab$2 = vec(4);
+var at_b = vec(4);
+var at_c = vec(4);
+var bt_c = vec(4);
+var bt_a = vec(4);
+var ct_a = vec(4);
+var ct_b = vec(4);
+var bct$1 = vec(8);
+var cat$1 = vec(8);
+var abt$1 = vec(8);
+var u$1 = vec(4);
+
+var _8$2 = vec(8);
+var _8b$1 = vec(8);
+var _16$2 = vec(8);
+var _12 = vec(12);
+
+var fin$2 = vec(192);
+var fin2$1 = vec(192);
+
+function finadd$1(finlen, alen, a) {
+    finlen = sum(finlen, fin$2, alen, a, fin2$1);
+    var tmp = fin$2; fin$2 = fin2$1; fin2$1 = tmp;
+    return finlen;
+}
+
+function tailinit(xtail, ytail, ax, ay, bx, by, a, b) {
+    var bvirt, c, ahi, alo, bhi, blo, _i, _j, _k, _0, s1, s0, t1, t0, u3, negate;
+    if (xtail === 0) {
+        if (ytail === 0) {
+            a[0] = 0;
+            b[0] = 0;
+            return 1;
+        } else {
+            negate = -ytail;
+            s1 = negate * ax;
+            c = splitter * negate;
+            ahi = c - (c - negate);
+            alo = negate - ahi;
+            c = splitter * ax;
+            bhi = c - (c - ax);
+            blo = ax - bhi;
+            a[0] = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
+            a[1] = s1;
+            s1 = ytail * bx;
+            c = splitter * ytail;
+            ahi = c - (c - ytail);
+            alo = ytail - ahi;
+            c = splitter * bx;
+            bhi = c - (c - bx);
+            blo = bx - bhi;
+            b[0] = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
+            b[1] = s1;
+            return 2;
+        }
+    } else {
+        if (ytail === 0) {
+            s1 = xtail * ay;
+            c = splitter * xtail;
+            ahi = c - (c - xtail);
+            alo = xtail - ahi;
+            c = splitter * ay;
+            bhi = c - (c - ay);
+            blo = ay - bhi;
+            a[0] = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
+            a[1] = s1;
+            negate = -xtail;
+            s1 = negate * by;
+            c = splitter * negate;
+            ahi = c - (c - negate);
+            alo = negate - ahi;
+            c = splitter * by;
+            bhi = c - (c - by);
+            blo = by - bhi;
+            b[0] = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
+            b[1] = s1;
+            return 2;
+        } else {
+            s1 = xtail * ay;
+            c = splitter * xtail;
+            ahi = c - (c - xtail);
+            alo = xtail - ahi;
+            c = splitter * ay;
+            bhi = c - (c - ay);
+            blo = ay - bhi;
+            s0 = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
+            t1 = ytail * ax;
+            c = splitter * ytail;
+            ahi = c - (c - ytail);
+            alo = ytail - ahi;
+            c = splitter * ax;
+            bhi = c - (c - ax);
+            blo = ax - bhi;
+            t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
+            _i = s0 - t0;
+            bvirt = s0 - _i;
+            a[0] = s0 - (_i + bvirt) + (bvirt - t0);
+            _j = s1 + _i;
+            bvirt = _j - s1;
+            _0 = s1 - (_j - bvirt) + (_i - bvirt);
+            _i = _0 - t1;
+            bvirt = _0 - _i;
+            a[1] = _0 - (_i + bvirt) + (bvirt - t1);
+            u3 = _j + _i;
+            bvirt = u3 - _j;
+            a[2] = _j - (u3 - bvirt) + (_i - bvirt);
+            a[3] = u3;
+            s1 = ytail * bx;
+            c = splitter * ytail;
+            ahi = c - (c - ytail);
+            alo = ytail - ahi;
+            c = splitter * bx;
+            bhi = c - (c - bx);
+            blo = bx - bhi;
+            s0 = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
+            t1 = xtail * by;
+            c = splitter * xtail;
+            ahi = c - (c - xtail);
+            alo = xtail - ahi;
+            c = splitter * by;
+            bhi = c - (c - by);
+            blo = by - bhi;
+            t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
+            _i = s0 - t0;
+            bvirt = s0 - _i;
+            b[0] = s0 - (_i + bvirt) + (bvirt - t0);
+            _j = s1 + _i;
+            bvirt = _j - s1;
+            _0 = s1 - (_j - bvirt) + (_i - bvirt);
+            _i = _0 - t1;
+            bvirt = _0 - _i;
+            b[1] = _0 - (_i + bvirt) + (bvirt - t1);
+            u3 = _j + _i;
+            bvirt = u3 - _j;
+            b[2] = _j - (u3 - bvirt) + (_i - bvirt);
+            b[3] = u3;
+            return 4;
+        }
+    }
+}
+
+function tailadd(finlen, a, b, k, z) {
+    var bvirt, c, ahi, alo, bhi, blo, _i, _j, _k, _0, s1, s0, u3;
+    s1 = a * b;
+    c = splitter * a;
+    ahi = c - (c - a);
+    alo = a - ahi;
+    c = splitter * b;
+    bhi = c - (c - b);
+    blo = b - bhi;
+    s0 = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
+    c = splitter * k;
+    bhi = c - (c - k);
+    blo = k - bhi;
+    _i = s0 * k;
+    c = splitter * s0;
+    ahi = c - (c - s0);
+    alo = s0 - ahi;
+    u$1[0] = alo * blo - (_i - ahi * bhi - alo * bhi - ahi * blo);
+    _j = s1 * k;
+    c = splitter * s1;
+    ahi = c - (c - s1);
+    alo = s1 - ahi;
+    _0 = alo * blo - (_j - ahi * bhi - alo * bhi - ahi * blo);
+    _k = _i + _0;
+    bvirt = _k - _i;
+    u$1[1] = _i - (_k - bvirt) + (_0 - bvirt);
+    u3 = _j + _k;
+    u$1[2] = _k - (u3 - _j);
+    u$1[3] = u3;
+    finlen = finadd$1(finlen, 4, u$1);
+    if (z !== 0) {
+        c = splitter * z;
+        bhi = c - (c - z);
+        blo = z - bhi;
+        _i = s0 * z;
+        c = splitter * s0;
+        ahi = c - (c - s0);
+        alo = s0 - ahi;
+        u$1[0] = alo * blo - (_i - ahi * bhi - alo * bhi - ahi * blo);
+        _j = s1 * z;
+        c = splitter * s1;
+        ahi = c - (c - s1);
+        alo = s1 - ahi;
+        _0 = alo * blo - (_j - ahi * bhi - alo * bhi - ahi * blo);
+        _k = _i + _0;
+        bvirt = _k - _i;
+        u$1[1] = _i - (_k - bvirt) + (_0 - bvirt);
+        u3 = _j + _k;
+        u$1[2] = _k - (u3 - _j);
+        u$1[3] = u3;
+        finlen = finadd$1(finlen, 4, u$1);
+    }
+    return finlen;
+}
+
+function orient3dadapt(ax, ay, az, bx, by, bz, cx, cy, cz, dx, dy, dz, permanent) {
+    var finlen;
+    var adxtail, bdxtail, cdxtail;
+    var adytail, bdytail, cdytail;
+    var adztail, bdztail, cdztail;
+    var bvirt, c, ahi, alo, bhi, blo, _i, _j, _k, _0, s1, s0, t1, t0, u3;
+
+    var adx = ax - dx;
+    var bdx = bx - dx;
+    var cdx = cx - dx;
+    var ady = ay - dy;
+    var bdy = by - dy;
+    var cdy = cy - dy;
+    var adz = az - dz;
+    var bdz = bz - dz;
+    var cdz = cz - dz;
+
+    s1 = bdx * cdy;
+    c = splitter * bdx;
+    ahi = c - (c - bdx);
+    alo = bdx - ahi;
+    c = splitter * cdy;
+    bhi = c - (c - cdy);
+    blo = cdy - bhi;
+    s0 = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
+    t1 = cdx * bdy;
+    c = splitter * cdx;
+    ahi = c - (c - cdx);
+    alo = cdx - ahi;
+    c = splitter * bdy;
+    bhi = c - (c - bdy);
+    blo = bdy - bhi;
+    t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
+    _i = s0 - t0;
+    bvirt = s0 - _i;
+    bc$2[0] = s0 - (_i + bvirt) + (bvirt - t0);
+    _j = s1 + _i;
+    bvirt = _j - s1;
+    _0 = s1 - (_j - bvirt) + (_i - bvirt);
+    _i = _0 - t1;
+    bvirt = _0 - _i;
+    bc$2[1] = _0 - (_i + bvirt) + (bvirt - t1);
+    u3 = _j + _i;
+    bvirt = u3 - _j;
+    bc$2[2] = _j - (u3 - bvirt) + (_i - bvirt);
+    bc$2[3] = u3;
+    s1 = cdx * ady;
+    c = splitter * cdx;
+    ahi = c - (c - cdx);
+    alo = cdx - ahi;
+    c = splitter * ady;
+    bhi = c - (c - ady);
+    blo = ady - bhi;
+    s0 = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
+    t1 = adx * cdy;
+    c = splitter * adx;
+    ahi = c - (c - adx);
+    alo = adx - ahi;
+    c = splitter * cdy;
+    bhi = c - (c - cdy);
+    blo = cdy - bhi;
+    t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
+    _i = s0 - t0;
+    bvirt = s0 - _i;
+    ca$1[0] = s0 - (_i + bvirt) + (bvirt - t0);
+    _j = s1 + _i;
+    bvirt = _j - s1;
+    _0 = s1 - (_j - bvirt) + (_i - bvirt);
+    _i = _0 - t1;
+    bvirt = _0 - _i;
+    ca$1[1] = _0 - (_i + bvirt) + (bvirt - t1);
+    u3 = _j + _i;
+    bvirt = u3 - _j;
+    ca$1[2] = _j - (u3 - bvirt) + (_i - bvirt);
+    ca$1[3] = u3;
+    s1 = adx * bdy;
+    c = splitter * adx;
+    ahi = c - (c - adx);
+    alo = adx - ahi;
+    c = splitter * bdy;
+    bhi = c - (c - bdy);
+    blo = bdy - bhi;
+    s0 = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
+    t1 = bdx * ady;
+    c = splitter * bdx;
+    ahi = c - (c - bdx);
+    alo = bdx - ahi;
+    c = splitter * ady;
+    bhi = c - (c - ady);
+    blo = ady - bhi;
+    t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
+    _i = s0 - t0;
+    bvirt = s0 - _i;
+    ab$2[0] = s0 - (_i + bvirt) + (bvirt - t0);
+    _j = s1 + _i;
+    bvirt = _j - s1;
+    _0 = s1 - (_j - bvirt) + (_i - bvirt);
+    _i = _0 - t1;
+    bvirt = _0 - _i;
+    ab$2[1] = _0 - (_i + bvirt) + (bvirt - t1);
+    u3 = _j + _i;
+    bvirt = u3 - _j;
+    ab$2[2] = _j - (u3 - bvirt) + (_i - bvirt);
+    ab$2[3] = u3;
+
+    finlen = sum(
+        sum(
+            scale(4, bc$2, adz, _8$2), _8$2,
+            scale(4, ca$1, bdz, _8b$1), _8b$1, _16$2), _16$2,
+        scale(4, ab$2, cdz, _8$2), _8$2, fin$2);
+
+    var det = estimate(finlen, fin$2);
+    var errbound = o3derrboundB * permanent;
+    if (det >= errbound || -det >= errbound) {
+        return det;
+    }
+
+    bvirt = ax - adx;
+    adxtail = ax - (adx + bvirt) + (bvirt - dx);
+    bvirt = bx - bdx;
+    bdxtail = bx - (bdx + bvirt) + (bvirt - dx);
+    bvirt = cx - cdx;
+    cdxtail = cx - (cdx + bvirt) + (bvirt - dx);
+    bvirt = ay - ady;
+    adytail = ay - (ady + bvirt) + (bvirt - dy);
+    bvirt = by - bdy;
+    bdytail = by - (bdy + bvirt) + (bvirt - dy);
+    bvirt = cy - cdy;
+    cdytail = cy - (cdy + bvirt) + (bvirt - dy);
+    bvirt = az - adz;
+    adztail = az - (adz + bvirt) + (bvirt - dz);
+    bvirt = bz - bdz;
+    bdztail = bz - (bdz + bvirt) + (bvirt - dz);
+    bvirt = cz - cdz;
+    cdztail = cz - (cdz + bvirt) + (bvirt - dz);
+
+    if (adxtail === 0 && bdxtail === 0 && cdxtail === 0 &&
+        adytail === 0 && bdytail === 0 && cdytail === 0 &&
+        adztail === 0 && bdztail === 0 && cdztail === 0) {
+        return det;
+    }
+
+    errbound = o3derrboundC * permanent + resulterrbound * Math.abs(det);
+    det +=
+        adz * (bdx * cdytail + cdy * bdxtail - (bdy * cdxtail + cdx * bdytail)) + adztail * (bdx * cdy - bdy * cdx) +
+        bdz * (cdx * adytail + ady * cdxtail - (cdy * adxtail + adx * cdytail)) + bdztail * (cdx * ady - cdy * adx) +
+        cdz * (adx * bdytail + bdy * adxtail - (ady * bdxtail + bdx * adytail)) + cdztail * (adx * bdy - ady * bdx);
+    if (det >= errbound || -det >= errbound) {
+        return det;
+    }
+
+    var at_len = tailinit(adxtail, adytail, bdx, bdy, cdx, cdy, at_b, at_c);
+    var bt_len = tailinit(bdxtail, bdytail, cdx, cdy, adx, ady, bt_c, bt_a);
+    var ct_len = tailinit(cdxtail, cdytail, adx, ady, bdx, bdy, ct_a, ct_b);
+
+    var bctlen = sum(bt_len, bt_c, ct_len, ct_b, bct$1);
+    finlen = finadd$1(finlen, scale(bctlen, bct$1, adz, _16$2), _16$2);
+
+    var catlen = sum(ct_len, ct_a, at_len, at_c, cat$1);
+    finlen = finadd$1(finlen, scale(catlen, cat$1, bdz, _16$2), _16$2);
+
+    var abtlen = sum(at_len, at_b, bt_len, bt_a, abt$1);
+    finlen = finadd$1(finlen, scale(abtlen, abt$1, cdz, _16$2), _16$2);
+
+    if (adztail !== 0) {
+        finlen = finadd$1(finlen, scale(4, bc$2, adztail, _12), _12);
+        finlen = finadd$1(finlen, scale(bctlen, bct$1, adztail, _16$2), _16$2);
+    }
+    if (bdztail !== 0) {
+        finlen = finadd$1(finlen, scale(4, ca$1, bdztail, _12), _12);
+        finlen = finadd$1(finlen, scale(catlen, cat$1, bdztail, _16$2), _16$2);
+    }
+    if (cdztail !== 0) {
+        finlen = finadd$1(finlen, scale(4, ab$2, cdztail, _12), _12);
+        finlen = finadd$1(finlen, scale(abtlen, abt$1, cdztail, _16$2), _16$2);
+    }
+
+    if (adxtail !== 0) {
+        if (bdytail !== 0) {
+            finlen = tailadd(finlen, adxtail, bdytail, cdz, cdztail);
+        }
+        if (cdytail !== 0) {
+            finlen = tailadd(finlen, -adxtail, cdytail, bdz, bdztail);
+        }
+    }
+    if (bdxtail !== 0) {
+        if (cdytail !== 0) {
+            finlen = tailadd(finlen, bdxtail, cdytail, adz, adztail);
+        }
+        if (adytail !== 0) {
+            finlen = tailadd(finlen, -bdxtail, adytail, cdz, cdztail);
+        }
+    }
+    if (cdxtail !== 0) {
+        if (adytail !== 0) {
+            finlen = tailadd(finlen, cdxtail, adytail, bdz, bdztail);
+        }
+        if (bdytail !== 0) {
+            finlen = tailadd(finlen, -cdxtail, bdytail, adz, adztail);
+        }
+    }
+
+    return fin$2[finlen - 1];
+}
+
+function orient3d(ax, ay, az, bx, by, bz, cx, cy, cz, dx, dy, dz) {
+    var adx = ax - dx;
+    var bdx = bx - dx;
+    var cdx = cx - dx;
+    var ady = ay - dy;
+    var bdy = by - dy;
+    var cdy = cy - dy;
+    var adz = az - dz;
+    var bdz = bz - dz;
+    var cdz = cz - dz;
+
+    var bdxcdy = bdx * cdy;
+    var cdxbdy = cdx * bdy;
+
+    var cdxady = cdx * ady;
+    var adxcdy = adx * cdy;
+
+    var adxbdy = adx * bdy;
+    var bdxady = bdx * ady;
+
+    var det =
+        adz * (bdxcdy - cdxbdy) +
+        bdz * (cdxady - adxcdy) +
+        cdz * (adxbdy - bdxady);
+
+    var permanent =
+        (Math.abs(bdxcdy) + Math.abs(cdxbdy)) * Math.abs(adz) +
+        (Math.abs(cdxady) + Math.abs(adxcdy)) * Math.abs(bdz) +
+        (Math.abs(adxbdy) + Math.abs(bdxady)) * Math.abs(cdz);
+
+    var errbound = o3derrboundA * permanent;
+    if (det > errbound || -det > errbound) {
+        return det;
+    }
+
+    return orient3dadapt(ax, ay, az, bx, by, bz, cx, cy, cz, dx, dy, dz, permanent);
+}
+
+function orient3dfast(ax, ay, az, bx, by, bz, cx, cy, cz, dx, dy, dz) {
+    var adx = ax - dx;
+    var bdx = bx - dx;
+    var cdx = cx - dx;
+    var ady = ay - dy;
+    var bdy = by - dy;
+    var cdy = cy - dy;
+    var adz = az - dz;
+    var bdz = bz - dz;
+    var cdz = cz - dz;
+
+    return adx * (bdy * cdz - bdz * cdy) +
+        bdx * (cdy * adz - cdz * ady) +
+        cdx * (ady * bdz - adz * bdy);
+}
+
+var iccerrboundA = (10 + 96 * epsilon) * epsilon;
+var iccerrboundB = (4 + 48 * epsilon) * epsilon;
+var iccerrboundC = (44 + 576 * epsilon) * epsilon * epsilon;
+
+var bc$1 = vec(4);
+var ca = vec(4);
+var ab$1 = vec(4);
+var aa = vec(4);
+var bb = vec(4);
+var cc = vec(4);
+var u = vec(4);
+var v = vec(4);
+var axtbc = vec(8);
+var aytbc = vec(8);
+var bxtca = vec(8);
+var bytca = vec(8);
+var cxtab = vec(8);
+var cytab = vec(8);
+var abt = vec(8);
+var bct = vec(8);
+var cat = vec(8);
+var abtt = vec(4);
+var bctt = vec(4);
+var catt = vec(4);
+
+var _8$1 = vec(8);
+var _16$1 = vec(16);
+var _16b = vec(16);
+var _16c = vec(16);
+var _32 = vec(32);
+var _32b = vec(32);
+var _48$1 = vec(48);
+var _64 = vec(64);
+
+var fin$1 = vec(1152);
+var fin2 = vec(1152);
+
+function finadd(finlen, a, alen) {
+    finlen = sum(finlen, fin$1, a, alen, fin2);
+    var tmp = fin$1; fin$1 = fin2; fin2 = tmp;
+    return finlen;
+}
+
+function incircleadapt(ax, ay, bx, by, cx, cy, dx, dy, permanent) {
+    var finlen;
+    var adxtail, bdxtail, cdxtail, adytail, bdytail, cdytail;
+    var axtbclen, aytbclen, bxtcalen, bytcalen, cxtablen, cytablen;
+    var abtlen, bctlen, catlen;
+    var abttlen, bcttlen, cattlen;
+    var n1, n0;
+
+    var bvirt, c, ahi, alo, bhi, blo, _i, _j, _0, s1, s0, t1, t0, u3;
+
+    var adx = ax - dx;
+    var bdx = bx - dx;
+    var cdx = cx - dx;
+    var ady = ay - dy;
+    var bdy = by - dy;
+    var cdy = cy - dy;
+
+    s1 = bdx * cdy;
+    c = splitter * bdx;
+    ahi = c - (c - bdx);
+    alo = bdx - ahi;
+    c = splitter * cdy;
+    bhi = c - (c - cdy);
+    blo = cdy - bhi;
+    s0 = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
+    t1 = cdx * bdy;
+    c = splitter * cdx;
+    ahi = c - (c - cdx);
+    alo = cdx - ahi;
+    c = splitter * bdy;
+    bhi = c - (c - bdy);
+    blo = bdy - bhi;
+    t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
+    _i = s0 - t0;
+    bvirt = s0 - _i;
+    bc$1[0] = s0 - (_i + bvirt) + (bvirt - t0);
+    _j = s1 + _i;
+    bvirt = _j - s1;
+    _0 = s1 - (_j - bvirt) + (_i - bvirt);
+    _i = _0 - t1;
+    bvirt = _0 - _i;
+    bc$1[1] = _0 - (_i + bvirt) + (bvirt - t1);
+    u3 = _j + _i;
+    bvirt = u3 - _j;
+    bc$1[2] = _j - (u3 - bvirt) + (_i - bvirt);
+    bc$1[3] = u3;
+    s1 = cdx * ady;
+    c = splitter * cdx;
+    ahi = c - (c - cdx);
+    alo = cdx - ahi;
+    c = splitter * ady;
+    bhi = c - (c - ady);
+    blo = ady - bhi;
+    s0 = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
+    t1 = adx * cdy;
+    c = splitter * adx;
+    ahi = c - (c - adx);
+    alo = adx - ahi;
+    c = splitter * cdy;
+    bhi = c - (c - cdy);
+    blo = cdy - bhi;
+    t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
+    _i = s0 - t0;
+    bvirt = s0 - _i;
+    ca[0] = s0 - (_i + bvirt) + (bvirt - t0);
+    _j = s1 + _i;
+    bvirt = _j - s1;
+    _0 = s1 - (_j - bvirt) + (_i - bvirt);
+    _i = _0 - t1;
+    bvirt = _0 - _i;
+    ca[1] = _0 - (_i + bvirt) + (bvirt - t1);
+    u3 = _j + _i;
+    bvirt = u3 - _j;
+    ca[2] = _j - (u3 - bvirt) + (_i - bvirt);
+    ca[3] = u3;
+    s1 = adx * bdy;
+    c = splitter * adx;
+    ahi = c - (c - adx);
+    alo = adx - ahi;
+    c = splitter * bdy;
+    bhi = c - (c - bdy);
+    blo = bdy - bhi;
+    s0 = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
+    t1 = bdx * ady;
+    c = splitter * bdx;
+    ahi = c - (c - bdx);
+    alo = bdx - ahi;
+    c = splitter * ady;
+    bhi = c - (c - ady);
+    blo = ady - bhi;
+    t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
+    _i = s0 - t0;
+    bvirt = s0 - _i;
+    ab$1[0] = s0 - (_i + bvirt) + (bvirt - t0);
+    _j = s1 + _i;
+    bvirt = _j - s1;
+    _0 = s1 - (_j - bvirt) + (_i - bvirt);
+    _i = _0 - t1;
+    bvirt = _0 - _i;
+    ab$1[1] = _0 - (_i + bvirt) + (bvirt - t1);
+    u3 = _j + _i;
+    bvirt = u3 - _j;
+    ab$1[2] = _j - (u3 - bvirt) + (_i - bvirt);
+    ab$1[3] = u3;
+
+    finlen = sum(
+        sum(
+            sum(
+                scale(scale(4, bc$1, adx, _8$1), _8$1, adx, _16$1), _16$1,
+                scale(scale(4, bc$1, ady, _8$1), _8$1, ady, _16b), _16b, _32), _32,
+            sum(
+                scale(scale(4, ca, bdx, _8$1), _8$1, bdx, _16$1), _16$1,
+                scale(scale(4, ca, bdy, _8$1), _8$1, bdy, _16b), _16b, _32b), _32b, _64), _64,
+        sum(
+            scale(scale(4, ab$1, cdx, _8$1), _8$1, cdx, _16$1), _16$1,
+            scale(scale(4, ab$1, cdy, _8$1), _8$1, cdy, _16b), _16b, _32), _32, fin$1);
+
+    var det = estimate(finlen, fin$1);
+    var errbound = iccerrboundB * permanent;
+    if (det >= errbound || -det >= errbound) {
+        return det;
+    }
+
+    bvirt = ax - adx;
+    adxtail = ax - (adx + bvirt) + (bvirt - dx);
+    bvirt = ay - ady;
+    adytail = ay - (ady + bvirt) + (bvirt - dy);
+    bvirt = bx - bdx;
+    bdxtail = bx - (bdx + bvirt) + (bvirt - dx);
+    bvirt = by - bdy;
+    bdytail = by - (bdy + bvirt) + (bvirt - dy);
+    bvirt = cx - cdx;
+    cdxtail = cx - (cdx + bvirt) + (bvirt - dx);
+    bvirt = cy - cdy;
+    cdytail = cy - (cdy + bvirt) + (bvirt - dy);
+    if (adxtail === 0 && bdxtail === 0 && cdxtail === 0 && adytail === 0 && bdytail === 0 && cdytail === 0) {
+        return det;
+    }
+
+    errbound = iccerrboundC * permanent + resulterrbound * Math.abs(det);
+    det += ((adx * adx + ady * ady) * ((bdx * cdytail + cdy * bdxtail) - (bdy * cdxtail + cdx * bdytail)) +
+        2 * (adx * adxtail + ady * adytail) * (bdx * cdy - bdy * cdx)) +
+        ((bdx * bdx + bdy * bdy) * ((cdx * adytail + ady * cdxtail) - (cdy * adxtail + adx * cdytail)) +
+        2 * (bdx * bdxtail + bdy * bdytail) * (cdx * ady - cdy * adx)) +
+        ((cdx * cdx + cdy * cdy) * ((adx * bdytail + bdy * adxtail) - (ady * bdxtail + bdx * adytail)) +
+        2 * (cdx * cdxtail + cdy * cdytail) * (adx * bdy - ady * bdx));
+
+    if (det >= errbound || -det >= errbound) {
+        return det;
+    }
+
+    if (bdxtail !== 0 || bdytail !== 0 || cdxtail !== 0 || cdytail !== 0) {
+        s1 = adx * adx;
+        c = splitter * adx;
+        ahi = c - (c - adx);
+        alo = adx - ahi;
+        s0 = alo * alo - (s1 - ahi * ahi - (ahi + ahi) * alo);
+        t1 = ady * ady;
+        c = splitter * ady;
+        ahi = c - (c - ady);
+        alo = ady - ahi;
+        t0 = alo * alo - (t1 - ahi * ahi - (ahi + ahi) * alo);
+        _i = s0 + t0;
+        bvirt = _i - s0;
+        aa[0] = s0 - (_i - bvirt) + (t0 - bvirt);
+        _j = s1 + _i;
+        bvirt = _j - s1;
+        _0 = s1 - (_j - bvirt) + (_i - bvirt);
+        _i = _0 + t1;
+        bvirt = _i - _0;
+        aa[1] = _0 - (_i - bvirt) + (t1 - bvirt);
+        u3 = _j + _i;
+        bvirt = u3 - _j;
+        aa[2] = _j - (u3 - bvirt) + (_i - bvirt);
+        aa[3] = u3;
+    }
+    if (cdxtail !== 0 || cdytail !== 0 || adxtail !== 0 || adytail !== 0) {
+        s1 = bdx * bdx;
+        c = splitter * bdx;
+        ahi = c - (c - bdx);
+        alo = bdx - ahi;
+        s0 = alo * alo - (s1 - ahi * ahi - (ahi + ahi) * alo);
+        t1 = bdy * bdy;
+        c = splitter * bdy;
+        ahi = c - (c - bdy);
+        alo = bdy - ahi;
+        t0 = alo * alo - (t1 - ahi * ahi - (ahi + ahi) * alo);
+        _i = s0 + t0;
+        bvirt = _i - s0;
+        bb[0] = s0 - (_i - bvirt) + (t0 - bvirt);
+        _j = s1 + _i;
+        bvirt = _j - s1;
+        _0 = s1 - (_j - bvirt) + (_i - bvirt);
+        _i = _0 + t1;
+        bvirt = _i - _0;
+        bb[1] = _0 - (_i - bvirt) + (t1 - bvirt);
+        u3 = _j + _i;
+        bvirt = u3 - _j;
+        bb[2] = _j - (u3 - bvirt) + (_i - bvirt);
+        bb[3] = u3;
+    }
+    if (adxtail !== 0 || adytail !== 0 || bdxtail !== 0 || bdytail !== 0) {
+        s1 = cdx * cdx;
+        c = splitter * cdx;
+        ahi = c - (c - cdx);
+        alo = cdx - ahi;
+        s0 = alo * alo - (s1 - ahi * ahi - (ahi + ahi) * alo);
+        t1 = cdy * cdy;
+        c = splitter * cdy;
+        ahi = c - (c - cdy);
+        alo = cdy - ahi;
+        t0 = alo * alo - (t1 - ahi * ahi - (ahi + ahi) * alo);
+        _i = s0 + t0;
+        bvirt = _i - s0;
+        cc[0] = s0 - (_i - bvirt) + (t0 - bvirt);
+        _j = s1 + _i;
+        bvirt = _j - s1;
+        _0 = s1 - (_j - bvirt) + (_i - bvirt);
+        _i = _0 + t1;
+        bvirt = _i - _0;
+        cc[1] = _0 - (_i - bvirt) + (t1 - bvirt);
+        u3 = _j + _i;
+        bvirt = u3 - _j;
+        cc[2] = _j - (u3 - bvirt) + (_i - bvirt);
+        cc[3] = u3;
+    }
+
+    if (adxtail !== 0) {
+        axtbclen = scale(4, bc$1, adxtail, axtbc);
+        finlen = finadd(finlen, sum_three(
+            scale(axtbclen, axtbc, 2 * adx, _16$1), _16$1,
+            scale(scale(4, cc, adxtail, _8$1), _8$1, bdy, _16b), _16b,
+            scale(scale(4, bb, adxtail, _8$1), _8$1, -cdy, _16c), _16c, _32, _48$1), _48$1);
+    }
+    if (adytail !== 0) {
+        aytbclen = scale(4, bc$1, adytail, aytbc);
+        finlen = finadd(finlen, sum_three(
+            scale(aytbclen, aytbc, 2 * ady, _16$1), _16$1,
+            scale(scale(4, bb, adytail, _8$1), _8$1, cdx, _16b), _16b,
+            scale(scale(4, cc, adytail, _8$1), _8$1, -bdx, _16c), _16c, _32, _48$1), _48$1);
+    }
+    if (bdxtail !== 0) {
+        bxtcalen = scale(4, ca, bdxtail, bxtca);
+        finlen = finadd(finlen, sum_three(
+            scale(bxtcalen, bxtca, 2 * bdx, _16$1), _16$1,
+            scale(scale(4, aa, bdxtail, _8$1), _8$1, cdy, _16b), _16b,
+            scale(scale(4, cc, bdxtail, _8$1), _8$1, -ady, _16c), _16c, _32, _48$1), _48$1);
+    }
+    if (bdytail !== 0) {
+        bytcalen = scale(4, ca, bdytail, bytca);
+        finlen = finadd(finlen, sum_three(
+            scale(bytcalen, bytca, 2 * bdy, _16$1), _16$1,
+            scale(scale(4, cc, bdytail, _8$1), _8$1, adx, _16b), _16b,
+            scale(scale(4, aa, bdytail, _8$1), _8$1, -cdx, _16c), _16c, _32, _48$1), _48$1);
+    }
+    if (cdxtail !== 0) {
+        cxtablen = scale(4, ab$1, cdxtail, cxtab);
+        finlen = finadd(finlen, sum_three(
+            scale(cxtablen, cxtab, 2 * cdx, _16$1), _16$1,
+            scale(scale(4, bb, cdxtail, _8$1), _8$1, ady, _16b), _16b,
+            scale(scale(4, aa, cdxtail, _8$1), _8$1, -bdy, _16c), _16c, _32, _48$1), _48$1);
+    }
+    if (cdytail !== 0) {
+        cytablen = scale(4, ab$1, cdytail, cytab);
+        finlen = finadd(finlen, sum_three(
+            scale(cytablen, cytab, 2 * cdy, _16$1), _16$1,
+            scale(scale(4, aa, cdytail, _8$1), _8$1, bdx, _16b), _16b,
+            scale(scale(4, bb, cdytail, _8$1), _8$1, -adx, _16c), _16c, _32, _48$1), _48$1);
+    }
+
+    if (adxtail !== 0 || adytail !== 0) {
+        if (bdxtail !== 0 || bdytail !== 0 || cdxtail !== 0 || cdytail !== 0) {
+            s1 = bdxtail * cdy;
+            c = splitter * bdxtail;
+            ahi = c - (c - bdxtail);
+            alo = bdxtail - ahi;
+            c = splitter * cdy;
+            bhi = c - (c - cdy);
+            blo = cdy - bhi;
+            s0 = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
+            t1 = bdx * cdytail;
+            c = splitter * bdx;
+            ahi = c - (c - bdx);
+            alo = bdx - ahi;
+            c = splitter * cdytail;
+            bhi = c - (c - cdytail);
+            blo = cdytail - bhi;
+            t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
+            _i = s0 + t0;
+            bvirt = _i - s0;
+            u[0] = s0 - (_i - bvirt) + (t0 - bvirt);
+            _j = s1 + _i;
+            bvirt = _j - s1;
+            _0 = s1 - (_j - bvirt) + (_i - bvirt);
+            _i = _0 + t1;
+            bvirt = _i - _0;
+            u[1] = _0 - (_i - bvirt) + (t1 - bvirt);
+            u3 = _j + _i;
+            bvirt = u3 - _j;
+            u[2] = _j - (u3 - bvirt) + (_i - bvirt);
+            u[3] = u3;
+            s1 = cdxtail * -bdy;
+            c = splitter * cdxtail;
+            ahi = c - (c - cdxtail);
+            alo = cdxtail - ahi;
+            c = splitter * -bdy;
+            bhi = c - (c - -bdy);
+            blo = -bdy - bhi;
+            s0 = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
+            t1 = cdx * -bdytail;
+            c = splitter * cdx;
+            ahi = c - (c - cdx);
+            alo = cdx - ahi;
+            c = splitter * -bdytail;
+            bhi = c - (c - -bdytail);
+            blo = -bdytail - bhi;
+            t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
+            _i = s0 + t0;
+            bvirt = _i - s0;
+            v[0] = s0 - (_i - bvirt) + (t0 - bvirt);
+            _j = s1 + _i;
+            bvirt = _j - s1;
+            _0 = s1 - (_j - bvirt) + (_i - bvirt);
+            _i = _0 + t1;
+            bvirt = _i - _0;
+            v[1] = _0 - (_i - bvirt) + (t1 - bvirt);
+            u3 = _j + _i;
+            bvirt = u3 - _j;
+            v[2] = _j - (u3 - bvirt) + (_i - bvirt);
+            v[3] = u3;
+            bctlen = sum(4, u, 4, v, bct);
+            s1 = bdxtail * cdytail;
+            c = splitter * bdxtail;
+            ahi = c - (c - bdxtail);
+            alo = bdxtail - ahi;
+            c = splitter * cdytail;
+            bhi = c - (c - cdytail);
+            blo = cdytail - bhi;
+            s0 = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
+            t1 = cdxtail * bdytail;
+            c = splitter * cdxtail;
+            ahi = c - (c - cdxtail);
+            alo = cdxtail - ahi;
+            c = splitter * bdytail;
+            bhi = c - (c - bdytail);
+            blo = bdytail - bhi;
+            t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
+            _i = s0 - t0;
+            bvirt = s0 - _i;
+            bctt[0] = s0 - (_i + bvirt) + (bvirt - t0);
+            _j = s1 + _i;
+            bvirt = _j - s1;
+            _0 = s1 - (_j - bvirt) + (_i - bvirt);
+            _i = _0 - t1;
+            bvirt = _0 - _i;
+            bctt[1] = _0 - (_i + bvirt) + (bvirt - t1);
+            u3 = _j + _i;
+            bvirt = u3 - _j;
+            bctt[2] = _j - (u3 - bvirt) + (_i - bvirt);
+            bctt[3] = u3;
+            bcttlen = 4;
+        } else {
+            bct[0] = 0;
+            bctlen = 1;
+            bctt[0] = 0;
+            bcttlen = 1;
+        }
+        if (adxtail !== 0) {
+            var len = scale(bctlen, bct, adxtail, _16c);
+            finlen = finadd(finlen, sum(
+                scale(axtbclen, axtbc, adxtail, _16$1), _16$1,
+                scale(len, _16c, 2 * adx, _32), _32, _48$1), _48$1);
+
+            var len2 = scale(bcttlen, bctt, adxtail, _8$1);
+            finlen = finadd(finlen, sum_three(
+                scale(len2, _8$1, 2 * adx, _16$1), _16$1,
+                scale(len2, _8$1, adxtail, _16b), _16b,
+                scale(len, _16c, adxtail, _32), _32, _32b, _64), _64);
+
+            if (bdytail !== 0) {
+                finlen = finadd(finlen, scale(scale(4, cc, adxtail, _8$1), _8$1, bdytail, _16$1), _16$1);
+            }
+            if (cdytail !== 0) {
+                finlen = finadd(finlen, scale(scale(4, bb, -adxtail, _8$1), _8$1, cdytail, _16$1), _16$1);
+            }
+        }
+        if (adytail !== 0) {
+            var len$1 = scale(bctlen, bct, adytail, _16c);
+            finlen = finadd(finlen, sum(
+                scale(aytbclen, aytbc, adytail, _16$1), _16$1,
+                scale(len$1, _16c, 2 * ady, _32), _32, _48$1), _48$1);
+
+            var len2$1 = scale(bcttlen, bctt, adytail, _8$1);
+            finlen = finadd(finlen, sum_three(
+                scale(len2$1, _8$1, 2 * ady, _16$1), _16$1,
+                scale(len2$1, _8$1, adytail, _16b), _16b,
+                scale(len$1, _16c, adytail, _32), _32, _32b, _64), _64);
+        }
+    }
+    if (bdxtail !== 0 || bdytail !== 0) {
+        if (cdxtail !== 0 || cdytail !== 0 || adxtail !== 0 || adytail !== 0) {
+            s1 = cdxtail * ady;
+            c = splitter * cdxtail;
+            ahi = c - (c - cdxtail);
+            alo = cdxtail - ahi;
+            c = splitter * ady;
+            bhi = c - (c - ady);
+            blo = ady - bhi;
+            s0 = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
+            t1 = cdx * adytail;
+            c = splitter * cdx;
+            ahi = c - (c - cdx);
+            alo = cdx - ahi;
+            c = splitter * adytail;
+            bhi = c - (c - adytail);
+            blo = adytail - bhi;
+            t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
+            _i = s0 + t0;
+            bvirt = _i - s0;
+            u[0] = s0 - (_i - bvirt) + (t0 - bvirt);
+            _j = s1 + _i;
+            bvirt = _j - s1;
+            _0 = s1 - (_j - bvirt) + (_i - bvirt);
+            _i = _0 + t1;
+            bvirt = _i - _0;
+            u[1] = _0 - (_i - bvirt) + (t1 - bvirt);
+            u3 = _j + _i;
+            bvirt = u3 - _j;
+            u[2] = _j - (u3 - bvirt) + (_i - bvirt);
+            u[3] = u3;
+            n1 = -cdy;
+            n0 = -cdytail;
+            s1 = adxtail * n1;
+            c = splitter * adxtail;
+            ahi = c - (c - adxtail);
+            alo = adxtail - ahi;
+            c = splitter * n1;
+            bhi = c - (c - n1);
+            blo = n1 - bhi;
+            s0 = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
+            t1 = adx * n0;
+            c = splitter * adx;
+            ahi = c - (c - adx);
+            alo = adx - ahi;
+            c = splitter * n0;
+            bhi = c - (c - n0);
+            blo = n0 - bhi;
+            t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
+            _i = s0 + t0;
+            bvirt = _i - s0;
+            v[0] = s0 - (_i - bvirt) + (t0 - bvirt);
+            _j = s1 + _i;
+            bvirt = _j - s1;
+            _0 = s1 - (_j - bvirt) + (_i - bvirt);
+            _i = _0 + t1;
+            bvirt = _i - _0;
+            v[1] = _0 - (_i - bvirt) + (t1 - bvirt);
+            u3 = _j + _i;
+            bvirt = u3 - _j;
+            v[2] = _j - (u3 - bvirt) + (_i - bvirt);
+            v[3] = u3;
+            catlen = sum(4, u, 4, v, cat);
+            s1 = cdxtail * adytail;
+            c = splitter * cdxtail;
+            ahi = c - (c - cdxtail);
+            alo = cdxtail - ahi;
+            c = splitter * adytail;
+            bhi = c - (c - adytail);
+            blo = adytail - bhi;
+            s0 = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
+            t1 = adxtail * cdytail;
+            c = splitter * adxtail;
+            ahi = c - (c - adxtail);
+            alo = adxtail - ahi;
+            c = splitter * cdytail;
+            bhi = c - (c - cdytail);
+            blo = cdytail - bhi;
+            t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
+            _i = s0 - t0;
+            bvirt = s0 - _i;
+            catt[0] = s0 - (_i + bvirt) + (bvirt - t0);
+            _j = s1 + _i;
+            bvirt = _j - s1;
+            _0 = s1 - (_j - bvirt) + (_i - bvirt);
+            _i = _0 - t1;
+            bvirt = _0 - _i;
+            catt[1] = _0 - (_i + bvirt) + (bvirt - t1);
+            u3 = _j + _i;
+            bvirt = u3 - _j;
+            catt[2] = _j - (u3 - bvirt) + (_i - bvirt);
+            catt[3] = u3;
+            cattlen = 4;
+        } else {
+            cat[0] = 0;
+            catlen = 1;
+            catt[0] = 0;
+            cattlen = 1;
+        }
+        if (bdxtail !== 0) {
+            var len$2 = scale(catlen, cat, bdxtail, _16c);
+            finlen = finadd(finlen, sum(
+                scale(bxtcalen, bxtca, bdxtail, _16$1), _16$1,
+                scale(len$2, _16c, 2 * bdx, _32), _32, _48$1), _48$1);
+
+            var len2$2 = scale(cattlen, catt, bdxtail, _8$1);
+            finlen = finadd(finlen, sum_three(
+                scale(len2$2, _8$1, 2 * bdx, _16$1), _16$1,
+                scale(len2$2, _8$1, bdxtail, _16b), _16b,
+                scale(len$2, _16c, bdxtail, _32), _32, _32b, _64), _64);
+
+            if (cdytail !== 0) {
+                finlen = finadd(finlen, scale(scale(4, aa, bdxtail, _8$1), _8$1, cdytail, _16$1), _16$1);
+            }
+            if (adytail !== 0) {
+                finlen = finadd(finlen, scale(scale(4, cc, -bdxtail, _8$1), _8$1, adytail, _16$1), _16$1);
+            }
+        }
+        if (bdytail !== 0) {
+            var len$3 = scale(catlen, cat, bdytail, _16c);
+            finlen = finadd(finlen, sum(
+                scale(bytcalen, bytca, bdytail, _16$1), _16$1,
+                scale(len$3, _16c, 2 * bdy, _32), _32, _48$1), _48$1);
+
+            var len2$3 = scale(cattlen, catt, bdytail, _8$1);
+            finlen = finadd(finlen, sum_three(
+                scale(len2$3, _8$1, 2 * bdy, _16$1), _16$1,
+                scale(len2$3, _8$1, bdytail, _16b), _16b,
+                scale(len$3, _16c, bdytail, _32), _32,  _32b, _64), _64);
+        }
+    }
+    if (cdxtail !== 0 || cdytail !== 0) {
+        if (adxtail !== 0 || adytail !== 0 || bdxtail !== 0 || bdytail !== 0) {
+            s1 = adxtail * bdy;
+            c = splitter * adxtail;
+            ahi = c - (c - adxtail);
+            alo = adxtail - ahi;
+            c = splitter * bdy;
+            bhi = c - (c - bdy);
+            blo = bdy - bhi;
+            s0 = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
+            t1 = adx * bdytail;
+            c = splitter * adx;
+            ahi = c - (c - adx);
+            alo = adx - ahi;
+            c = splitter * bdytail;
+            bhi = c - (c - bdytail);
+            blo = bdytail - bhi;
+            t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
+            _i = s0 + t0;
+            bvirt = _i - s0;
+            u[0] = s0 - (_i - bvirt) + (t0 - bvirt);
+            _j = s1 + _i;
+            bvirt = _j - s1;
+            _0 = s1 - (_j - bvirt) + (_i - bvirt);
+            _i = _0 + t1;
+            bvirt = _i - _0;
+            u[1] = _0 - (_i - bvirt) + (t1 - bvirt);
+            u3 = _j + _i;
+            bvirt = u3 - _j;
+            u[2] = _j - (u3 - bvirt) + (_i - bvirt);
+            u[3] = u3;
+            n1 = -ady;
+            n0 = -adytail;
+            s1 = bdxtail * n1;
+            c = splitter * bdxtail;
+            ahi = c - (c - bdxtail);
+            alo = bdxtail - ahi;
+            c = splitter * n1;
+            bhi = c - (c - n1);
+            blo = n1 - bhi;
+            s0 = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
+            t1 = bdx * n0;
+            c = splitter * bdx;
+            ahi = c - (c - bdx);
+            alo = bdx - ahi;
+            c = splitter * n0;
+            bhi = c - (c - n0);
+            blo = n0 - bhi;
+            t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
+            _i = s0 + t0;
+            bvirt = _i - s0;
+            v[0] = s0 - (_i - bvirt) + (t0 - bvirt);
+            _j = s1 + _i;
+            bvirt = _j - s1;
+            _0 = s1 - (_j - bvirt) + (_i - bvirt);
+            _i = _0 + t1;
+            bvirt = _i - _0;
+            v[1] = _0 - (_i - bvirt) + (t1 - bvirt);
+            u3 = _j + _i;
+            bvirt = u3 - _j;
+            v[2] = _j - (u3 - bvirt) + (_i - bvirt);
+            v[3] = u3;
+            abtlen = sum(4, u, 4, v, abt);
+            s1 = adxtail * bdytail;
+            c = splitter * adxtail;
+            ahi = c - (c - adxtail);
+            alo = adxtail - ahi;
+            c = splitter * bdytail;
+            bhi = c - (c - bdytail);
+            blo = bdytail - bhi;
+            s0 = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
+            t1 = bdxtail * adytail;
+            c = splitter * bdxtail;
+            ahi = c - (c - bdxtail);
+            alo = bdxtail - ahi;
+            c = splitter * adytail;
+            bhi = c - (c - adytail);
+            blo = adytail - bhi;
+            t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
+            _i = s0 - t0;
+            bvirt = s0 - _i;
+            abtt[0] = s0 - (_i + bvirt) + (bvirt - t0);
+            _j = s1 + _i;
+            bvirt = _j - s1;
+            _0 = s1 - (_j - bvirt) + (_i - bvirt);
+            _i = _0 - t1;
+            bvirt = _0 - _i;
+            abtt[1] = _0 - (_i + bvirt) + (bvirt - t1);
+            u3 = _j + _i;
+            bvirt = u3 - _j;
+            abtt[2] = _j - (u3 - bvirt) + (_i - bvirt);
+            abtt[3] = u3;
+            abttlen = 4;
+        } else {
+            abt[0] = 0;
+            abtlen = 1;
+            abtt[0] = 0;
+            abttlen = 1;
+        }
+        if (cdxtail !== 0) {
+            var len$4 = scale(abtlen, abt, cdxtail, _16c);
+            finlen = finadd(finlen, sum(
+                scale(cxtablen, cxtab, cdxtail, _16$1), _16$1,
+                scale(len$4, _16c, 2 * cdx, _32), _32, _48$1), _48$1);
+
+            var len2$4 = scale(abttlen, abtt, cdxtail, _8$1);
+            finlen = finadd(finlen, sum_three(
+                scale(len2$4, _8$1, 2 * cdx, _16$1), _16$1,
+                scale(len2$4, _8$1, cdxtail, _16b), _16b,
+                scale(len$4, _16c, cdxtail, _32), _32, _32b, _64), _64);
+
+            if (adytail !== 0) {
+                finlen = finadd(finlen, scale(scale(4, bb, cdxtail, _8$1), _8$1, adytail, _16$1), _16$1);
+            }
+            if (bdytail !== 0) {
+                finlen = finadd(finlen, scale(scale(4, aa, -cdxtail, _8$1), _8$1, bdytail, _16$1), _16$1);
+            }
+        }
+        if (cdytail !== 0) {
+            var len$5 = scale(abtlen, abt, cdytail, _16c);
+            finlen = finadd(finlen, sum(
+                scale(cytablen, cytab, cdytail, _16$1), _16$1,
+                scale(len$5, _16c, 2 * cdy, _32), _32, _48$1), _48$1);
+
+            var len2$5 = scale(abttlen, abtt, cdytail, _8$1);
+            finlen = finadd(finlen, sum_three(
+                scale(len2$5, _8$1, 2 * cdy, _16$1), _16$1,
+                scale(len2$5, _8$1, cdytail, _16b), _16b,
+                scale(len$5, _16c, cdytail, _32), _32, _32b, _64), _64);
+        }
+    }
+
+    return fin$1[finlen - 1];
+}
+
+function incircle(ax, ay, bx, by, cx, cy, dx, dy) {
+    var adx = ax - dx;
+    var bdx = bx - dx;
+    var cdx = cx - dx;
+    var ady = ay - dy;
+    var bdy = by - dy;
+    var cdy = cy - dy;
+
+    var bdxcdy = bdx * cdy;
+    var cdxbdy = cdx * bdy;
+    var alift = adx * adx + ady * ady;
+
+    var cdxady = cdx * ady;
+    var adxcdy = adx * cdy;
+    var blift = bdx * bdx + bdy * bdy;
+
+    var adxbdy = adx * bdy;
+    var bdxady = bdx * ady;
+    var clift = cdx * cdx + cdy * cdy;
+
+    var det =
+        alift * (bdxcdy - cdxbdy) +
+        blift * (cdxady - adxcdy) +
+        clift * (adxbdy - bdxady);
+
+    var permanent =
+        (Math.abs(bdxcdy) + Math.abs(cdxbdy)) * alift +
+        (Math.abs(cdxady) + Math.abs(adxcdy)) * blift +
+        (Math.abs(adxbdy) + Math.abs(bdxady)) * clift;
+
+    var errbound = iccerrboundA * permanent;
+
+    if (det > errbound || -det > errbound) {
+        return det;
+    }
+    return incircleadapt(ax, ay, bx, by, cx, cy, dx, dy, permanent);
+}
+
+function incirclefast(ax, ay, bx, by, cx, cy, dx, dy) {
+    var adx = ax - dx;
+    var ady = ay - dy;
+    var bdx = bx - dx;
+    var bdy = by - dy;
+    var cdx = cx - dx;
+    var cdy = cy - dy;
+
+    var abdet = adx * bdy - bdx * ady;
+    var bcdet = bdx * cdy - cdx * bdy;
+    var cadet = cdx * ady - adx * cdy;
+    var alift = adx * adx + ady * ady;
+    var blift = bdx * bdx + bdy * bdy;
+    var clift = cdx * cdx + cdy * cdy;
+
+    return alift * bcdet + blift * cadet + clift * abdet;
+}
+
+var isperrboundA = (16 + 224 * epsilon) * epsilon;
+var isperrboundB = (5 + 72 * epsilon) * epsilon;
+var isperrboundC = (71 + 1408 * epsilon) * epsilon * epsilon;
+
+var ab = vec(4);
+var bc = vec(4);
+var cd = vec(4);
+var de = vec(4);
+var ea = vec(4);
+var ac = vec(4);
+var bd = vec(4);
+var ce = vec(4);
+var da = vec(4);
+var eb = vec(4);
+
+var abc = vec(24);
+var bcd = vec(24);
+var cde = vec(24);
+var dea = vec(24);
+var eab = vec(24);
+var abd = vec(24);
+var bce = vec(24);
+var cda = vec(24);
+var deb = vec(24);
+var eac = vec(24);
+
+var adet = vec(1152);
+var bdet = vec(1152);
+var cdet = vec(1152);
+var ddet = vec(1152);
+var edet = vec(1152);
+var abdet = vec(2304);
+var cddet = vec(2304);
+var cdedet = vec(3456);
+var deter = vec(5760);
+
+var _8 = vec(8);
+var _8b = vec(8);
+var _8c = vec(8);
+var _16 = vec(16);
+var _24 = vec(24);
+var _48 = vec(48);
+var _48b = vec(48);
+var _96 = vec(96);
+var _192 = vec(192);
+var _384x = vec(384);
+var _384y = vec(384);
+var _384z = vec(384);
+var _768 = vec(768);
+
+function sum_three_scale(a, b, c, az, bz, cz, out) {
+    return sum_three(
+        scale(4, a, az, _8), _8,
+        scale(4, b, bz, _8b), _8b,
+        scale(4, c, cz, _8c), _8c, _16, out);
+}
+
+function liftexact(alen, a, blen, b, clen, c, dlen, d, x, y, z, out) {
+    var len = sum(
+        sum(alen, a, blen, b, _48), _48,
+        negate(sum(clen, c, dlen, d, _48b), _48b), _48b, _96);
+
+    return sum_three(
+        scale(scale(len, _96, x, _192), _192, x, _384x), _384x,
+        scale(scale(len, _96, y, _192), _192, y, _384y), _384y,
+        scale(scale(len, _96, z, _192), _192, z, _384z), _384z, _768, out);
+}
+
+function insphereexact(ax, ay, az, bx, by, bz, cx, cy, cz, dx, dy, dz, ex, ey, ez) {
+    var bvirt, c, ahi, alo, bhi, blo, _i, _j, _0, s1, s0, t1, t0, u3;
+
+    s1 = ax * by;
+    c = splitter * ax;
+    ahi = c - (c - ax);
+    alo = ax - ahi;
+    c = splitter * by;
+    bhi = c - (c - by);
+    blo = by - bhi;
+    s0 = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
+    t1 = bx * ay;
+    c = splitter * bx;
+    ahi = c - (c - bx);
+    alo = bx - ahi;
+    c = splitter * ay;
+    bhi = c - (c - ay);
+    blo = ay - bhi;
+    t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
+    _i = s0 - t0;
+    bvirt = s0 - _i;
+    ab[0] = s0 - (_i + bvirt) + (bvirt - t0);
+    _j = s1 + _i;
+    bvirt = _j - s1;
+    _0 = s1 - (_j - bvirt) + (_i - bvirt);
+    _i = _0 - t1;
+    bvirt = _0 - _i;
+    ab[1] = _0 - (_i + bvirt) + (bvirt - t1);
+    u3 = _j + _i;
+    bvirt = u3 - _j;
+    ab[2] = _j - (u3 - bvirt) + (_i - bvirt);
+    ab[3] = u3;
+    s1 = bx * cy;
+    c = splitter * bx;
+    ahi = c - (c - bx);
+    alo = bx - ahi;
+    c = splitter * cy;
+    bhi = c - (c - cy);
+    blo = cy - bhi;
+    s0 = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
+    t1 = cx * by;
+    c = splitter * cx;
+    ahi = c - (c - cx);
+    alo = cx - ahi;
+    c = splitter * by;
+    bhi = c - (c - by);
+    blo = by - bhi;
+    t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
+    _i = s0 - t0;
+    bvirt = s0 - _i;
+    bc[0] = s0 - (_i + bvirt) + (bvirt - t0);
+    _j = s1 + _i;
+    bvirt = _j - s1;
+    _0 = s1 - (_j - bvirt) + (_i - bvirt);
+    _i = _0 - t1;
+    bvirt = _0 - _i;
+    bc[1] = _0 - (_i + bvirt) + (bvirt - t1);
+    u3 = _j + _i;
+    bvirt = u3 - _j;
+    bc[2] = _j - (u3 - bvirt) + (_i - bvirt);
+    bc[3] = u3;
+    s1 = cx * dy;
+    c = splitter * cx;
+    ahi = c - (c - cx);
+    alo = cx - ahi;
+    c = splitter * dy;
+    bhi = c - (c - dy);
+    blo = dy - bhi;
+    s0 = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
+    t1 = dx * cy;
+    c = splitter * dx;
+    ahi = c - (c - dx);
+    alo = dx - ahi;
+    c = splitter * cy;
+    bhi = c - (c - cy);
+    blo = cy - bhi;
+    t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
+    _i = s0 - t0;
+    bvirt = s0 - _i;
+    cd[0] = s0 - (_i + bvirt) + (bvirt - t0);
+    _j = s1 + _i;
+    bvirt = _j - s1;
+    _0 = s1 - (_j - bvirt) + (_i - bvirt);
+    _i = _0 - t1;
+    bvirt = _0 - _i;
+    cd[1] = _0 - (_i + bvirt) + (bvirt - t1);
+    u3 = _j + _i;
+    bvirt = u3 - _j;
+    cd[2] = _j - (u3 - bvirt) + (_i - bvirt);
+    cd[3] = u3;
+    s1 = dx * ey;
+    c = splitter * dx;
+    ahi = c - (c - dx);
+    alo = dx - ahi;
+    c = splitter * ey;
+    bhi = c - (c - ey);
+    blo = ey - bhi;
+    s0 = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
+    t1 = ex * dy;
+    c = splitter * ex;
+    ahi = c - (c - ex);
+    alo = ex - ahi;
+    c = splitter * dy;
+    bhi = c - (c - dy);
+    blo = dy - bhi;
+    t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
+    _i = s0 - t0;
+    bvirt = s0 - _i;
+    de[0] = s0 - (_i + bvirt) + (bvirt - t0);
+    _j = s1 + _i;
+    bvirt = _j - s1;
+    _0 = s1 - (_j - bvirt) + (_i - bvirt);
+    _i = _0 - t1;
+    bvirt = _0 - _i;
+    de[1] = _0 - (_i + bvirt) + (bvirt - t1);
+    u3 = _j + _i;
+    bvirt = u3 - _j;
+    de[2] = _j - (u3 - bvirt) + (_i - bvirt);
+    de[3] = u3;
+    s1 = ex * ay;
+    c = splitter * ex;
+    ahi = c - (c - ex);
+    alo = ex - ahi;
+    c = splitter * ay;
+    bhi = c - (c - ay);
+    blo = ay - bhi;
+    s0 = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
+    t1 = ax * ey;
+    c = splitter * ax;
+    ahi = c - (c - ax);
+    alo = ax - ahi;
+    c = splitter * ey;
+    bhi = c - (c - ey);
+    blo = ey - bhi;
+    t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
+    _i = s0 - t0;
+    bvirt = s0 - _i;
+    ea[0] = s0 - (_i + bvirt) + (bvirt - t0);
+    _j = s1 + _i;
+    bvirt = _j - s1;
+    _0 = s1 - (_j - bvirt) + (_i - bvirt);
+    _i = _0 - t1;
+    bvirt = _0 - _i;
+    ea[1] = _0 - (_i + bvirt) + (bvirt - t1);
+    u3 = _j + _i;
+    bvirt = u3 - _j;
+    ea[2] = _j - (u3 - bvirt) + (_i - bvirt);
+    ea[3] = u3;
+    s1 = ax * cy;
+    c = splitter * ax;
+    ahi = c - (c - ax);
+    alo = ax - ahi;
+    c = splitter * cy;
+    bhi = c - (c - cy);
+    blo = cy - bhi;
+    s0 = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
+    t1 = cx * ay;
+    c = splitter * cx;
+    ahi = c - (c - cx);
+    alo = cx - ahi;
+    c = splitter * ay;
+    bhi = c - (c - ay);
+    blo = ay - bhi;
+    t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
+    _i = s0 - t0;
+    bvirt = s0 - _i;
+    ac[0] = s0 - (_i + bvirt) + (bvirt - t0);
+    _j = s1 + _i;
+    bvirt = _j - s1;
+    _0 = s1 - (_j - bvirt) + (_i - bvirt);
+    _i = _0 - t1;
+    bvirt = _0 - _i;
+    ac[1] = _0 - (_i + bvirt) + (bvirt - t1);
+    u3 = _j + _i;
+    bvirt = u3 - _j;
+    ac[2] = _j - (u3 - bvirt) + (_i - bvirt);
+    ac[3] = u3;
+    s1 = bx * dy;
+    c = splitter * bx;
+    ahi = c - (c - bx);
+    alo = bx - ahi;
+    c = splitter * dy;
+    bhi = c - (c - dy);
+    blo = dy - bhi;
+    s0 = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
+    t1 = dx * by;
+    c = splitter * dx;
+    ahi = c - (c - dx);
+    alo = dx - ahi;
+    c = splitter * by;
+    bhi = c - (c - by);
+    blo = by - bhi;
+    t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
+    _i = s0 - t0;
+    bvirt = s0 - _i;
+    bd[0] = s0 - (_i + bvirt) + (bvirt - t0);
+    _j = s1 + _i;
+    bvirt = _j - s1;
+    _0 = s1 - (_j - bvirt) + (_i - bvirt);
+    _i = _0 - t1;
+    bvirt = _0 - _i;
+    bd[1] = _0 - (_i + bvirt) + (bvirt - t1);
+    u3 = _j + _i;
+    bvirt = u3 - _j;
+    bd[2] = _j - (u3 - bvirt) + (_i - bvirt);
+    bd[3] = u3;
+    s1 = cx * ey;
+    c = splitter * cx;
+    ahi = c - (c - cx);
+    alo = cx - ahi;
+    c = splitter * ey;
+    bhi = c - (c - ey);
+    blo = ey - bhi;
+    s0 = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
+    t1 = ex * cy;
+    c = splitter * ex;
+    ahi = c - (c - ex);
+    alo = ex - ahi;
+    c = splitter * cy;
+    bhi = c - (c - cy);
+    blo = cy - bhi;
+    t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
+    _i = s0 - t0;
+    bvirt = s0 - _i;
+    ce[0] = s0 - (_i + bvirt) + (bvirt - t0);
+    _j = s1 + _i;
+    bvirt = _j - s1;
+    _0 = s1 - (_j - bvirt) + (_i - bvirt);
+    _i = _0 - t1;
+    bvirt = _0 - _i;
+    ce[1] = _0 - (_i + bvirt) + (bvirt - t1);
+    u3 = _j + _i;
+    bvirt = u3 - _j;
+    ce[2] = _j - (u3 - bvirt) + (_i - bvirt);
+    ce[3] = u3;
+    s1 = dx * ay;
+    c = splitter * dx;
+    ahi = c - (c - dx);
+    alo = dx - ahi;
+    c = splitter * ay;
+    bhi = c - (c - ay);
+    blo = ay - bhi;
+    s0 = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
+    t1 = ax * dy;
+    c = splitter * ax;
+    ahi = c - (c - ax);
+    alo = ax - ahi;
+    c = splitter * dy;
+    bhi = c - (c - dy);
+    blo = dy - bhi;
+    t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
+    _i = s0 - t0;
+    bvirt = s0 - _i;
+    da[0] = s0 - (_i + bvirt) + (bvirt - t0);
+    _j = s1 + _i;
+    bvirt = _j - s1;
+    _0 = s1 - (_j - bvirt) + (_i - bvirt);
+    _i = _0 - t1;
+    bvirt = _0 - _i;
+    da[1] = _0 - (_i + bvirt) + (bvirt - t1);
+    u3 = _j + _i;
+    bvirt = u3 - _j;
+    da[2] = _j - (u3 - bvirt) + (_i - bvirt);
+    da[3] = u3;
+    s1 = ex * by;
+    c = splitter * ex;
+    ahi = c - (c - ex);
+    alo = ex - ahi;
+    c = splitter * by;
+    bhi = c - (c - by);
+    blo = by - bhi;
+    s0 = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
+    t1 = bx * ey;
+    c = splitter * bx;
+    ahi = c - (c - bx);
+    alo = bx - ahi;
+    c = splitter * ey;
+    bhi = c - (c - ey);
+    blo = ey - bhi;
+    t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
+    _i = s0 - t0;
+    bvirt = s0 - _i;
+    eb[0] = s0 - (_i + bvirt) + (bvirt - t0);
+    _j = s1 + _i;
+    bvirt = _j - s1;
+    _0 = s1 - (_j - bvirt) + (_i - bvirt);
+    _i = _0 - t1;
+    bvirt = _0 - _i;
+    eb[1] = _0 - (_i + bvirt) + (bvirt - t1);
+    u3 = _j + _i;
+    bvirt = u3 - _j;
+    eb[2] = _j - (u3 - bvirt) + (_i - bvirt);
+    eb[3] = u3;
+
+    var abclen = sum_three_scale(ab, bc, ac, cz, az, -bz, abc);
+    var bcdlen = sum_three_scale(bc, cd, bd, dz, bz, -cz, bcd);
+    var cdelen = sum_three_scale(cd, de, ce, ez, cz, -dz, cde);
+    var dealen = sum_three_scale(de, ea, da, az, dz, -ez, dea);
+    var eablen = sum_three_scale(ea, ab, eb, bz, ez, -az, eab);
+    var abdlen = sum_three_scale(ab, bd, da, dz, az, bz, abd);
+    var bcelen = sum_three_scale(bc, ce, eb, ez, bz, cz, bce);
+    var cdalen = sum_three_scale(cd, da, ac, az, cz, dz, cda);
+    var deblen = sum_three_scale(de, eb, bd, bz, dz, ez, deb);
+    var eaclen = sum_three_scale(ea, ac, ce, cz, ez, az, eac);
+
+    var deterlen = sum_three(
+        liftexact(cdelen, cde, bcelen, bce, deblen, deb, bcdlen, bcd, ax, ay, az, adet), adet,
+        liftexact(dealen, dea, cdalen, cda, eaclen, eac, cdelen, cde, bx, by, bz, bdet), bdet,
+        sum_three(
+            liftexact(eablen, eab, deblen, deb, abdlen, abd, dealen, dea, cx, cy, cz, cdet), cdet,
+            liftexact(abclen, abc, eaclen, eac, bcelen, bce, eablen, eab, dx, dy, dz, ddet), ddet,
+            liftexact(bcdlen, bcd, abdlen, abd, cdalen, cda, abclen, abc, ex, ey, ez, edet), edet, cddet, cdedet), cdedet, abdet, deter);
+
+    return deter[deterlen - 1];
+}
+
+var xdet = vec(96);
+var ydet = vec(96);
+var zdet = vec(96);
+var fin = vec(1152);
+
+function liftadapt(a, b, c, az, bz, cz, x, y, z, out) {
+    var len = sum_three_scale(a, b, c, az, bz, cz, _24);
+    return sum_three(
+        scale(scale(len, _24, x, _48), _48, x, xdet), xdet,
+        scale(scale(len, _24, y, _48), _48, y, ydet), ydet,
+        scale(scale(len, _24, z, _48), _48, z, zdet), zdet, _192, out);
+}
+
+function insphereadapt(ax, ay, az, bx, by, bz, cx, cy, cz, dx, dy, dz, ex, ey, ez, permanent) {
+    var ab3, bc3, cd3, da3, ac3, bd3;
+
+    var aextail, bextail, cextail, dextail;
+    var aeytail, beytail, ceytail, deytail;
+    var aeztail, beztail, ceztail, deztail;
+
+    var bvirt, c, ahi, alo, bhi, blo, _i, _j, _0, s1, s0, t1, t0;
+
+    var aex = ax - ex;
+    var bex = bx - ex;
+    var cex = cx - ex;
+    var dex = dx - ex;
+    var aey = ay - ey;
+    var bey = by - ey;
+    var cey = cy - ey;
+    var dey = dy - ey;
+    var aez = az - ez;
+    var bez = bz - ez;
+    var cez = cz - ez;
+    var dez = dz - ez;
+
+    s1 = aex * bey;
+    c = splitter * aex;
+    ahi = c - (c - aex);
+    alo = aex - ahi;
+    c = splitter * bey;
+    bhi = c - (c - bey);
+    blo = bey - bhi;
+    s0 = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
+    t1 = bex * aey;
+    c = splitter * bex;
+    ahi = c - (c - bex);
+    alo = bex - ahi;
+    c = splitter * aey;
+    bhi = c - (c - aey);
+    blo = aey - bhi;
+    t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
+    _i = s0 - t0;
+    bvirt = s0 - _i;
+    ab[0] = s0 - (_i + bvirt) + (bvirt - t0);
+    _j = s1 + _i;
+    bvirt = _j - s1;
+    _0 = s1 - (_j - bvirt) + (_i - bvirt);
+    _i = _0 - t1;
+    bvirt = _0 - _i;
+    ab[1] = _0 - (_i + bvirt) + (bvirt - t1);
+    ab3 = _j + _i;
+    bvirt = ab3 - _j;
+    ab[2] = _j - (ab3 - bvirt) + (_i - bvirt);
+    ab[3] = ab3;
+    s1 = bex * cey;
+    c = splitter * bex;
+    ahi = c - (c - bex);
+    alo = bex - ahi;
+    c = splitter * cey;
+    bhi = c - (c - cey);
+    blo = cey - bhi;
+    s0 = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
+    t1 = cex * bey;
+    c = splitter * cex;
+    ahi = c - (c - cex);
+    alo = cex - ahi;
+    c = splitter * bey;
+    bhi = c - (c - bey);
+    blo = bey - bhi;
+    t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
+    _i = s0 - t0;
+    bvirt = s0 - _i;
+    bc[0] = s0 - (_i + bvirt) + (bvirt - t0);
+    _j = s1 + _i;
+    bvirt = _j - s1;
+    _0 = s1 - (_j - bvirt) + (_i - bvirt);
+    _i = _0 - t1;
+    bvirt = _0 - _i;
+    bc[1] = _0 - (_i + bvirt) + (bvirt - t1);
+    bc3 = _j + _i;
+    bvirt = bc3 - _j;
+    bc[2] = _j - (bc3 - bvirt) + (_i - bvirt);
+    bc[3] = bc3;
+    s1 = cex * dey;
+    c = splitter * cex;
+    ahi = c - (c - cex);
+    alo = cex - ahi;
+    c = splitter * dey;
+    bhi = c - (c - dey);
+    blo = dey - bhi;
+    s0 = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
+    t1 = dex * cey;
+    c = splitter * dex;
+    ahi = c - (c - dex);
+    alo = dex - ahi;
+    c = splitter * cey;
+    bhi = c - (c - cey);
+    blo = cey - bhi;
+    t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
+    _i = s0 - t0;
+    bvirt = s0 - _i;
+    cd[0] = s0 - (_i + bvirt) + (bvirt - t0);
+    _j = s1 + _i;
+    bvirt = _j - s1;
+    _0 = s1 - (_j - bvirt) + (_i - bvirt);
+    _i = _0 - t1;
+    bvirt = _0 - _i;
+    cd[1] = _0 - (_i + bvirt) + (bvirt - t1);
+    cd3 = _j + _i;
+    bvirt = cd3 - _j;
+    cd[2] = _j - (cd3 - bvirt) + (_i - bvirt);
+    cd[3] = cd3;
+    s1 = dex * aey;
+    c = splitter * dex;
+    ahi = c - (c - dex);
+    alo = dex - ahi;
+    c = splitter * aey;
+    bhi = c - (c - aey);
+    blo = aey - bhi;
+    s0 = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
+    t1 = aex * dey;
+    c = splitter * aex;
+    ahi = c - (c - aex);
+    alo = aex - ahi;
+    c = splitter * dey;
+    bhi = c - (c - dey);
+    blo = dey - bhi;
+    t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
+    _i = s0 - t0;
+    bvirt = s0 - _i;
+    da[0] = s0 - (_i + bvirt) + (bvirt - t0);
+    _j = s1 + _i;
+    bvirt = _j - s1;
+    _0 = s1 - (_j - bvirt) + (_i - bvirt);
+    _i = _0 - t1;
+    bvirt = _0 - _i;
+    da[1] = _0 - (_i + bvirt) + (bvirt - t1);
+    da3 = _j + _i;
+    bvirt = da3 - _j;
+    da[2] = _j - (da3 - bvirt) + (_i - bvirt);
+    da[3] = da3;
+    s1 = aex * cey;
+    c = splitter * aex;
+    ahi = c - (c - aex);
+    alo = aex - ahi;
+    c = splitter * cey;
+    bhi = c - (c - cey);
+    blo = cey - bhi;
+    s0 = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
+    t1 = cex * aey;
+    c = splitter * cex;
+    ahi = c - (c - cex);
+    alo = cex - ahi;
+    c = splitter * aey;
+    bhi = c - (c - aey);
+    blo = aey - bhi;
+    t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
+    _i = s0 - t0;
+    bvirt = s0 - _i;
+    ac[0] = s0 - (_i + bvirt) + (bvirt - t0);
+    _j = s1 + _i;
+    bvirt = _j - s1;
+    _0 = s1 - (_j - bvirt) + (_i - bvirt);
+    _i = _0 - t1;
+    bvirt = _0 - _i;
+    ac[1] = _0 - (_i + bvirt) + (bvirt - t1);
+    ac3 = _j + _i;
+    bvirt = ac3 - _j;
+    ac[2] = _j - (ac3 - bvirt) + (_i - bvirt);
+    ac[3] = ac3;
+    s1 = bex * dey;
+    c = splitter * bex;
+    ahi = c - (c - bex);
+    alo = bex - ahi;
+    c = splitter * dey;
+    bhi = c - (c - dey);
+    blo = dey - bhi;
+    s0 = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
+    t1 = dex * bey;
+    c = splitter * dex;
+    ahi = c - (c - dex);
+    alo = dex - ahi;
+    c = splitter * bey;
+    bhi = c - (c - bey);
+    blo = bey - bhi;
+    t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
+    _i = s0 - t0;
+    bvirt = s0 - _i;
+    bd[0] = s0 - (_i + bvirt) + (bvirt - t0);
+    _j = s1 + _i;
+    bvirt = _j - s1;
+    _0 = s1 - (_j - bvirt) + (_i - bvirt);
+    _i = _0 - t1;
+    bvirt = _0 - _i;
+    bd[1] = _0 - (_i + bvirt) + (bvirt - t1);
+    bd3 = _j + _i;
+    bvirt = bd3 - _j;
+    bd[2] = _j - (bd3 - bvirt) + (_i - bvirt);
+    bd[3] = bd3;
+
+    var finlen = sum(
+        sum(
+            negate(liftadapt(bc, cd, bd, dez, bez, -cez, aex, aey, aez, adet), adet), adet,
+            liftadapt(cd, da, ac, aez, cez, dez, bex, bey, bez, bdet), bdet, abdet), abdet,
+        sum(
+            negate(liftadapt(da, ab, bd, bez, dez, aez, cex, cey, cez, cdet), cdet), cdet,
+            liftadapt(ab, bc, ac, cez, aez, -bez, dex, dey, dez, ddet), ddet, cddet), cddet, fin);
+
+    var det = estimate(finlen, fin);
+    var errbound = isperrboundB * permanent;
+    if (det >= errbound || -det >= errbound) {
+        return det;
+    }
+
+    bvirt = ax - aex;
+    aextail = ax - (aex + bvirt) + (bvirt - ex);
+    bvirt = ay - aey;
+    aeytail = ay - (aey + bvirt) + (bvirt - ey);
+    bvirt = az - aez;
+    aeztail = az - (aez + bvirt) + (bvirt - ez);
+    bvirt = bx - bex;
+    bextail = bx - (bex + bvirt) + (bvirt - ex);
+    bvirt = by - bey;
+    beytail = by - (bey + bvirt) + (bvirt - ey);
+    bvirt = bz - bez;
+    beztail = bz - (bez + bvirt) + (bvirt - ez);
+    bvirt = cx - cex;
+    cextail = cx - (cex + bvirt) + (bvirt - ex);
+    bvirt = cy - cey;
+    ceytail = cy - (cey + bvirt) + (bvirt - ey);
+    bvirt = cz - cez;
+    ceztail = cz - (cez + bvirt) + (bvirt - ez);
+    bvirt = dx - dex;
+    dextail = dx - (dex + bvirt) + (bvirt - ex);
+    bvirt = dy - dey;
+    deytail = dy - (dey + bvirt) + (bvirt - ey);
+    bvirt = dz - dez;
+    deztail = dz - (dez + bvirt) + (bvirt - ez);
+    if (aextail === 0 && aeytail === 0 && aeztail === 0 &&
+        bextail === 0 && beytail === 0 && beztail === 0 &&
+        cextail === 0 && ceytail === 0 && ceztail === 0 &&
+        dextail === 0 && deytail === 0 && deztail === 0) {
+        return det;
+    }
+
+    errbound = isperrboundC * permanent + resulterrbound * Math.abs(det);
+
+    var abeps = (aex * beytail + bey * aextail) - (aey * bextail + bex * aeytail);
+    var bceps = (bex * ceytail + cey * bextail) - (bey * cextail + cex * beytail);
+    var cdeps = (cex * deytail + dey * cextail) - (cey * dextail + dex * ceytail);
+    var daeps = (dex * aeytail + aey * dextail) - (dey * aextail + aex * deytail);
+    var aceps = (aex * ceytail + cey * aextail) - (aey * cextail + cex * aeytail);
+    var bdeps = (bex * deytail + dey * bextail) - (bey * dextail + dex * beytail);
+    det +=
+        (((bex * bex + bey * bey + bez * bez) * ((cez * daeps + dez * aceps + aez * cdeps) +
+        (ceztail * da3 + deztail * ac3 + aeztail * cd3)) + (dex * dex + dey * dey + dez * dez) *
+        ((aez * bceps - bez * aceps + cez * abeps) + (aeztail * bc3 - beztail * ac3 + ceztail * ab3))) -
+        ((aex * aex + aey * aey + aez * aez) * ((bez * cdeps - cez * bdeps + dez * bceps) +
+        (beztail * cd3 - ceztail * bd3 + deztail * bc3)) + (cex * cex + cey * cey + cez * cez) *
+        ((dez * abeps + aez * bdeps + bez * daeps) + (deztail * ab3 + aeztail * bd3 + beztail * da3)))) +
+        2 * (((bex * bextail + bey * beytail + bez * beztail) * (cez * da3 + dez * ac3 + aez * cd3) +
+        (dex * dextail + dey * deytail + dez * deztail) * (aez * bc3 - bez * ac3 + cez * ab3)) -
+        ((aex * aextail + aey * aeytail + aez * aeztail) * (bez * cd3 - cez * bd3 + dez * bc3) +
+        (cex * cextail + cey * ceytail + cez * ceztail) * (dez * ab3 + aez * bd3 + bez * da3)));
+
+    if (det >= errbound || -det >= errbound) {
+        return det;
+    }
+
+    return insphereexact(ax, ay, az, bx, by, bz, cx, cy, cz, dx, dy, dz, ex, ey, ez);
+}
+
+function insphere(ax, ay, az, bx, by, bz, cx, cy, cz, dx, dy, dz, ex, ey, ez) {
+    var aex = ax - ex;
+    var bex = bx - ex;
+    var cex = cx - ex;
+    var dex = dx - ex;
+    var aey = ay - ey;
+    var bey = by - ey;
+    var cey = cy - ey;
+    var dey = dy - ey;
+    var aez = az - ez;
+    var bez = bz - ez;
+    var cez = cz - ez;
+    var dez = dz - ez;
+
+    var aexbey = aex * bey;
+    var bexaey = bex * aey;
+    var ab = aexbey - bexaey;
+    var bexcey = bex * cey;
+    var cexbey = cex * bey;
+    var bc = bexcey - cexbey;
+    var cexdey = cex * dey;
+    var dexcey = dex * cey;
+    var cd = cexdey - dexcey;
+    var dexaey = dex * aey;
+    var aexdey = aex * dey;
+    var da = dexaey - aexdey;
+    var aexcey = aex * cey;
+    var cexaey = cex * aey;
+    var ac = aexcey - cexaey;
+    var bexdey = bex * dey;
+    var dexbey = dex * bey;
+    var bd = bexdey - dexbey;
+
+    var abc = aez * bc - bez * ac + cez * ab;
+    var bcd = bez * cd - cez * bd + dez * bc;
+    var cda = cez * da + dez * ac + aez * cd;
+    var dab = dez * ab + aez * bd + bez * da;
+
+    var alift = aex * aex + aey * aey + aez * aez;
+    var blift = bex * bex + bey * bey + bez * bez;
+    var clift = cex * cex + cey * cey + cez * cez;
+    var dlift = dex * dex + dey * dey + dez * dez;
+
+    var det = (clift * dab - dlift * abc) + (alift * bcd - blift * cda);
+
+    var aezplus = Math.abs(aez);
+    var bezplus = Math.abs(bez);
+    var cezplus = Math.abs(cez);
+    var dezplus = Math.abs(dez);
+    var aexbeyplus = Math.abs(aexbey);
+    var bexaeyplus = Math.abs(bexaey);
+    var bexceyplus = Math.abs(bexcey);
+    var cexbeyplus = Math.abs(cexbey);
+    var cexdeyplus = Math.abs(cexdey);
+    var dexceyplus = Math.abs(dexcey);
+    var dexaeyplus = Math.abs(dexaey);
+    var aexdeyplus = Math.abs(aexdey);
+    var aexceyplus = Math.abs(aexcey);
+    var cexaeyplus = Math.abs(cexaey);
+    var bexdeyplus = Math.abs(bexdey);
+    var dexbeyplus = Math.abs(dexbey);
+    var permanent =
+        ((cexdeyplus + dexceyplus) * bezplus + (dexbeyplus + bexdeyplus) * cezplus + (bexceyplus + cexbeyplus) * dezplus) * alift +
+        ((dexaeyplus + aexdeyplus) * cezplus + (aexceyplus + cexaeyplus) * dezplus + (cexdeyplus + dexceyplus) * aezplus) * blift +
+        ((aexbeyplus + bexaeyplus) * dezplus + (bexdeyplus + dexbeyplus) * aezplus + (dexaeyplus + aexdeyplus) * bezplus) * clift +
+        ((bexceyplus + cexbeyplus) * aezplus + (cexaeyplus + aexceyplus) * bezplus + (aexbeyplus + bexaeyplus) * cezplus) * dlift;
+
+    var errbound = isperrboundA * permanent;
+    if (det > errbound || -det > errbound) {
+        return det;
+    }
+    return -insphereadapt(ax, ay, az, bx, by, bz, cx, cy, cz, dx, dy, dz, ex, ey, ez, permanent);
+}
+
+function inspherefast(pax, pay, paz, pbx, pby, pbz, pcx, pcy, pcz, pdx, pdy, pdz, pex, pey, pez) {
+    var aex = pax - pex;
+    var bex = pbx - pex;
+    var cex = pcx - pex;
+    var dex = pdx - pex;
+    var aey = pay - pey;
+    var bey = pby - pey;
+    var cey = pcy - pey;
+    var dey = pdy - pey;
+    var aez = paz - pez;
+    var bez = pbz - pez;
+    var cez = pcz - pez;
+    var dez = pdz - pez;
+
+    var ab = aex * bey - bex * aey;
+    var bc = bex * cey - cex * bey;
+    var cd = cex * dey - dex * cey;
+    var da = dex * aey - aex * dey;
+    var ac = aex * cey - cex * aey;
+    var bd = bex * dey - dex * bey;
+
+    var abc = aez * bc - bez * ac + cez * ab;
+    var bcd = bez * cd - cez * bd + dez * bc;
+    var cda = cez * da + dez * ac + aez * cd;
+    var dab = dez * ab + aez * bd + bez * da;
+
+    var alift = aex * aex + aey * aey + aez * aez;
+    var blift = bex * bex + bey * bey + bez * bez;
+    var clift = cex * cex + cey * cey + cez * cez;
+    var dlift = dex * dex + dey * dey + dez * dez;
+
+    return (clift * dab - dlift * abc) + (alift * bcd - blift * cda);
+}
+
+var Edge = function Edge(p1, p2, edgeType, index, contourId) {
+  this.p1 = p1;
+  this.p2 = p2;
+  this.edgeType = edgeType;
+  this.originalIndex = index;
+
+  this.polygonContourId = contourId;
+  this.interiorRing = false;
+
+  this.minX = Math.min(p1.p[0], p2.p[0]);
+  this.minY = Math.min(p1.p[1], p2.p[1]);
+
+  this.maxX = Math.max(p1.p[0], p2.p[0]);
+  this.maxY = Math.max(p1.p[1], p2.p[1]);
+
+  this.intersectionPoints = [];
+  this.nextEdge = null;
+};
+
+var Point = function Point(p) {
+  this.p = p;
+};
+
+var Contour = function Contour(contourId, coords) {
+  this.id = contourId;
+  this.rawCoords = coords;
+};
+
+function fillQueue(polygon, line, polyEdges, lineEdges, polylineBbox) {
+  var numberOfRingsInPolygon = 0;
+  var contours = [];
+
+  var linegeom = line.type === 'Feature' ? line.geometry : line;
+  var linecoords = linegeom.type === 'LineString' ? [linegeom.coordinates] : linegeom.coordinates;
+
+  var edgeCount = 0;
+
+  for (var i = 0; i < linecoords.length; i++) {
+
+    var lineLength = linecoords[i].length - 1;
+    var p1 = new Point(linecoords[i][0]);
+    var p2 = null;
+    var prevEdge = {nextEdge: null};
+
+    for (var ii = 0; ii < lineLength; ii++) {
+      p2 = new Point(linecoords[i][ii + 1]);
+      p1.nextPoint = p2;
+      p2.prevPoint = p1;
+      var e = new Edge(p1, p2, 'polyline', edgeCount, null);
+      lineEdges.push(e);
+      prevEdge.nextEdge = e;
+      e.prevEdge = prevEdge;
+      polylineBbox[0] = Math.min(polylineBbox[0], p1.p[0]);
+      polylineBbox[1] = Math.min(polylineBbox[1], p1.p[1]);
+      polylineBbox[2] = Math.max(polylineBbox[2], p1.p[0]);
+      polylineBbox[3] = Math.max(polylineBbox[3], p1.p[1]);
+
+      p1 = p2;
+      edgeCount = edgeCount + 1;
+      prevEdge = e;
+    }
+    polylineBbox[0] = Math.min(polylineBbox[0], linecoords[i][lineLength][0]);
+    polylineBbox[1] = Math.min(polylineBbox[1], linecoords[i][lineLength][1]);
+    polylineBbox[2] = Math.max(polylineBbox[2], linecoords[i][lineLength][0]);
+    polylineBbox[3] = Math.max(polylineBbox[3], linecoords[i][lineLength][1]);
+  }
+
+  var polygeom = polygon.type === 'Feature' ? polygon.geometry : polygon;
+  var polycoords = polygeom.type === 'Polygon' ? [polygeom.coordinates] : polygeom.coordinates;
+
+  var polyLength = polycoords.length;
+
+  for (var i$1 = 0; i$1 < polyLength; i$1++) {
+
+    var polyLenth2 = polycoords[i$1].length;
+
+    for (var ii$1 = 0; ii$1 < polyLenth2; ii$1++) {
+      numberOfRingsInPolygon = numberOfRingsInPolygon + 1;
+
+      var polygonSet = polycoords[i$1][ii$1];
+      var polyLenth3 = polygonSet.length;
+      
+      contours.push(new Contour(numberOfRingsInPolygon, polygonSet));
+
+      var firstPoint = new Point(polygonSet[0]);
+      var p1$1 = firstPoint;
+      var p2$1 = (void 0), e$1 = null;
+      var prevEdge$1 = {nextEdge: null, prevEdge: null};
+      var firstEdge = null;
+
+      for (var iii = 1; iii < polyLenth3; iii++) {
+        p2$1 = new Point(polygonSet[iii]);
+        p1$1.nextPoint = p2$1;
+        p2$1.prevPoint = p1$1;
+
+        e$1 = new Edge(p1$1, p2$1, 'polygon', edgeCount, numberOfRingsInPolygon);
+        prevEdge$1.nextEdge = e$1;
+        e$1.prevEdge = prevEdge$1;
+        if (iii === 1) { firstEdge = e$1; }
+
+        if (ii$1 > 0) { e$1.interiorRing = true; }
+        e$1.intersectPolylineBbox = edgeIntersectsBbox(e$1, polylineBbox);
+        polyEdges.push(e$1);
+
+        p1$1 = p2$1;
+        edgeCount = edgeCount + 1;
+        prevEdge$1 = e$1;
+      }
+
+      e$1.nextEdge = firstEdge;
+      firstEdge.prevEdge = e$1;
+      p2$1.nextPoint = firstPoint.nextPoint;
+      firstPoint.prevPoint = p2$1.prevPoint;
+    }
+  }
+  return contours
+}
+
+function edgeIntersectsBbox(edge, bbox) {
+  if (edge.maxX < bbox[0]) { return false }
+  if (edge.minX > bbox[2]) { return false }
+  if (edge.maxY < bbox[1]) { return false }
+  if (edge.minY > bbox[3]) { return false }
+  return true
+}
+
+var IntersectionPoint = function IntersectionPoint(p, edge1, edge2, isHeadingIn) {
+  this.p = p;
+  this.polylineEdge = edge1;
+  this.polygonEdge = edge2;
+  this.isHeadingIn = isHeadingIn;
+
+  this.distanceFromPolylineEdgeStart = distance(this.polylineEdge.p1.p, this.p);
+  this.distanceFromPolygonEdgeStart = distance(this.polygonEdge.p1.p, this.p);
+
+  this.polygonEdge.intersectionPoints.push(this);
+  this.polylineEdge.intersectionPoints.push(this);
+
+  this.visitCount = 0;
+};
+
+IntersectionPoint.prototype.incrementVisitCount = function incrementVisitCount () {
+  this.visitCount = this.visitCount + 1;
+};
+
+function distance(p1, p2) {
+  var xs = p2[0] - p1[0];
+  var ys = p2[1] - p1[1];
+  xs *= xs;
+  ys *= ys;
+
+  return Math.sqrt(xs + ys)
+}
+
+function findIntersectionPoints(polygonEdges, lineEdges, intersectingPoints) {
+  var i, ii, iii;
+  var count = lineEdges.length;
+  var polyCount = polygonEdges.length;
+  for (i = 0; i < count; i++) {
+    var lineEdge = lineEdges[i];
+
+    for (ii = 0; ii < polyCount; ii++) {
+      var polygonEdge = polygonEdges[ii];
+      if (!polygonEdge.intersectPolylineBbox) { continue }
+
+      if (polygonEdge.maxX < lineEdge.minX || polygonEdge.minX > lineEdge.maxX) { continue }
+      if (polygonEdge.maxY < lineEdge.minY || polygonEdge.minY > lineEdge.maxY) { continue }
+      var intersection = getEdgeIntersection(lineEdge, polygonEdge);
+      if (intersection !== null) {
+        for (iii = 0; iii < intersection.length; iii++) {
+          var isHeadingIn = orient2d(polygonEdge.p1.p[0], polygonEdge.p1.p[1], polygonEdge.p2.p[0], polygonEdge.p2.p[1], lineEdge.p1.p[0], lineEdge.p1.p[1]);
+          var ip = new IntersectionPoint(intersection[iii], lineEdge, polygonEdge, isHeadingIn > 0);
+          intersectingPoints.push(ip);
+        }
+      }
+    }
+  }
+  lineEdges.forEach(function (edge) {
+    edge.intersectionPoints.sort(function (a, b) {
+      return a.distanceFromPolylineEdgeStart - b.distanceFromPolylineEdgeStart
+    });
+  });
+
+  polygonEdges.forEach(function (edge) {
+    edge.intersectionPoints.sort(function (a, b) {
+      return a.distanceFromPolygonEdgeStart - b.distanceFromPolygonEdgeStart
+    });
+  });
+}
+
+var EPSILON = 1e-9;
+
+function crossProduct(a, b) {
+  return (a[0] * b[1]) - (a[1] * b[0])
+}
+
+function dotProduct(a, b) {
+  return (a[0] * b[0]) + (a[1] * b[1])
+}
+
+function toPoint(p, s, d) {
+  return [
+    p[0] + s * d[0],
+    p[1] + s * d[1]
+  ]
+}
+
+function getEdgeIntersection(lineEdge, potentialEdge, noEndpointTouch) {
+  var va = [lineEdge.p2.p[0] - lineEdge.p1.p[0], lineEdge.p2.p[1] - lineEdge.p1.p[1]];
+  var vb = [potentialEdge.p2.p[0] - potentialEdge.p1.p[0], potentialEdge.p2.p[1] - potentialEdge.p1.p[1]];
+
+  var e = [potentialEdge.p1.p[0] - lineEdge.p1.p[0], potentialEdge.p1.p[1] - lineEdge.p1.p[1]];
+  var kross = crossProduct(va, vb);
+  var sqrKross = kross * kross;
+  var sqrLenA  = dotProduct(va, va);
+
+  if (sqrKross > 0) {
+
+    var s = crossProduct(e, vb) / kross;
+    if (s < 0 || s > 1) { return null }
+    var t = crossProduct(e, va) / kross;
+    if (t < 0 || t > 1) { return null }
+    if (s === 0 || s === 1) {
+      // on an endpoint of line segment a
+      return noEndpointTouch ? null : [toPoint(lineEdge.p1.p, s, va)]
+    }
+    if (t === 0 || t === 1) {
+      // on an endpoint of line segment b
+      return noEndpointTouch ? null : [toPoint(potentialEdge.p1.p, t, vb)]
+    }
+    return [toPoint(lineEdge.p1.p, s, va)]
+  }
+
+  var sqrLenE = dotProduct(e, e);
+  kross = crossProduct(e, va);
+  sqrKross = kross * kross;
+
+  if (sqrKross > EPSILON * sqrLenA * sqrLenE) { return null }
+
+  var sa = dotProduct(va, e) / sqrLenA;
+  var sb = sa + dotProduct(va, vb) / sqrLenA;
+  var smin = Math.min(sa, sb);
+  var smax = Math.max(sa, sb);
+
+  if (smin <= 1 && smax >= 0) {
+
+    if (smin === 1) { return noEndpointTouch ? null : [toPoint(lineEdge.p1.p, smin > 0 ? smin : 0, va)] }
+
+    if (smax === 0) { return noEndpointTouch ? null : [toPoint(lineEdge.p1.p, smax < 1 ? smax : 1, va)] }
+
+    if (noEndpointTouch && smin === 0 && smax === 1) { return null }
+
+    return [
+      toPoint(lineEdge.p1.p, smin > 0 ? smin : 0, va),
+      toPoint(lineEdge.p1.p, smax < 1 ? smax : 1, va)
+    ]
+  }
+
+  return null
+}
+
+// import { _debugCandidatePoly, _debugIntersectionPoint, _debugLinePoints, _debugIntersectionPoints, _debugPolyStart } from './debug'
+
+function index (polygon, line) {
+  var poly = rewind(polygon);
+
+  var intersections = [];
+  var polygonEdges = [];
+  var polylineEdges = [];
+  var polylineBbox = [Infinity, Infinity, Infinity, Infinity];
+
+  var contours = fillQueue(poly, line, polygonEdges, polylineEdges, polylineBbox);
+
+  findIntersectionPoints(polygonEdges, polylineEdges, intersections);
+
+  if (intersections.length === 0) {
+    return polygon
+  }
+
+  // Track the number of intersections per contour
+  // This is useful for holes or outerrings that aren't intersected
+  // so that we can manually add them back in at the end
+  var numberIntersectionsByRing = {};
+  contours.forEach(function (c) { return numberIntersectionsByRing[c.id] = 0; }); //eslint-disable-line
+  intersections.forEach(function (i) {
+    var id = i.polygonEdge.polygonContourId;
+    numberIntersectionsByRing[id] = numberIntersectionsByRing[id] + 1;
+  });
+
+
+  var infiniteLoopGuard = 0;
+  var outPolys = [];
+  // _debugIntersectionPoints(intersections)
+  // Start the rewiring of the outputs from the first intersection point along the polyline line
+  // This step makes a difference (eg see the another.geojson harness file)
+  var firstPolyStart = null;
+  for (var index = 0; index < polylineEdges.length; index++) {
+    var pe = polylineEdges[index];
+    if (pe.intersectionPoints.length > 0) {
+      firstPolyStart = pe.intersectionPoints[0];
+      break
+    }
+  }
+
+  var polyStart = firstPolyStart;
+  var nextPolyStart = {visitCount: 1};
+  // Basically we're going to walk our way around the outside of the polygon
+  // to find new output polygons until we get back to the beginning
+  while (firstPolyStart !== nextPolyStart) {
+    if (infiniteLoopGuard > intersections.length * 2) {
+      break
+    }
+    infiniteLoopGuard = infiniteLoopGuard++;
+
+    // If we've already visited this intersection point a couple of times we've
+    // already used it in it's two output polygons
+
+    if (nextPolyStart.visitCount >= 2) {
+      var unvisitedPolyFound = false;
+      for (var index$1 = 0; index$1 < intersections.length; index$1++) {
+        var intersection = intersections[index$1];
+        if (intersection.visitCount < 2) {
+          polyStart = intersection;
+          unvisitedPolyFound = true;
+          break
+        }
+      }
+      if (!unvisitedPolyFound) { break }
+    }
+
+    polyStart.visitCount = polyStart.visitCount + 1;
+    var outPoly = [];
+    outPolys.push(outPoly);
+    outPoly.push(polyStart.p);
+
+    polyStart.visitCount = polyStart.visitCount + 1;
+    var nextIntersection = walkPolygonForwards(polyStart, outPoly);
+    // _debugCandidatePoly(outPolys)
+    // After we've walked the first stretch of the polygon we now have the
+    // starting point for our next output polygon
+    nextPolyStart = nextIntersection;
+
+
+    // Although sometimes we walk all the way around the outside
+    // because our split line goes from outer to inner ring
+    var override = false;
+    if (nextIntersection === nextPolyStart && intersections.length === 2) {
+      for (var index$2 = 0; index$2 < intersections.length; index$2++) {
+        var intersection$1 = intersections[index$2];
+        if (intersection$1.visitCount < 2) {
+          override = true;
+        }
+      }
+    }
+
+    // An ouput polygon has to contain at least 1 stretch from the original polygon
+    // and one stretch from the polyline
+    // However it can contain many stretches of each
+    // So we walk continually from polyline to polygon collecting the output
+    while (nextIntersection !== polyStart || override) {
+      var methodForPolyline = nextIntersection.isHeadingIn ? walkPolylineForwards : walkPolylineBackwards;
+      nextIntersection = methodForPolyline(nextIntersection, outPoly);
+      // _debugCandidatePoly(outPolys)
+
+      if (nextIntersection !== polyStart) {
+        nextIntersection = walkPolygonForwards(nextIntersection, outPoly);
+        // _debugCandidatePoly(outPolys)
+      }
+      override = false;
+    }
+
+    if (nextPolyStart.visitCount >= 2) {
+      var unvisitedPolyFound$1 = false;
+      for (var index$3 = 0; index$3 < intersections.length; index$3++) {
+        var intersection$2 = intersections[index$3];
+        if (intersection$2.visitCount < 2) {
+          polyStart = intersection$2;
+          unvisitedPolyFound$1 = true;
+          break
+        }
+      }
+      if (unvisitedPolyFound$1) {
+        nextPolyStart = polyStart;
+      }
+    }
+
+    // Finally we set the next start point based on what we found earlier
+    polyStart = nextPolyStart;
+  }
+
+  var outCoordinates = outPolys.map(function (poly) { return [poly]; });
+
+  var keys = Object.keys(numberIntersectionsByRing);
+  for (var index$4 = 0; index$4 < keys.length; index$4++) {
+    var key = keys[index$4];
+    var value = numberIntersectionsByRing[key];
+    if (value === 0) {
+      var edge = findFirstPolygonEdge(polygonEdges, parseInt(key));
+      var ring = findRingFromEdge(edge, contours);
+      createAsHoleOrAddAsNewOuterRing(ring, outCoordinates);
+    }
+  }
+
+  return {
+    type: 'Feature',
+    properties: {},
+    geometry: {
+      type: 'MultiPolygon',
+      coordinates: outCoordinates
+    }
+  }
+}
+
+function findFirstPolygonEdge(polygonEdges, contourId) {
+  for (var index = 0; index < polygonEdges.length; index++) {
+    var edge = polygonEdges[index];
+    if (edge.polygonContourId === contourId) { return edge }
+  }
+}
+
+function findRingFromEdge(edge, contours) {
+  var contour = contours.find(function (c) { return c.id === edge.polygonContourId; });
+  return contour.rawCoords
+}
+
+function createAsHoleOrAddAsNewOuterRing(unusedRing, outCoordinates) {
+  for (var index = 0; index < outCoordinates.length; index++) {
+    var existingRing = outCoordinates[index];
+    if (pointInPolygon(unusedRing[0], [existingRing[0]])) {
+      existingRing.push(unusedRing);
+      return
+    }
+  }
+  // If no match is found push it as a new outer ring
+  outCoordinates.push([unusedRing]);
+}
+
+// Walk around the polygon collecting vertices
+function walkPolygonForwards(intersectionPoint, outPoly) {
+  var nextEdge = intersectionPoint.polygonEdge;
+  if (nextEdge.intersectionPoints.length > 1) {
+    // _debugIntersectionPoint(intersectionPoint)
+    var lastPointOnEdge = nextEdge.intersectionPoints[nextEdge.intersectionPoints.length - 1];
+    if (lastPointOnEdge !== intersectionPoint) {
+      var currentIndex = findIndexOfIntersectionPoint(intersectionPoint, nextEdge.intersectionPoints);
+      var nextIp = nextEdge.intersectionPoints[currentIndex + 1];
+      outPoly.push(nextIp.p);
+      nextIp.incrementVisitCount();
+      return nextIp
+    }
+  }
+  var condition = true;
+  while (condition) {
+    outPoly.push(nextEdge.p2.p);
+    nextEdge = nextEdge.nextEdge;
+    if (nextEdge === null) { return intersectionPoint }
+    else if (nextEdge.intersectionPoints.length > 0) { condition = false; }
+  }
+  nextEdge.intersectionPoints[0].incrementVisitCount();
+  outPoly.push(nextEdge.intersectionPoints[0].p);
+  return nextEdge.intersectionPoints[0]
+}
+
+// Given a set of intersections find the next one
+function findIndexOfIntersectionPoint(intersection, intersections) {
+  for (var index = 0; index < intersections.length; index++) {
+    var int = intersections[index];
+    if (int === intersection) { return index }
+  }
+  return null
+}
+
+
+function walkPolylineBackwards(intersectionPoint, outPoly) {
+  var nextEdge = intersectionPoint.polylineEdge;
+  if (nextEdge.intersectionPoints.length === 2) {
+    var lastPointOnEdge = nextEdge.intersectionPoints[nextEdge.intersectionPoints.length - 1];
+    // debugger
+    if (lastPointOnEdge === intersectionPoint) {
+      var nextIntersection = nextEdge.intersectionPoints[0];
+      outPoly.push(nextIntersection.p);
+      nextIntersection.incrementVisitCount();
+      return nextIntersection
+    } else {
+      outPoly.push(lastPointOnEdge.p);
+      lastPointOnEdge.incrementVisitCount();
+      return lastPointOnEdge
+    }
+  } else if (nextEdge.intersectionPoints.length > 2) {
+    // _debugIntersectionPoint(intersectionPoint)
+
+    var lastPointOnEdge$1 = nextEdge.intersectionPoints[0];
+    if (lastPointOnEdge$1 !== intersectionPoint) {
+      var currentIndex = findIndexOfIntersectionPoint(intersectionPoint, nextEdge.intersectionPoints);
+      var nextIntersection$1 = nextEdge.intersectionPoints[currentIndex - 1];
+      outPoly.push(nextIntersection$1.p);
+      nextIntersection$1.incrementVisitCount();
+      return nextIntersection$1
+    }
+  }
+  var condition = true;
+  while (condition) {
+    outPoly.push(nextEdge.p1.p);
+    nextEdge = nextEdge.prevEdge;
+    if (nextEdge.originalIndex === undefined) { return intersectionPoint }
+    else if (nextEdge.intersectionPoints.length > 0) {
+      condition = false;
+    }
+  }
+  if (nextEdge.originalIndex === undefined) { return intersectionPoint }
+  var lastIntersection = nextEdge.intersectionPoints[nextEdge.intersectionPoints.length - 1];
+  lastIntersection.incrementVisitCount();
+  outPoly.push(lastIntersection.p);
+  return lastIntersection
+}
+
+function walkPolylineForwards(intersectionPoint, outPoly) {
+  var nextEdge = intersectionPoint.polylineEdge;
+
+  if (nextEdge.intersectionPoints.length > 1) {
+    // _debugIntersectionPoint(intersectionPoint)
+    var lastPointOnEdge = nextEdge.intersectionPoints[nextEdge.intersectionPoints.length - 1];
+    if (lastPointOnEdge !== intersectionPoint) {
+      var currentIndex = findIndexOfIntersectionPoint(intersectionPoint, nextEdge.intersectionPoints);
+      var nextIp = nextEdge.intersectionPoints[currentIndex + 1];
+      outPoly.push(nextIp.p);
+      nextIp.incrementVisitCount();
+      return nextIp
+    }
+  }
+  var condition = true;
+  while (condition) {
+    outPoly.push(nextEdge.p2.p);
+    nextEdge = nextEdge.nextEdge;
+    if (nextEdge === null) { return intersectionPoint }
+    else if (nextEdge.intersectionPoints.length > 0) { condition = false; }
+  }
+  if (nextEdge === undefined) { return intersectionPoint }
+  var lastIntersection = nextEdge.intersectionPoints[0];
+  lastIntersection.incrementVisitCount();
+  outPoly.push(lastIntersection.p);
+  return lastIntersection
+}
+
 function objectWithoutProperties (obj, exclude) { var target = {}; for (var k in obj) if (Object.prototype.hasOwnProperty.call(obj, k) && exclude.indexOf(k) === -1) target[k] = obj[k]; return target; }
 
 var originOnSetup = DrawLineString.onSetup;
@@ -7113,7 +12621,6 @@ CutLineMode.onSetup = function (opt) {
   if (!features.length) {
     throw new Error('Please select a feature/features (Polygon or MultiPolygon or LineString or MultiLineString) to split!');
   }
-  this._api = this._ctx.api;
   this._options = options;
   this._features = features;
   var state = this.originOnSetup();
@@ -7126,6 +12633,11 @@ CutLineMode.clickOnVertex = function (state) {
 
   this.originClickOnVertex(state, function () {
     this$1$1._cut(state);
+    if (this$1$1._options.continuous) {
+      this$1$1._resetState();
+    } else {
+      this$1$1.deleteFeature([state.line.id], { silent: true });
+    }
   });
 };
 
@@ -7136,28 +12648,72 @@ CutLineMode._cut = function (state) {
   var ref = this._options;
   var lineWidth = ref.lineWidth;
   var lineWidthUnit = ref.lineWidthUnit;
-
-  var newPolygons = [];
-  this._features.forEach(function (el) {
-    if (turf__namespace.booleanDisjoint(el, cuttingLineString)) {
-      console.info(("Line was outside of Polygon " + (el.id)));
-      newPolygons.push(el);
+  var highlightColor = ref.highlightColor;
+  var ref$1 = this._ctx;
+  var store = ref$1.store;
+  var api = ref$1.api;
+  var endCoord = cuttingLineString.geometry.coordinates[cuttingLineString.geometry.coordinates.length - 1];
+  var startPoint = turf__namespace.point(cuttingLineString.geometry.coordinates[0]);
+  var endPoint = turf__namespace.point(endCoord);
+  var splitter = turf__namespace.polygonToLine(turf__namespace.buffer(cuttingLineString, lineWidth, { units: lineWidthUnit }));
+  var oneMeters = turf__namespace.convertLength(1, 'meters', lineWidthUnit);
+  this._features.forEach(function (feature) {
+    if (turf__namespace.booleanDisjoint(feature, cuttingLineString)) {
+      console.warn(("Line was outside of Polygon " + (feature.id)));
       return;
-    } else if (lineWidth === 0) {
-      var polycut = polygonCut(el.geometry, cuttingLineString.geometry);
-      polycut.id = el.id;
-      this$1$1._api.add(polycut);
-      newPolygons.push(polycut);
-    } else {
-      var polycut$1 = polygonCutWithSpacing(el.geometry, cuttingLineString.geometry, {
-        line_width: lineWidth,
-        line_width_unit: lineWidthUnit,
-      });
-      polycut$1.id = el.id;
-      this$1$1._api.add(polycut$1);
-      newPolygons.push(polycut$1);
     }
+
+    if (!(turf__namespace.booleanDisjoint(feature, startPoint) && turf__namespace.booleanDisjoint(feature, endPoint))) {
+      console.warn("The start and end points of the line must be outside of the poly");
+      return;
+    }
+    store.get(feature.id).measure.delete();
+    if (lineTypes.includes(feature.geometry.type)) {
+      if (lineWidth === 0) {
+        var cuted = turf__namespace.lineSplit(feature, cuttingLineString);
+        cuted.features.sort(function (a, b) { return turf__namespace.length(a) - turf__namespace.length(b); });
+        cuted.features[0].id = feature.id;
+        api.add(cuted, { silent: true }).forEach(function (id, i) { return (cuted.features[i].id = id); });
+        this$1$1._continuous(function () { return this$1$1._batchHighlight(cuted.features, highlightColor); });
+      } else {
+        var fc = turf__namespace.featureCollection([]);
+        var cuted$1 = turf__namespace.lineSplit(feature, splitter);
+        var intersectPoints = turf__namespace.lineIntersect(feature.geometry, cuttingLineString.geometry);
+        intersectPoints.features.forEach(function (f) {
+          var ref;
+
+          var buffered = turf__namespace.buffer(f, lineWidth + oneMeters, { units: lineWidthUnit });
+          (ref = fc.features).push.apply(ref, cuted$1.features.filter(function (v) { return !turf__namespace.booleanContains(buffered, v); }));
+        });
+
+        fc.features.forEach(function (f) { return (f.id = hat$1()); });
+        fc.features.sort(function (a, b) { return turf__namespace.length(a) - turf__namespace.length(b); });
+        fc.features[0].id = feature.id;
+        api.add(fc);
+        this$1$1._continuous(function () { return this$1$1._batchHighlight(fc.features, highlightColor); });
+      }
+      return;
+    }
+    var afterCut;
+    if (lineWidth === 0) {
+      afterCut = index(feature.geometry, cuttingLineString.geometry);
+    } else {
+      var intersectPoints$1 = turf__namespace.lineIntersect(feature.geometry, cuttingLineString.geometry);
+      var intersectLine = turf__namespace.lineString(intersectPoints$1.features.map(function (f) { return f.geometry.coordinates; }));
+      var buffered = turf__namespace.buffer(intersectLine, lineWidth, { units: lineWidthUnit });
+      afterCut = turf__namespace.difference(feature.geometry, buffered);
+    }
+    var newFeature = this$1$1.newFeature(afterCut);
+    var ref = newFeature.features.sort(function (a, b) { return turf__namespace.area(a) - turf__namespace.area(b); });
+    var f = ref[0];
+    var rest = ref.slice(1);
+    f.id = feature.id;
+    api.add(turf__namespace.featureCollection(rest.map(function (v) { return v.toGeoJSON(); })), { silent: true });
+    this$1$1.addFeature(f);
+    this$1$1._execMeasure(f);
+    this$1$1._continuous(function () { return this$1$1._batchHighlight(newFeature.features, highlightColor); });
   });
+  store.setDirty();
 };
 
 CutLineMode.onMouseMove = function (state, e) {
@@ -7172,6 +12728,12 @@ CutLineMode.onStop = function (state) {
     this$1$1._cancelCut();
     this$1$1.deleteFeature([state.polygon.id], { silent: true });
   });
+};
+
+CutLineMode._resetState = function () {
+  var state = this.getState();
+  state.currentVertexPosition = 0;
+  state.line.setCoordinates([]);
 };
 
 var modes = {
@@ -9141,7 +14703,7 @@ function stringSetsAreEqual(a, b) {
 var featureTypes = {
   Polygon: Polygon,
   LineString: LineString,
-  Point: Point$2,
+  Point: Point$3,
   MultiPolygon: MultiFeature,
   MultiLineString: MultiFeature,
   MultiPoint: MultiFeature,
