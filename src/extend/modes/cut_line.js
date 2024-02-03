@@ -1,6 +1,7 @@
 import * as turf from '@turf/turf';
 import * as Constants from '../../constants';
 import polygonSplitter from 'polygon-splitter';
+import hat from 'hat';
 import cut, { getCutDefaultOptions, lineTypes } from './utils';
 import draw_line_string from '../../modes/draw_line_string';
 import xtend from 'xtend';
@@ -11,13 +12,26 @@ const {
   clickOnVertex: originClickOnVertex,
   onStop: originOnStop,
   onKeyUp: originOnKeyUp,
+  onTrash: originOnTrash,
   ...restOriginMethods
 } = draw_line_string;
-const CutLineMode = { originOnSetup, originOnKeyUp, originOnStop, originOnMouseMove, originClickOnVertex, ...restOriginMethods, ...cut };
-
+const CutLineMode = {
+  originOnTrash,
+  originOnSetup,
+  originOnKeyUp,
+  originOnStop,
+  originOnMouseMove,
+  originClickOnVertex,
+  ...restOriginMethods,
+  ...cut,
+};
 CutLineMode.onSetup = function (opt) {
   const options = xtend(getCutDefaultOptions(), opt);
   const { featureIds, highlightColor } = options;
+
+  if (options.lineWidth > 0 && !options.lineWidthUnit) {
+    throw new Error('Please provide a valid lineWidthUnit');
+  }
 
   let features = [];
   if (featureIds.length) {
@@ -31,7 +45,7 @@ CutLineMode.onSetup = function (opt) {
   }
   this._options = options;
   this._features = features;
-  const state = this.originOnSetup();
+  const state = this.originOnSetup({ button: Constants.modes.CUT_LINE });
   this._batchHighlight(features, highlightColor);
   return this.setState(state);
 };
@@ -68,7 +82,7 @@ CutLineMode._cut = function (state) {
     }
     store.get(feature.id).measure.delete();
     if (lineTypes.includes(feature.geometry.type)) {
-      if (lineWidth === 0) {
+      if (!lineWidth) {
         const cuted = turf.lineSplit(feature, cuttingLineString);
         cuted.features.sort((a, b) => turf.length(a) - turf.length(b));
         cuted.features[0].id = feature.id;
@@ -76,40 +90,48 @@ CutLineMode._cut = function (state) {
         this._continuous(() => this._batchHighlight(cuted.features, highlightColor));
       } else {
         if (!splitter) splitter = turf.polygonToLine(turf.buffer(cuttingLineString, lineWidth, { units: lineWidthUnit }));
-        const fc = turf.featureCollection([]);
-        const cuted = turf.lineSplit(feature, splitter);
-        const intersectPoints = turf.lineIntersect(feature.geometry, cuttingLineString.geometry);
-        intersectPoints.features.forEach((f) => {
-          const buffered = turf.buffer(f, lineWidth + oneMeters, { units: lineWidthUnit });
-          fc.features.push(...cuted.features.filter((v) => !turf.booleanContains(buffered, v)));
+        const intersecting = turf.featureCollection([]);
+        let cuted = turf.lineSplit(feature, splitter);
+        cuted.features.forEach((v) => (v.id = hat()));
+        const intersectPoints = turf.lineIntersect(feature, cuttingLineString);
+        intersectPoints.features.forEach((p) => {
+          const buffered = turf.buffer(p, oneMeters / 10, { units: 'meters' });
+          const filtered = cuted.features.filter((f) => !turf.booleanDisjoint(buffered, f));
+          intersecting.features.push(...filtered);
         });
-        fc.features.sort((a, b) => {
-          delete a.id;
-          delete b.id;
-          return turf.length(a) - turf.length(b);
-        });
-        fc.features[0].id = feature.id;
-        api.add(fc, { silent: true }).forEach((id, i) => (fc.features[i].id = id));
-        this._continuous(() => this._batchHighlight(fc.features, highlightColor));
+        cuted.features = cuted.features.filter((v) => !intersecting.features.some((f) => f.id === v.id));
+        cuted.features.sort((a, b) => turf.length(a) - turf.length(b));
+        if (cuted.features.length !== 0) {
+          cuted.features[0].id = feature.id;
+          api.add(cuted, { silent: true });
+          this._continuous(() => this._batchHighlight(cuted.features, highlightColor));
+        } else {
+          api.delete(feature.id, { silent: true });
+          this._continuous();
+        }
       }
       return;
     }
+
     let afterCut;
-    if (lineWidth === 0) {
+    if (!lineWidth) {
       afterCut = polygonSplitter(feature.geometry, cuttingLineString.geometry);
     } else {
-      const intersectPoints = turf.lineIntersect(feature.geometry, cuttingLineString.geometry);
-      const intersectLine = turf.lineString(intersectPoints.features.map((f) => f.geometry.coordinates));
-      const buffered = turf.buffer(intersectLine, lineWidth, { units: lineWidthUnit });
+      const buffered = turf.buffer(cuttingLineString, lineWidth, { units: lineWidthUnit });
       afterCut = turf.difference(feature.geometry, buffered);
     }
-    const newFeature = this.newFeature(afterCut);
-    const [f, ...rest] = newFeature.features.sort((a, b) => turf.area(a) - turf.area(b));
-    f.id = feature.id;
-    api.add(turf.featureCollection(rest.map((v) => v.toGeoJSON())), { silent: true });
-    this.addFeature(f);
-    this._execMeasure(f);
-    this._continuous(() => this._batchHighlight(newFeature.features, highlightColor));
+    if (afterCut) {
+      const newFeature = this.newFeature(afterCut);
+      const [f, ...rest] = newFeature.features.sort((a, b) => turf.area(a) - turf.area(b));
+      f.id = feature.id;
+      api.add(turf.featureCollection(rest.map((v) => v.toGeoJSON())), { silent: true });
+      this.addFeature(f);
+      this._execMeasure(f);
+      this._continuous(() => this._batchHighlight(newFeature.features, highlightColor));
+    } else {
+      api.delete(feature.id, { silent: true });
+      this._continuous();
+    }
   });
   store.setDirty();
 };

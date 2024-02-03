@@ -56,11 +56,10 @@ DrawLineString.onSetup = function (opts) {
     currentVertexPosition = 0;
     this.addFeature(line);
   }
-
   this.clearSelectedFeatures();
   doubleClickZoom.disable(this);
   this.updateUIClasses({ mouse: Constants.cursors.ADD });
-  this.activateUIButton(Constants.types.LINE);
+  this.activateUIButton(opts.button || Constants.types.LINE);
   this.setActionableState({
     trash: true,
   });

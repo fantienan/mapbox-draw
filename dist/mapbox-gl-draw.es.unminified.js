@@ -55,7 +55,7 @@ var ModeHandler = function (mode, DrawContext) {
   return {
     render: mode.render,
     stop: function stop() {
-      if (mode.stop) { mode.stop(); }
+      if (mode.stop) { return mode.stop(); }
     },
     trash: function trash() {
       if (mode.trash) {
@@ -289,6 +289,7 @@ var classes = {
   MEASURE_MARKER: 'mapbox-gl-draw-measure',
   CONTROL_BUTTON_CUT_LINE: 'mapbox-gl-draw_cut-line',
   CONTROL_BUTTON_CUT_POLYGON: 'mapbox-gl-draw_cut-polygon',
+  CONTROL_POPOVER: 'mapbox-gl-draw-popover',
   /** extend end */
 };
 
@@ -2193,7 +2194,7 @@ function objectToMode (modeObject) {
         });
       },
       stop: function stop() {
-        mode.onStop(state);
+        return mode.onStop(state);
       },
       trash: function trash() {
         mode.onTrash(state);
@@ -2239,7 +2240,6 @@ function events (ctx) {
     m[k] = objectToMode(ctx.options.modes[k]);
     return m;
   }, {});
-
   var mouseDownInfo = {};
   var touchStartInfo = {};
   var events = {};
@@ -2435,13 +2435,14 @@ function events (ctx) {
   function changeMode(modename, nextModeOptions, eventOptions) {
     if ( eventOptions === void 0 ) eventOptions = {};
 
-    currentMode.stop();
+    var result = currentMode.stop();
+
     var modebuilder = modes[modename];
     if (modebuilder === undefined) {
       throw new Error((modename + " is not valid"));
     }
     currentModeName = modename;
-    var mode = modebuilder(ctx, nextModeOptions);
+    var mode = modebuilder(ctx, result && result.featureIds ? Object.assign({}, {featureIds: result.featureIds}, nextModeOptions) : nextModeOptions);
     currentMode = ModeHandler(mode, ctx);
 
     if (!eventOptions.silent) {
@@ -3100,6 +3101,54 @@ function ui (ctx) {
     mouse: null,
   };
 
+  var lineUnitTranform = {
+    meters: '米',
+    kilometers: '公里',
+    miles: '英里',
+    nauticalmiles: '海里',
+    inches: '英寸',
+    yards: '码',
+    centimeters: '厘米',
+    feet: '英尺',
+  };
+  var linePopover;
+
+  function removeLinePopover() {
+    if (linePopover) {
+      linePopover.removeHandle();
+      linePopover = null;
+    }
+  }
+
+  var areaUnitTranform = {
+    mu: '亩',
+    hectares: '公顷',
+    kilometers: '平方公里',
+    meters: '平方米',
+    centimetres: '平方厘米',
+    millimeters: '平方毫米',
+    acres: '英亩',
+    miles: '平方英里',
+    yards: '平方码',
+    feet: '平方英尺',
+    inches: '平方英寸',
+  };
+
+  var polygonPopover;
+
+  function removePolygonPopover() {
+    if (polygonPopover) {
+      polygonPopover.removeHandle();
+      polygonPopover = null;
+    }
+  }
+
+  function listen() {
+    removePolygonPopover();
+    removeLinePopover();
+    document.body.removeEventListener('click', listen);
+  }
+
   function clearMapClasses() {
     queueMapClasses({ mode: null, feature: null, mouse: null });
     updateMapClasses();
@@ -3150,6 +3199,11 @@ function ui (ctx) {
       function (e) {
         e.preventDefault();
         e.stopPropagation();
+        if (id !== 'cut_line' && id !== 'cut_polygon') {
+          removeLinePopover();
+          removePolygonPopover();
+        }
+
         if (typeof options.onClick === 'function') {
           options.onClick();
           return;
@@ -3161,9 +3215,15 @@ function ui (ctx) {
           options.onDeactivate();
           return;
         }
-
-        setActiveButton(id);
-        options.onActivate();
+        if (options.popover) {
+          options.popover({ button: button }).then(function (res) {
+            setActiveButton(id);
+            options.onActivate(res);
+          });
+        } else {
+          setActiveButton(id);
+          options.onActivate();
+        }
       },
       true
     );
@@ -3179,7 +3239,6 @@ function ui (ctx) {
 
   function setActiveButton(id) {
     deactivateButtons();
-
     var button = buttonElements[id];
     if (!button) { return; }
 
@@ -3315,7 +3374,66 @@ function ui (ctx) {
         className: classes.CONTROL_BUTTON_CUT_LINE,
         title: 'cut line',
         disabled: true,
-        onActivate: function () { return ctx.api.changeMode(modes$1.CUT_LINE); },
+        popover: function (ref) {
+          var button = ref.button;
+
+          return new Promise(function (resolve) {
+            if (linePopover) {
+              removeLinePopover();
+              resolve();
+              return;
+            }
+            removePolygonPopover();
+            var popover = document.createElement('div');
+            var title = document.createTextNode('line width:');
+            var title1 = document.createTextNode('unit:');
+            var input = document.createElement('input');
+            var okBtn = document.createElement('button');
+            var cancelBtn = document.createElement('button');
+            var select = document.createElement('select');
+            select.innerHTML = Object.keys(lineUnitTranform).reduce(function (prev, k) {
+              prev += "<option value=\"" + k + "\">" + (lineUnitTranform[k]) + "</option>";
+              return prev;
+            }, '');
+            okBtn.addEventListener('click', function () {
+              resolve({ lineWidth: +(input.value || 0), lineWidthUnit: select.value });
+              removeLinePopover();
+            });
+            cancelBtn.addEventListener('click', function () {
+              resolve();
+              removeLinePopover();
+            });
+            okBtn.textContent = 'ok';
+            cancelBtn.textContent = 'cancel';
+            input.value = '1';
+            input.type = 'number';
+            input.min = 0;
+            select.value = 'meters';
+            popover.className = classes.CONTROL_POPOVER;
+            popover.style.top = (11 * 29) + "px";
+            popover.style.left = '-308px';
+            popover.appendChild(title);
+            popover.appendChild(input);
+            popover.appendChild(title1);
+            popover.appendChild(select);
+            popover.appendChild(okBtn);
+            popover.appendChild(cancelBtn);
+            popover.addEventListener('click', function (e) { return e.stopPropagation(); });
+            popover.removeHandle = function () {
+              title.remove();
+              title1.remove();
+              input.remove();
+              okBtn.remove();
+              cancelBtn.remove();
+              select.remove();
+              popover.remove();
+            };
+            linePopover = popover;
+            button.parentNode.appendChild(popover);
+            document.body.addEventListener('click', listen);
+          });
+        },
+        onActivate: function (opts) { return ctx.api.changeMode(modes$1.CUT_LINE, opts); },
         onDeactivate: function () { return ctx.events.trash(); },
       });
     }
@@ -3326,8 +3444,76 @@ function ui (ctx) {
         className: classes.CONTROL_BUTTON_CUT_POLYGON,
         title: 'cut polygon',
         disabled: true,
+        popover: function (ref) {
+          var button = ref.button;
+
+          return new Promise(function (resolve) {
+            if (polygonPopover) {
+              removePolygonPopover();
+              resolve();
+              return;
+            }
+            removeLinePopover();
+            var popover = document.createElement('div');
+            var title = document.createTextNode('buffer width:');
+            var title1 = document.createTextNode('unit:');
+            var input = document.createElement('input');
+            var okBtn = document.createElement('button');
+            var cancelBtn = document.createElement('button');
+            var select = document.createElement('select');
+            select.innerHTML = Object.keys(areaUnitTranform).reduce(function (prev, k) {
+              prev += "<option value=\"" + k + "\">" + (areaUnitTranform[k]) + "</option>";
+              return prev;
+            }, '');
+            okBtn.addEventListener('click', function () {
+              var res;
+              if (select.value === 'mu') {
+                res = { bufferWidthUnit: 'meters', bufferWidth: (input.value || 0) * 666.666666667 };
+              } else {
+                res = { bufferWidth: +(input.value || 0), bufferWidthUnit: select.value };
+              }
+              resolve(res);
+              removePolygonPopover();
+            });
+            cancelBtn.addEventListener('click', function () {
+              resolve();
+              removePolygonPopover();
+            });
+
+            okBtn.textContent = 'ok';
+            cancelBtn.textContent = 'cancel';
+            input.value = '1';
+            input.type = 'number';
+            input.min = 0;
+            select.value = 'meters';
+            popover.className = classes.CONTROL_POPOVER;
+            popover.style.top = (12 * 29) + "px";
+            popover.style.left = '-347px';
+
+            popover.appendChild(title);
+            popover.appendChild(input);
+            popover.appendChild(title1);
+            popover.appendChild(select);
+            popover.appendChild(okBtn);
+            popover.appendChild(cancelBtn);
+            popover.addEventListener('click', function (e) { return e.stopPropagation(); });
+            popover.removeHandle = function () {
+              title.remove();
+              title1.remove();
+              input.remove();
+              okBtn.remove();
+              cancelBtn.remove();
+              select.remove();
+              popover.remove();
+            };
+
+            polygonPopover = popover;
+            button.parentNode.appendChild(popover);
+            document.body.addEventListener('click', listen);
+          });
+        },
         onDeactivate: function () { return ctx.events.trash(); },
-        onActivate: function () { return ctx.api.changeMode(modes$1.CUT_POLYGON); },
+        onActivate: function (opts) { return ctx.api.changeMode(modes$1.CUT_POLYGON, opts); },
       });
     }
 
@@ -6086,11 +6272,10 @@ DrawLineString.onSetup = function (opts) {
     currentVertexPosition = 0;
     this.addFeature(line);
   }
-
   this.clearSelectedFeatures();
   doubleClickZoom.disable(this);
   this.updateUIClasses({ mouse: cursors.ADD });
-  this.activateUIButton(types$1.LINE);
+  this.activateUIButton(opts.button || types$1.LINE);
   this.setActionableState({
     trash: true,
   });
@@ -6227,14 +6412,7 @@ var lineTypes = [geojsonTypes$1.LINE_STRING, geojsonTypes$1.MULTI_LINE_STRING];
 
 var geojsonTypes = polyTypes.concat( lineTypes);
 
-var getCutDefaultOptions = function () { return ({
-  featureIds: [],
-  highlightColor: '#73d13d',
-  continuous: true,
-  // lineWidth: 0,
-  lineWidth: 0.001,
-  lineWidthUnit: 'kilometers',
-}); };
+var getCutDefaultOptions = function () { return ({ featureIds: [], highlightColor: '#73d13d', continuous: true }); };
 
 var highlightFieldName = 'wait-cut';
 
@@ -6249,9 +6427,11 @@ Cut._execMeasure = function (feature) {
     feature.execMeasure();
   }
 };
+
 Cut._continuous = function (cb) {
   if (this._options.continuous) {
-    cb();
+    if (cb) { cb(); }
+
     this._updateFeatures();
   }
 };
@@ -6302,7 +6482,7 @@ var originOnSetup$1 = DrawPolygon.onSetup;
 var originOnMouseMove$1 = DrawPolygon.onMouseMove;
 var originClickOnVertex$1 = DrawPolygon.clickOnVertex;
 var originOnStop$1 = DrawPolygon.onStop;
-var originOnTrash = DrawPolygon.onTrash;
+var originOnTrash$1 = DrawPolygon.onTrash;
 var originOnKeyUp$1 = DrawPolygon.onKeyUp;
 var rest$1 = objectWithoutProperties$1( DrawPolygon, ["onSetup", "onMouseMove", "clickOnVertex", "onStop", "onTrash", "onKeyUp"] );
 var restOriginMethods$1 = rest$1;
@@ -6312,7 +6492,7 @@ var CutPolygonMode = Object.assign({}, {originOnSetup: originOnSetup$1,
   originOnMouseMove: originOnMouseMove$1,
   originClickOnVertex: originClickOnVertex$1,
   originOnStop: originOnStop$1,
-  originOnTrash: originOnTrash},
+  originOnTrash: originOnTrash$1},
   restOriginMethods$1,
   Cut);
 
@@ -6320,6 +6500,11 @@ CutPolygonMode.onSetup = function (opt) {
   var this$1$1 = this;
 
   var options = xtend(getCutDefaultOptions(), opt);
+
+  if (options.bufferWidth > 0 && !options.bufferWidthUnit) {
+    throw new Error('Please provide a valid bufferWidthUnit');
+  }
+
   var highlightColor = options.highlightColor;
   var featureIds = options.featureIds;
 
@@ -6334,6 +6519,7 @@ CutPolygonMode.onSetup = function (opt) {
   if (!features.length) {
     throw new Error('Please select a feature/features (Polygon or MultiPolygon or LineString or MultiLineString) to split!');
   }
+
   this._features = features;
   this._options = options;
   this._undoStack = [];
@@ -6355,10 +6541,12 @@ CutPolygonMode.onMouseMove = function (state, e) {
 CutPolygonMode.onStop = function (state) {
   var this$1$1 = this;
 
+  var featureIds = this._features.map(function (v) { return v.id; });
   this.originOnStop(state, function () {
     this$1$1._cancelCut();
     this$1$1.deleteFeature([state.polygon.id], { silent: true });
   });
+  return { featureIds: featureIds };
 };
 
 CutPolygonMode.clickOnVertex = function (state) {
@@ -6449,8 +6637,10 @@ CutPolygonMode._cut = function (cuttingpolygon) {
   var api = ref.api;
   var ref$1 = this._options;
   var highlightColor = ref$1.highlightColor;
+  var bufferWidth = ref$1.bufferWidth;
+  var bufferWidthUnit = ref$1.bufferWidthUnit;
+  if (bufferWidth) { cuttingpolygon = turf.buffer(cuttingpolygon, bufferWidth, { units: bufferWidthUnit }); }
   var undoStack = { geoJson: cuttingpolygon, collection: [], lines: [] };
-
   this._features.forEach(function (feature) {
     if (geojsonTypes.includes(feature.geometry.type)) {
       store.get(feature.id).measure.delete();
@@ -7984,16 +8174,27 @@ var originOnMouseMove = DrawLineString.onMouseMove;
 var originClickOnVertex = DrawLineString.clickOnVertex;
 var originOnStop = DrawLineString.onStop;
 var originOnKeyUp = DrawLineString.onKeyUp;
-var rest = objectWithoutProperties( DrawLineString, ["onSetup", "onMouseMove", "clickOnVertex", "onStop", "onKeyUp"] );
+var originOnTrash = DrawLineString.onTrash;
+var rest = objectWithoutProperties( DrawLineString, ["onSetup", "onMouseMove", "clickOnVertex", "onStop", "onKeyUp", "onTrash"] );
 var restOriginMethods = rest;
-var CutLineMode = Object.assign({}, {originOnSetup: originOnSetup, originOnKeyUp: originOnKeyUp, originOnStop: originOnStop, originOnMouseMove: originOnMouseMove, originClickOnVertex: originClickOnVertex}, restOriginMethods, Cut);
-
+var CutLineMode = Object.assign({}, {originOnTrash: originOnTrash,
+  originOnSetup: originOnSetup,
+  originOnKeyUp: originOnKeyUp,
+  originOnStop: originOnStop,
+  originOnMouseMove: originOnMouseMove,
+  originClickOnVertex: originClickOnVertex},
+  restOriginMethods,
+  Cut);
 CutLineMode.onSetup = function (opt) {
   var this$1$1 = this;
 
   var options = xtend(getCutDefaultOptions(), opt);
   var featureIds = options.featureIds;
   var highlightColor = options.highlightColor;
+
+  if (options.lineWidth > 0 && !options.lineWidthUnit) {
+    throw new Error('Please provide a valid lineWidthUnit');
+  }
 
   var features = [];
   if (featureIds.length) {
@@ -8007,7 +8208,7 @@ CutLineMode.onSetup = function (opt) {
   }
   this._options = options;
   this._features = features;
-  var state = this.originOnSetup();
+  var state = this.originOnSetup({ button: modes$1.CUT_LINE });
   this._batchHighlight(features, highlightColor);
   return this.setState(state);
 };
@@ -8028,6 +8229,7 @@ CutLineMode.clickOnVertex = function (state) {
 CutLineMode._cut = function (state) {
   var this$1$1 = this;
 
+  var splitter;
   var cuttingLineString = state.line.toGeoJSON();
   var ref = this._options;
   var lineWidth = ref.lineWidth;
@@ -8039,7 +8241,6 @@ CutLineMode._cut = function (state) {
   var endCoord = cuttingLineString.geometry.coordinates[cuttingLineString.geometry.coordinates.length - 1];
   var startPoint = turf.point(cuttingLineString.geometry.coordinates[0]);
   var endPoint = turf.point(endCoord);
-  var splitter = turf.polygonToLine(turf.buffer(cuttingLineString, lineWidth, { units: lineWidthUnit }));
   var oneMeters = turf.convertLength(1, 'meters', lineWidthUnit);
   this._features.forEach(function (feature) {
     if (turf.booleanDisjoint(feature, cuttingLineString)) {
@@ -8053,47 +8254,60 @@ CutLineMode._cut = function (state) {
     }
     store.get(feature.id).measure.delete();
     if (lineTypes.includes(feature.geometry.type)) {
-      if (lineWidth === 0) {
+      if (!lineWidth) {
         var cuted = turf.lineSplit(feature, cuttingLineString);
         cuted.features.sort(function (a, b) { return turf.length(a) - turf.length(b); });
         cuted.features[0].id = feature.id;
         api.add(cuted, { silent: true }).forEach(function (id, i) { return (cuted.features[i].id = id); });
         this$1$1._continuous(function () { return this$1$1._batchHighlight(cuted.features, highlightColor); });
       } else {
-        var fc = turf.featureCollection([]);
+        if (!splitter) { splitter = turf.polygonToLine(turf.buffer(cuttingLineString, lineWidth, { units: lineWidthUnit })); }
+        var intersecting = turf.featureCollection([]);
         var cuted$1 = turf.lineSplit(feature, splitter);
-        var intersectPoints = turf.lineIntersect(feature.geometry, cuttingLineString.geometry);
-        intersectPoints.features.forEach(function (f) {
+        cuted$1.features.forEach(function (v) { return (v.id = hat$1()); });
+        var intersectPoints = turf.lineIntersect(feature, cuttingLineString);
+        intersectPoints.features.forEach(function (p) {
           var ref;
 
-          var buffered = turf.buffer(f, lineWidth + oneMeters, { units: lineWidthUnit });
-          (ref = fc.features).push.apply(ref, cuted$1.features.filter(function (v) { return !turf.booleanContains(buffered, v); }));
+          var buffered = turf.buffer(p, oneMeters / 10, { units: 'meters' });
+          var filtered = cuted$1.features.filter(function (f) { return !turf.booleanDisjoint(buffered, f); });
+          (ref = intersecting.features).push.apply(ref, filtered);
         });
-        fc.features.sort(function (a, b) { return turf.length(a) - turf.length(b); });
-        fc.features[0].id = feature.id;
-        api.add(fc, { silent: true });
-        this$1$1._continuous(function () { return this$1$1._batchHighlight(fc.features, highlightColor); });
+        cuted$1.features = cuted$1.features.filter(function (v) { return !intersecting.features.some(function (f) { return f.id === v.id; }); });
+        cuted$1.features.sort(function (a, b) { return turf.length(a) - turf.length(b); });
+        if (cuted$1.features.length !== 0) {
+          cuted$1.features[0].id = feature.id;
+          api.add(cuted$1, { silent: true });
+          this$1$1._continuous(function () { return this$1$1._batchHighlight(cuted$1.features, highlightColor); });
+        } else {
+          api.delete(feature.id, { silent: true });
+          this$1$1._continuous();
+        }
       }
       return;
     }
+
     var afterCut;
-    if (lineWidth === 0) {
+    if (!lineWidth) {
       afterCut = index(feature.geometry, cuttingLineString.geometry);
     } else {
-      var intersectPoints$1 = turf.lineIntersect(feature.geometry, cuttingLineString.geometry);
-      var intersectLine = turf.lineString(intersectPoints$1.features.map(function (f) { return f.geometry.coordinates; }));
-      var buffered = turf.buffer(intersectLine, lineWidth, { units: lineWidthUnit });
+      var buffered = turf.buffer(cuttingLineString, lineWidth, { units: lineWidthUnit });
       afterCut = turf.difference(feature.geometry, buffered);
     }
-    var newFeature = this$1$1.newFeature(afterCut);
-    var ref = newFeature.features.sort(function (a, b) { return turf.area(a) - turf.area(b); });
-    var f = ref[0];
-    var rest = ref.slice(1);
-    f.id = feature.id;
-    api.add(turf.featureCollection(rest.map(function (v) { return v.toGeoJSON(); })), { silent: true });
-    this$1$1.addFeature(f);
-    this$1$1._execMeasure(f);
-    this$1$1._continuous(function () { return this$1$1._batchHighlight(newFeature.features, highlightColor); });
+    if (afterCut) {
+      var newFeature = this$1$1.newFeature(afterCut);
+      var ref = newFeature.features.sort(function (a, b) { return turf.area(a) - turf.area(b); });
+      var f = ref[0];
+      var rest = ref.slice(1);
+      f.id = feature.id;
+      api.add(turf.featureCollection(rest.map(function (v) { return v.toGeoJSON(); })), { silent: true });
+      this$1$1.addFeature(f);
+      this$1$1._execMeasure(f);
+      this$1$1._continuous(function () { return this$1$1._batchHighlight(newFeature.features, highlightColor); });
+    } else {
+      api.delete(feature.id, { silent: true });
+      this$1$1._continuous();
+    }
   });
   store.setDirty();
 };
@@ -8106,10 +8320,12 @@ CutLineMode.onMouseMove = function (state, e) {
 CutLineMode.onStop = function (state) {
   var this$1$1 = this;
 
+  var featureIds = this._features.map(function (v) { return v.id; });
   this.originOnStop(state, function () {
     this$1$1._cancelCut();
-    this$1$1.deleteFeature([state.polygon.id], { silent: true });
+    this$1$1.deleteFeature([state.line.id], { silent: true });
   });
+  return { featureIds: featureIds };
 };
 
 CutLineMode._resetState = function () {

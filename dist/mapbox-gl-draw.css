@@ -128,3 +128,22 @@
   color: #fff;
   text-shadow: 0 1px #000, 1px 0 #000, -1px 0 #000, 0 -1px #000;
 }
+
+.mapbox-gl-draw-popover {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  gap: 5px;
+  background: #fff;
+  align-items: center;
+  padding: 0 5px;
+}
+
+.mapbox-gl-draw-popover input {
+  width: 50px;
+}
+
+.mapbox-gl-draw-popover button {
+  width: 42px;
+}

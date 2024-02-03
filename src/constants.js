@@ -21,6 +21,7 @@ export const classes = {
   MEASURE_MARKER: 'mapbox-gl-draw-measure',
   CONTROL_BUTTON_CUT_LINE: 'mapbox-gl-draw_cut-line',
   CONTROL_BUTTON_CUT_POLYGON: 'mapbox-gl-draw_cut-polygon',
+  CONTROL_POPOVER: 'mapbox-gl-draw-popover',
   /** extend end */
 };
 

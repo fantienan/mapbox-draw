@@ -27,6 +27,11 @@ const CutPolygonMode = {
 
 CutPolygonMode.onSetup = function (opt) {
   const options = xtend(getCutDefaultOptions(), opt);
+
+  if (options.bufferWidth > 0 && !options.bufferWidthUnit) {
+    throw new Error('Please provide a valid bufferWidthUnit');
+  }
+
   const { highlightColor, featureIds } = options;
 
   let features = [];
@@ -131,9 +136,9 @@ CutPolygonMode.redo = function () {
 
 CutPolygonMode._cut = function (cuttingpolygon) {
   const { store, api } = this._ctx;
-  const { highlightColor } = this._options;
+  const { highlightColor, bufferWidth, bufferWidthUnit } = this._options;
+  if (bufferWidth) cuttingpolygon = turf.buffer(cuttingpolygon, bufferWidth, { units: bufferWidthUnit });
   const undoStack = { geoJson: cuttingpolygon, collection: [], lines: [] };
-
   this._features.forEach((feature) => {
     if (geojsonTypes.includes(feature.geometry.type)) {
       store.get(feature.id).measure.delete();

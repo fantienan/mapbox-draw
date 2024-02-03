@@ -79,13 +79,23 @@ import '@ttfn/mapbox-gl-draw/dist/mapbox-gl-draw.css';
 
 - 描述：设置测量选项
 
-### changeMode: (mode: 'cut_polygon', options?: { featureIds?: string[]; highlightColor?: string; continuous?: boolean }) => this;
+### changeMode: (mode: 'cut_polygon', options?: { featureIds?: string[]; highlightColor?: string; continuous?: boolean; bufferWidth?: number; bufferWidthUnit?: MapboxDraw.AreaUnit; }) => this;
 
-- 描述：使用绘制的面图形分割选中的图形
+- 描述：使用绘制的面图形分割选中的或传入的图形。
+- featuresIds: 待分割的图形 id 数组，如果不传则分割选中的图形。
+- highlightColor: 图形的描边色。
+- continuous: 是否连续分割。
+- bufferWidth: 缓冲距离。
+- bufferWidthUnit: 缓冲距离单位。
 
-### 线分割
+### changeMode( mode: 'cut_line', options?: { featureIds?: string[]; highlightColor?: string; continuous?: boolean; lineWidth?: number; lineWidthUnit?: MapboxDraw.LineUnit; }) => this;
 
-- 待开发
+- 描述：使用绘制的线图形分割选中的或传入的图形。
+- featuresIds: 待分割的图形 id 数组，如果不传则分割选中的图形。
+- highlightColor: 图形的描边色。
+- continuous: 是否连续分割。
+- bufferWidth: 分割线的宽度。
+- bufferWidthUnit: 分割线的宽度单位。
 
 ### 挖洞
 
@@ -208,7 +218,7 @@ import '@ttfn/mapbox-gl-draw/dist/mapbox-gl-draw.css';
 - 描述：禁止选中
 - 默认值：undefined
 
-### measureOptions?: object
+### measureOptions?: MapboxDrawOptions['measureOptions']
 
 - 描述：测量配置
 - 默认值：undefined

@@ -646,7 +646,7 @@ declare namespace MapboxDraw {
     | 'gl-draw-point-stroke-active'
     | 'gl-draw-point-point-stroke-inactive';
 
-  type MeasureAreaUnit =
+  type AreaUnit =
     | 'mu' // 亩
     | 'hectares' // 公顷
     | 'kilometers' // 公里
@@ -659,7 +659,9 @@ declare namespace MapboxDraw {
     | 'feet' // 英尺
     | 'inches'; // 英寸
 
-  type MeasureLineUnit =
+  type MeasureAreaUnit = AreaUnit;
+
+  type LineUnit =
     | 'meters' // 米 默认
     | 'kilometers' // 公里
     | 'miles' // 英里
@@ -668,6 +670,8 @@ declare namespace MapboxDraw {
     | 'yards' // 码
     | 'centimeters' // 厘米
     | 'feet'; // 英尺
+
+  type MeasureLineUnit = LineUnit;
 
   interface MapboxDrawOptions {
     displayControlsDefault?: boolean | undefined;
@@ -750,7 +754,27 @@ declare class MapboxDraw implements IControl {
   changeMode(mode: 'simple_select', options?: { featureIds: string[] }): this;
   changeMode(mode: 'direct_select', options: { featureId: string }): this;
   changeMode(mode: 'draw_line_string', options?: { featureId: string; from: Feature<Point> | Point | number[] }): this;
-  changeMode(mode: 'cut_polygon', options?: { featureIds?: string[]; highlightColor?: string; continuous?: boolean }): this;
+
+  changeMode(
+    mode: 'cut_line',
+    options?: {
+      featureIds?: string[];
+      highlightColor?: string;
+      continuous?: boolean;
+      lineWidth?: number;
+      lineWidthUnit?: MapboxDraw.LineUnit;
+    },
+  ): this;
+  changeMode(
+    mode: 'cut_polygon',
+    options?: {
+      featureIds?: string[];
+      highlightColor?: string;
+      continuous?: boolean;
+      bufferWidth?: number;
+      bufferWidthUnit?: MapboxDraw.AreaUnit;
+    },
+  ): this;
   changeMode(mode: Exclude<MapboxDraw.DrawMode, 'direct_select' | 'simple_select' | 'draw_line_string' | 'cut_polygon'>): this;
   changeMode<T extends string>(mode: T & (T extends MapboxDraw.DrawMode ? T : never), options?: object): this;
 

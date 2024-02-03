@@ -7,14 +7,8 @@ export const lineTypes = [Constants.geojsonTypes.LINE_STRING, Constants.geojsonT
 
 export const geojsonTypes = [...polyTypes, ...lineTypes];
 
-export const getCutDefaultOptions = () => ({
-  featureIds: [],
-  highlightColor: '#73d13d',
-  continuous: true,
-  // lineWidth: 0,
-  lineWidth: 0.001,
-  lineWidthUnit: 'kilometers',
-});
+export const getCutDefaultOptions = () => ({ featureIds: [], highlightColor: '#73d13d', continuous: true });
+
 export const highlightFieldName = 'wait-cut';
 
 const Cut = {
@@ -31,7 +25,8 @@ Cut._execMeasure = function (feature) {
 
 Cut._continuous = function (cb) {
   if (this._options.continuous) {
-    cb();
+    if (cb) cb();
+
     this._updateFeatures();
   }
 };

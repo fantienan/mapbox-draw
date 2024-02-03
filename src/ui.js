@@ -19,6 +19,54 @@ export default function (ctx) {
     mouse: null,
   };
 
+  const lineUnitTranform = {
+    meters: '米',
+    kilometers: '公里',
+    miles: '英里',
+    nauticalmiles: '海里',
+    inches: '英寸',
+    yards: '码',
+    centimeters: '厘米',
+    feet: '英尺',
+  };
+  let linePopover;
+
+  function removeLinePopover() {
+    if (linePopover) {
+      linePopover.removeHandle();
+      linePopover = null;
+    }
+  }
+
+  const areaUnitTranform = {
+    mu: '亩',
+    hectares: '公顷',
+    kilometers: '平方公里',
+    meters: '平方米',
+    centimetres: '平方厘米',
+    millimeters: '平方毫米',
+    acres: '英亩',
+    miles: '平方英里',
+    yards: '平方码',
+    feet: '平方英尺',
+    inches: '平方英寸',
+  };
+
+  let polygonPopover;
+
+  function removePolygonPopover() {
+    if (polygonPopover) {
+      polygonPopover.removeHandle();
+      polygonPopover = null;
+    }
+  }
+
+  function listen() {
+    removePolygonPopover();
+    removeLinePopover();
+    document.body.removeEventListener('click', listen);
+  }
+
   function clearMapClasses() {
     queueMapClasses({ mode: null, feature: null, mouse: null });
     updateMapClasses();
@@ -65,6 +113,11 @@ export default function (ctx) {
       (e) => {
         e.preventDefault();
         e.stopPropagation();
+        if (id !== 'cut_line' && id !== 'cut_polygon') {
+          removeLinePopover();
+          removePolygonPopover();
+        }
+
         if (typeof options.onClick === 'function') {
           options.onClick();
           return;
@@ -76,9 +129,15 @@ export default function (ctx) {
           options.onDeactivate();
           return;
         }
-
-        setActiveButton(id);
-        options.onActivate();
+        if (options.popover) {
+          options.popover({ button }).then((res) => {
+            setActiveButton(id);
+            options.onActivate(res);
+          });
+        } else {
+          setActiveButton(id);
+          options.onActivate();
+        }
       },
       true,
     );
@@ -94,7 +153,6 @@ export default function (ctx) {
 
   function setActiveButton(id) {
     deactivateButtons();
-
     const button = buttonElements[id];
     if (!button) return;
 
@@ -230,7 +288,64 @@ export default function (ctx) {
         className: Constants.classes.CONTROL_BUTTON_CUT_LINE,
         title: 'cut line',
         disabled: true,
-        onActivate: () => ctx.api.changeMode(Constants.modes.CUT_LINE),
+        popover: ({ button }) => {
+          return new Promise((resolve) => {
+            if (linePopover) {
+              removeLinePopover();
+              resolve();
+              return;
+            }
+            removePolygonPopover();
+            const popover = document.createElement('div');
+            const title = document.createTextNode('line width:');
+            const title1 = document.createTextNode('unit:');
+            const input = document.createElement('input');
+            const okBtn = document.createElement('button');
+            const cancelBtn = document.createElement('button');
+            const select = document.createElement('select');
+            select.innerHTML = Object.keys(lineUnitTranform).reduce((prev, k) => {
+              prev += `<option value="${k}">${lineUnitTranform[k]}</option>`;
+              return prev;
+            }, '');
+            okBtn.addEventListener('click', () => {
+              resolve({ lineWidth: +(input.value || 0), lineWidthUnit: select.value });
+              removeLinePopover();
+            });
+            cancelBtn.addEventListener('click', () => {
+              resolve();
+              removeLinePopover();
+            });
+            okBtn.textContent = 'ok';
+            cancelBtn.textContent = 'cancel';
+            input.value = '1';
+            input.type = 'number';
+            input.min = 0;
+            select.value = 'meters';
+            popover.className = Constants.classes.CONTROL_POPOVER;
+            popover.style.top = `${11 * 29}px`;
+            popover.style.left = '-308px';
+            popover.appendChild(title);
+            popover.appendChild(input);
+            popover.appendChild(title1);
+            popover.appendChild(select);
+            popover.appendChild(okBtn);
+            popover.appendChild(cancelBtn);
+            popover.addEventListener('click', (e) => e.stopPropagation());
+            popover.removeHandle = () => {
+              title.remove();
+              title1.remove();
+              input.remove();
+              okBtn.remove();
+              cancelBtn.remove();
+              select.remove();
+              popover.remove();
+            };
+            linePopover = popover;
+            button.parentNode.appendChild(popover);
+            document.body.addEventListener('click', listen);
+          });
+        },
+        onActivate: (opts) => ctx.api.changeMode(Constants.modes.CUT_LINE, opts),
         onDeactivate: () => ctx.events.trash(),
       });
     }
@@ -241,8 +356,74 @@ export default function (ctx) {
         className: Constants.classes.CONTROL_BUTTON_CUT_POLYGON,
         title: 'cut polygon',
         disabled: true,
+        popover: ({ button }) => {
+          return new Promise((resolve) => {
+            if (polygonPopover) {
+              removePolygonPopover();
+              resolve();
+              return;
+            }
+            removeLinePopover();
+            const popover = document.createElement('div');
+            const title = document.createTextNode('buffer width:');
+            const title1 = document.createTextNode('unit:');
+            const input = document.createElement('input');
+            const okBtn = document.createElement('button');
+            const cancelBtn = document.createElement('button');
+            const select = document.createElement('select');
+            select.innerHTML = Object.keys(areaUnitTranform).reduce((prev, k) => {
+              prev += `<option value="${k}">${areaUnitTranform[k]}</option>`;
+              return prev;
+            }, '');
+            okBtn.addEventListener('click', () => {
+              let res;
+              if (select.value === 'mu') {
+                res = { bufferWidthUnit: 'meters', bufferWidth: (input.value || 0) * 666.666666667 };
+              } else {
+                res = { bufferWidth: +(input.value || 0), bufferWidthUnit: select.value };
+              }
+              resolve(res);
+              removePolygonPopover();
+            });
+            cancelBtn.addEventListener('click', () => {
+              resolve();
+              removePolygonPopover();
+            });
+
+            okBtn.textContent = 'ok';
+            cancelBtn.textContent = 'cancel';
+            input.value = '1';
+            input.type = 'number';
+            input.min = 0;
+            select.value = 'meters';
+            popover.className = Constants.classes.CONTROL_POPOVER;
+            popover.style.top = `${12 * 29}px`;
+            popover.style.left = '-347px';
+
+            popover.appendChild(title);
+            popover.appendChild(input);
+            popover.appendChild(title1);
+            popover.appendChild(select);
+            popover.appendChild(okBtn);
+            popover.appendChild(cancelBtn);
+            popover.addEventListener('click', (e) => e.stopPropagation());
+            popover.removeHandle = () => {
+              title.remove();
+              title1.remove();
+              input.remove();
+              okBtn.remove();
+              cancelBtn.remove();
+              select.remove();
+              popover.remove();
+            };
+
+            polygonPopover = popover;
+            button.parentNode.appendChild(popover);
+            document.body.addEventListener('click', listen);
+          });
+        },
         onDeactivate: () => ctx.events.trash(),
-        onActivate: () => ctx.api.changeMode(Constants.modes.CUT_POLYGON),
+        onActivate: (opts) => ctx.api.changeMode(Constants.modes.CUT_POLYGON, opts),
       });
     }
 
