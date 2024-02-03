@@ -54,7 +54,7 @@ export default function (modeObject) {
         });
       },
       stop() {
-        mode.onStop(state);
+        return mode.onStop(state);
       },
       trash() {
         mode.onTrash(state);

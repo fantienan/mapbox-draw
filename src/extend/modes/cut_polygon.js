@@ -40,6 +40,7 @@ CutPolygonMode.onSetup = function (opt) {
   if (!features.length) {
     throw new Error('Please select a feature/features (Polygon or MultiPolygon or LineString or MultiLineString) to split!');
   }
+
   this._features = features;
   this._options = options;
   this._undoStack = [];
@@ -59,10 +60,12 @@ CutPolygonMode.onMouseMove = function (state, e) {
 };
 
 CutPolygonMode.onStop = function (state) {
+  const featureIds = this._features.map((v) => v.id);
   this.originOnStop(state, () => {
     this._cancelCut();
     this.deleteFeature([state.polygon.id], { silent: true });
   });
+  return { featureIds };
 };
 
 CutPolygonMode.clickOnVertex = function (state) {

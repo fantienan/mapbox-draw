@@ -48,13 +48,13 @@ CutLineMode.clickOnVertex = function (state) {
 };
 
 CutLineMode._cut = function (state) {
+  let splitter;
   const cuttingLineString = state.line.toGeoJSON();
   const { lineWidth, lineWidthUnit, highlightColor } = this._options;
   const { store, api } = this._ctx;
   const endCoord = cuttingLineString.geometry.coordinates[cuttingLineString.geometry.coordinates.length - 1];
   const startPoint = turf.point(cuttingLineString.geometry.coordinates[0]);
   const endPoint = turf.point(endCoord);
-  const splitter = turf.polygonToLine(turf.buffer(cuttingLineString, lineWidth, { units: lineWidthUnit }));
   const oneMeters = turf.convertLength(1, 'meters', lineWidthUnit);
   this._features.forEach((feature) => {
     if (turf.booleanDisjoint(feature, cuttingLineString)) {
@@ -75,6 +75,7 @@ CutLineMode._cut = function (state) {
         api.add(cuted, { silent: true }).forEach((id, i) => (cuted.features[i].id = id));
         this._continuous(() => this._batchHighlight(cuted.features, highlightColor));
       } else {
+        if (!splitter) splitter = turf.polygonToLine(turf.buffer(cuttingLineString, lineWidth, { units: lineWidthUnit }));
         const fc = turf.featureCollection([]);
         const cuted = turf.lineSplit(feature, splitter);
         const intersectPoints = turf.lineIntersect(feature.geometry, cuttingLineString.geometry);
@@ -82,9 +83,13 @@ CutLineMode._cut = function (state) {
           const buffered = turf.buffer(f, lineWidth + oneMeters, { units: lineWidthUnit });
           fc.features.push(...cuted.features.filter((v) => !turf.booleanContains(buffered, v)));
         });
-        fc.features.sort((a, b) => turf.length(a) - turf.length(b));
+        fc.features.sort((a, b) => {
+          delete a.id;
+          delete b.id;
+          return turf.length(a) - turf.length(b);
+        });
         fc.features[0].id = feature.id;
-        api.add(fc, { silent: true });
+        api.add(fc, { silent: true }).forEach((id, i) => (fc.features[i].id = id));
         this._continuous(() => this._batchHighlight(fc.features, highlightColor));
       }
       return;
@@ -115,10 +120,12 @@ CutLineMode.onMouseMove = function (state, e) {
 };
 
 CutLineMode.onStop = function (state) {
+  const featureIds = this._features.map((v) => v.id);
   this.originOnStop(state, () => {
     this._cancelCut();
-    this.deleteFeature([state.polygon.id], { silent: true });
+    this.deleteFeature([state.line.id], { silent: true });
   });
+  return { featureIds };
 };
 
 CutLineMode._resetState = function () {

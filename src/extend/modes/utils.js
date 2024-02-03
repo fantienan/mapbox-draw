@@ -15,7 +15,6 @@ export const getCutDefaultOptions = () => ({
   lineWidth: 0.001,
   lineWidthUnit: 'kilometers',
 });
-
 export const highlightFieldName = 'wait-cut';
 
 const Cut = {
@@ -29,6 +28,7 @@ Cut._execMeasure = function (feature) {
     feature.execMeasure();
   }
 };
+
 Cut._continuous = function (cb) {
   if (this._options.continuous) {
     cb();

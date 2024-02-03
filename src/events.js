@@ -12,7 +12,6 @@ export default function (ctx) {
     m[k] = objectToMode(ctx.options.modes[k]);
     return m;
   }, {});
-
   let mouseDownInfo = {};
   let touchStartInfo = {};
   const events = {};
@@ -203,13 +202,14 @@ export default function (ctx) {
   };
 
   function changeMode(modename, nextModeOptions, eventOptions = {}) {
-    currentMode.stop();
+    const result = currentMode.stop();
+
     const modebuilder = modes[modename];
     if (modebuilder === undefined) {
       throw new Error(`${modename} is not valid`);
     }
     currentModeName = modename;
-    const mode = modebuilder(ctx, nextModeOptions);
+    const mode = modebuilder(ctx, result && result.featureIds ? { featureIds: result.featureIds, ...nextModeOptions } : nextModeOptions);
     currentMode = setupModeHandler(mode, ctx);
 
     if (!eventOptions.silent) {

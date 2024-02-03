@@ -333,7 +333,6 @@ var modes$1 = {
   // extend start
   CUT_POLYGON: 'cut_polygon',
   CUT_LINE: 'cut_line',
-  CUT_SELECT: 'cut_select',
   // extend end
 };
 
@@ -737,7 +736,7 @@ function loadIconImageByTheme(map) {
   batchLoadImages(map, [Object.assign({}, icon1$1), Object.assign({}, icon2$1), Object.assign({}, icon3$1)]);
 }
 
-function objectWithoutProperties$2 (obj, exclude) { var target = {}; for (var k in obj) if (Object.prototype.hasOwnProperty.call(obj, k) && exclude.indexOf(k) === -1) target[k] = obj[k]; return target; }
+function objectWithoutProperties$3 (obj, exclude) { var target = {}; for (var k in obj) if (Object.prototype.hasOwnProperty.call(obj, k) && exclude.indexOf(k) === -1) target[k] = obj[k]; return target; }
 
 var RedoUndo = function RedoUndo(options) {
   this._modeInstance = options.modeInstance;
@@ -772,7 +771,7 @@ RedoUndo.prototype._fireChangeAndRender = function _fireChangeAndRender (eventDa
 
 RedoUndo.prototype.fireChange = function fireChange (ref) {
     var cb = ref.cb;
-    var rest = objectWithoutProperties$2( ref, ["cb"] );
+    var rest = objectWithoutProperties$3( ref, ["cb"] );
     var eventData = rest;
 
   var undoStack = this.undoStack;
@@ -785,14 +784,9 @@ RedoUndo.prototype.fireChange = function fireChange (ref) {
     undoStack = this._modeInstance.feature.getCoordinates()[0] || [];
     if (undoStack.length < 3) { undoStack = []; }
   }
+  this.undoStack = undoStack;
   var e = JSON.parse(JSON.stringify(Object.assign({}, eventData, {undoStack: undoStack, redoStack: this.redoStack})));
-  this._ctx.ui.setDisableButtons(function (buttonStatus) {
-    buttonStatus.undo = { disabled: e.undoStack.length === 0 };
-    buttonStatus.redo = { disabled: e.redoStack.length === 0 };
-    return buttonStatus;
-  });
-
-  mapFireRedoUndo(this._modeInstance, JSON.parse(JSON.stringify(e)));
+  mapFireRedoUndo(this._modeInstance, e);
   typeof cb === 'function' && cb();
 };
 
@@ -814,8 +808,6 @@ RedoUndo.prototype.undo = function undo (cb) {
     state.currentVertexPosition--;
     if (state.currentVertexPosition < 0) { return; }
     this.redoStack.push(coord);
-    console.log(this.redoStack);
-
     this._fireChangeAndRender({ type: 'undo', cb: cb });
   }
 };
@@ -844,7 +836,7 @@ RedoUndo.prototype.reset = function reset () {
   this.redoStack = [];
 };
 
-function objectWithoutProperties$1 (obj, exclude) { var target = {}; for (var k in obj) if (Object.prototype.hasOwnProperty.call(obj, k) && exclude.indexOf(k) === -1) target[k] = obj[k]; return target; }
+function objectWithoutProperties$2 (obj, exclude) { var target = {}; for (var k in obj) if (Object.prototype.hasOwnProperty.call(obj, k) && exclude.indexOf(k) === -1) target[k] = obj[k]; return target; }
 
 var RedoUndoCut = function RedoUndoCut(options) {
   this._modeInstance = options.modeInstance;
@@ -886,18 +878,10 @@ RedoUndoCut.prototype._genStacks = function _genStacks (stacks) {
 
 RedoUndoCut.prototype._fireChange = function _fireChange (ref) {
     var cb = ref.cb;
-    var rest = objectWithoutProperties$1( ref, ["cb"] );
+    var rest = objectWithoutProperties$2( ref, ["cb"] );
     var eventData = rest;
 
-  var e = JSON.parse(
-    JSON.stringify(Object.assign({}, eventData, {undoStack: this._genStacks(this.undoStack), redoStack: this._genStacks(this.redoStack)}))
-  );
-  this._ctx.ui.setDisableButtons(function (buttonStatus) {
-    buttonStatus.undo = { disabled: e.undoStack.length === 0 };
-    buttonStatus.redo = { disabled: e.redoStack.length === 0 };
-    return buttonStatus;
-  });
-
+  var e = Object.assign({}, eventData, {undoStack: this._genStacks(this.undoStack), redoStack: this._genStacks(this.redoStack)});
   mapFireRedoUndo(this._modeInstance, JSON.parse(JSON.stringify(e)));
   typeof cb === 'function' && cb();
 };
@@ -908,6 +892,8 @@ RedoUndoCut.prototype.setRedoUndoStack = function setRedoUndoStack (cb) {
     var redoStack = ref.redoStack;
   if (Array.isArray(undoStack)) { this.undoStack = JSON.parse(JSON.stringify(undoStack)); }
   if (Array.isArray(redoStack)) { this.redoStack = JSON.parse(JSON.stringify(redoStack)); }
+  console.log('setRedoUndoStack', this.undoStack, this.redoStack);
+
   this._fireChangeAndRender({ type: 'cut' });
 };
 
@@ -1182,7 +1168,7 @@ function extend() {
 
 var xtend = /*@__PURE__*/getDefaultExportFromCjs(immutable);
 
-var getDefaultOptions$1 = function () { return ({
+var getDefaultOptions = function () { return ({
   unit: { line: 'meters', area: 'meters' },
   precision: 2,
 }); };
@@ -1194,7 +1180,7 @@ var Measure = function Measure(options) {
 };
 
 Measure.prototype.setOptions = function setOptions (options) {
-  this.options = xtend(getDefaultOptions$1(), options);
+  this.options = xtend(getDefaultOptions(), options);
   this[options.enable ? 'enable' : 'cancel']();
 };
 
@@ -1207,6 +1193,7 @@ Measure.prototype.cancel = function cancel () {
   this.markers = [];
   this.enabled = false;
 };
+
 Measure.prototype.destroy = function destroy () {
   this.cancel();
 };
@@ -1437,18 +1424,18 @@ Feature.prototype.execMeasure = function () {
   throw new Error('execMeasure method must be implemented');
 };
 
-var Point$2 = function(ctx, geojson) {
+var Point$3 = function(ctx, geojson) {
   Feature.call(this, ctx, geojson);
 };
 
-Point$2.prototype = Object.create(Feature.prototype);
+Point$3.prototype = Object.create(Feature.prototype);
 
-Point$2.prototype.isValid = function() {
+Point$3.prototype.isValid = function() {
   return typeof this.coordinates[0] === 'number' &&
     typeof this.coordinates[1] === 'number';
 };
 
-Point$2.prototype.updateCoordinate = function(pathOrLng, lngOrLat, lat) {
+Point$3.prototype.updateCoordinate = function(pathOrLng, lngOrLat, lat) {
   if (arguments.length === 3) {
     this.coordinates = [lngOrLat, lat];
   } else {
@@ -1457,12 +1444,12 @@ Point$2.prototype.updateCoordinate = function(pathOrLng, lngOrLat, lat) {
   this.changed();
 };
 
-Point$2.prototype.getCoordinate = function() {
+Point$3.prototype.getCoordinate = function() {
   return this.getCoordinates();
 };
 
 // extend start
-Point$2.prototype.execMeasure = function() {};
+Point$3.prototype.execMeasure = function() {};
 
 /* eslint-disable import/no-unresolved */
 
@@ -1625,7 +1612,7 @@ Polygon.prototype.execMeasure = function()  {
 };
 
 var models = {
-  MultiPoint: Point$2,
+  MultiPoint: Point$3,
   MultiLineString: LineString,
   MultiPolygon: Polygon
 };
@@ -1910,7 +1897,7 @@ ModeInterface.prototype.newFeature = function (geojson, options) {
   var type = geojson.geometry.type;
   var feature;
   if (type === geojsonTypes$1.POINT) {
-    feature = new Point$2(this._ctx, geojson);
+    feature = new Point$3(this._ctx, geojson);
   } else if (type === geojsonTypes$1.LINE_STRING) {
     feature = new LineString(this._ctx, geojson);
   } else if (type === geojsonTypes$1.POLYGON) {
@@ -1930,7 +1917,7 @@ ModeInterface.prototype.newFeature = function (geojson, options) {
  * @returns {Boolean}
  */
 ModeInterface.prototype.isInstanceOf = function (type, feature) {
-  if (type === geojsonTypes$1.POINT) { return feature instanceof Point$2; }
+  if (type === geojsonTypes$1.POINT) { return feature instanceof Point$3; }
   if (type === geojsonTypes$1.LINE_STRING) { return feature instanceof LineString; }
   if (type === geojsonTypes$1.POLYGON) { return feature instanceof Polygon; }
   if (type === 'MultiFeature') { return feature instanceof MultiFeature; }
@@ -2642,16 +2629,20 @@ function render(e) {
 
   // extend start
   if (store._emitSelectionChange || !e || e.type !== 'mousemove') {
+    var modeInstance = store.ctx.events.getModeInstance();
     var isSimpleSelectMode = mode === modes$1.SIMPLE_SELECT;
+    var isDirectSelectMode = mode === modes$1.DIRECT_SELECT;
     var isCutMode = mode.includes('cut');
-    var disabled = isSimpleSelectMode
-      ? !store.getSelected().length
-      : isCutMode
-      ? store.ctx.events.getModeInstance().getWaitCutFeatures().length
-      : true;
+    var disabledCut = isSimpleSelectMode ? !store.getSelected().length : isCutMode ? modeInstance.getWaitCutFeatures().length : true;
+    var disableFinish = isSimpleSelectMode || isDirectSelectMode || !modeInstance.feature.isValid();
     store.ctx.ui.setDisableButtons(function (buttonStatus) {
-      buttonStatus.cut_polygon = { disabled: disabled };
-      buttonStatus.cut_line = { disabled: disabled };
+      buttonStatus.cut_polygon = { disabled: disabledCut };
+      buttonStatus.cut_line = { disabled: disabledCut };
+      buttonStatus.draw_center = { disabled: isSimpleSelectMode };
+      buttonStatus.finish = { disabled: disableFinish };
+      buttonStatus.cancel = { disabled: isSimpleSelectMode || isDirectSelectMode };
+      buttonStatus.undo = { disabled: modeInstance.redoUndo.undoStack.length === 0 };
+      buttonStatus.redo = { disabled: modeInstance.redoUndo.redoStack.length === 0 };
       return buttonStatus;
     });
   }
@@ -3357,6 +3348,7 @@ function ui (ctx) {
   // extend start
   function setDisableButtons(cb) {
     if (!buttonElements) { return; }
+
     var orginStatus = Object.entries(buttonElements).reduce(function (prev, ref) {
       var k = ref[0];
       var v = ref[1];
@@ -3518,7 +3510,7 @@ function runSetup (ctx) {
   return setup;
 }
 
-var styles$1 = [
+var styles = [
   {
     id: 'gl-draw-polygon-fill-inactive',
     type: 'fill',
@@ -3781,7 +3773,7 @@ isEnterKey: isEnterKey,
 isTrue: isTrue
 });
 
-var pointGeometry = Point;
+var pointGeometry = Point$1;
 
 /**
  * A standalone point geometry with useful accessor, comparison, and
@@ -3795,19 +3787,19 @@ var pointGeometry = Point;
  * @example
  * var point = new Point(-77, 38);
  */
-function Point(x, y) {
+function Point$1(x, y) {
     this.x = x;
     this.y = y;
 }
 
-Point.prototype = {
+Point$1.prototype = {
 
     /**
      * Clone this point, returning a new point that can be modified
      * without affecting the old one.
      * @return {Point} the clone
      */
-    clone: function() { return new Point(this.x, this.y); },
+    clone: function() { return new Point$1(this.x, this.y); },
 
     /**
      * Add this point's x & y coordinates to another point,
@@ -4082,17 +4074,17 @@ Point.prototype = {
  * // is equivalent to
  * var point = new Point(0, 1);
  */
-Point.convert = function (a) {
-    if (a instanceof Point) {
+Point$1.convert = function (a) {
+    if (a instanceof Point$1) {
         return a;
     }
     if (Array.isArray(a)) {
-        return new Point(a[0], a[1]);
+        return new Point$1(a[0], a[1]);
     }
     return a;
 };
 
-var Point$1 = /*@__PURE__*/getDefaultExportFromCjs(pointGeometry);
+var Point$2 = /*@__PURE__*/getDefaultExportFromCjs(pointGeometry);
 
 /**
  * Returns a Point representing a mouse event's position
@@ -4104,7 +4096,7 @@ var Point$1 = /*@__PURE__*/getDefaultExportFromCjs(pointGeometry);
  */
 function mouseEventPoint(mouseEvent, container) {
   var rect = container.getBoundingClientRect();
-  return new Point$1(
+  return new Point$2(
     mouseEvent.clientX - rect.left - (container.clientLeft || 0),
     mouseEvent.clientY - rect.top - (container.clientTop || 0)
   );
@@ -5904,7 +5896,7 @@ DrawPolygon.clickAnywhere = function (state, e) {
 DrawPolygon.clickOnVertex = function (state, cb) {
   // extend start
   if (isDisabledClickOnVertexWithCtx(this._ctx)) { return; }
-  if (typeof cb === 'function') { return cb(state); }
+  if (typeof cb === 'function') { return cb(); }
   // extend end
   return this.changeMode(modes$1.SIMPLE_SELECT, { featureIds: [state.polygon.id] });
 };
@@ -6132,9 +6124,10 @@ DrawLineString.clickAnywhere = function (state, e) {
   // extend end
 };
 
-DrawLineString.clickOnVertex = function (state) {
+DrawLineString.clickOnVertex = function (state, cb) {
   // extend start
   if (isDisabledClickOnVertexWithCtx(this._ctx)) { return; }
+  if (typeof cb === 'function') { return cb(); }
   // extend end
   return this.changeMode(modes$1.SIMPLE_SELECT, { featureIds: [state.line.id] });
 };
@@ -6163,7 +6156,7 @@ DrawLineString.onKeyUp = function (state, e) {
   }
 };
 
-DrawLineString.onStop = function (state) {
+DrawLineString.onStop = function (state, cb) {
   doubleClickZoom.enable(this);
   this.activateUIButton();
   this.destroy();
@@ -6172,6 +6165,7 @@ DrawLineString.onStop = function (state) {
   if (this.getFeature(state.line.id) === undefined) { return; }
   //remove last added coordinate
   state.line.removeCoordinate(("" + (state.currentVertexPosition)));
+  if (typeof cb === 'function') { return cb(); }
   if (state.line.isValid()) {
     this.map.fire(events$1.CREATE, {
       features: [state.line.toGeoJSON()],
@@ -6227,47 +6221,105 @@ DrawLineString.drawByCoordinate = function (coord) {
   this.afterRender(function () { return mapFireAddPoint(this$1$1); }, true);
 };
 
-function objectWithoutProperties (obj, exclude) { var target = {}; for (var k in obj) if (Object.prototype.hasOwnProperty.call(obj, k) && exclude.indexOf(k) === -1) target[k] = obj[k]; return target; }
-
-var getDefaultOptions = function () { return ({
-  featureIds: [],
-  highlightColor: '#73d13d',
-  continuous: true,
-  lineWidth: 0.001,
-  lineWidthUnit: 'kilometers',
-}); };
-
-var styles = ['inactive-fill-color', 'inactive-fill-outline-color', 'inactive-line-color'];
-
-var highlightFieldName = 'wait-cut';
-
-var originOnSetup = DrawPolygon.onSetup;
-var originOnMouseMove = DrawPolygon.onMouseMove;
-var originClickOnVertex = DrawPolygon.clickOnVertex;
-var originOnStop = DrawPolygon.onStop;
-var originOnTrash = DrawPolygon.onTrash;
-var originOnKeyUp = DrawPolygon.onKeyUp;
-var rest = objectWithoutProperties( DrawPolygon, ["onSetup", "onMouseMove", "clickOnVertex", "onStop", "onTrash", "onKeyUp"] );
-var restOriginMethods = rest;
-
 var polyTypes = [geojsonTypes$1.POLYGON, geojsonTypes$1.MULTI_POLYGON];
 
 var lineTypes = [geojsonTypes$1.LINE_STRING, geojsonTypes$1.MULTI_LINE_STRING];
 
 var geojsonTypes = polyTypes.concat( lineTypes);
 
-var CutPolygonMode = Object.assign({}, {originOnSetup: originOnSetup,
-  originOnKeyUp: originOnKeyUp,
-  originOnMouseMove: originOnMouseMove,
-  originClickOnVertex: originClickOnVertex,
-  originOnStop: originOnStop,
+var getCutDefaultOptions = function () { return ({
+  featureIds: [],
+  highlightColor: '#73d13d',
+  continuous: true,
+  // lineWidth: 0,
+  lineWidth: 0.001,
+  lineWidthUnit: 'kilometers',
+}); };
+
+var highlightFieldName = 'wait-cut';
+
+var Cut = {
+  _styles: ['inactive-fill-color', 'inactive-fill-outline-color', 'inactive-line-color'],
+};
+
+Cut._execMeasure = function (feature) {
+  var api = this._ctx.api;
+  if (feature && api.options.measureOptions) {
+    feature.measure.setOptions(api.options.measureOptions);
+    feature.execMeasure();
+  }
+};
+Cut._continuous = function (cb) {
+  if (this._options.continuous) {
+    cb();
+    this._updateFeatures();
+  }
+};
+
+Cut._updateFeatures = function () {
+  this._features = this._ctx.store
+    .getAll()
+    .filter(function (f) { return f.getProperty(highlightFieldName); })
+    .map(function (f) { return f.toGeoJSON(); });
+};
+
+Cut._cancelCut = function () {
+  if (this._features.length) {
+    this._batchHighlight(this._features);
+    this._features = [];
+  }
+};
+
+Cut._setHighlight = function (id, color) {
+  var api = this._ctx.api;
+  this._styles.forEach(function (style) { return api.setFeatureProperty(id, style, color); });
+  api.setFeatureProperty(id, highlightFieldName, color ? true : undefined);
+};
+
+Cut._batchHighlight = function (features, color) {
+  var this$1$1 = this;
+
+  if (features.length) { features.forEach(function (feature) { return this$1$1._setHighlight(feature.id, color); }); }
+};
+
+Cut.getWaitCutFeatures = function () {
+  return JSON.parse(JSON.stringify(this._features));
+};
+
+Cut.onTrash = function (state) {
+  this.originOnTrash(state);
+  this._cancelCut();
+};
+
+Cut.onKeyUp = function (state, e) {
+  this.originOnKeyUp(state, e);
+  if (isEscapeKey(e)) { this._cancelCut(); }
+};
+
+function objectWithoutProperties$1 (obj, exclude) { var target = {}; for (var k in obj) if (Object.prototype.hasOwnProperty.call(obj, k) && exclude.indexOf(k) === -1) target[k] = obj[k]; return target; }
+
+var originOnSetup$1 = DrawPolygon.onSetup;
+var originOnMouseMove$1 = DrawPolygon.onMouseMove;
+var originClickOnVertex$1 = DrawPolygon.clickOnVertex;
+var originOnStop$1 = DrawPolygon.onStop;
+var originOnTrash = DrawPolygon.onTrash;
+var originOnKeyUp$1 = DrawPolygon.onKeyUp;
+var rest$1 = objectWithoutProperties$1( DrawPolygon, ["onSetup", "onMouseMove", "clickOnVertex", "onStop", "onTrash", "onKeyUp"] );
+var restOriginMethods$1 = rest$1;
+
+var CutPolygonMode = Object.assign({}, {originOnSetup: originOnSetup$1,
+  originOnKeyUp: originOnKeyUp$1,
+  originOnMouseMove: originOnMouseMove$1,
+  originClickOnVertex: originClickOnVertex$1,
+  originOnStop: originOnStop$1,
   originOnTrash: originOnTrash},
-  restOriginMethods);
+  restOriginMethods$1,
+  Cut);
 
 CutPolygonMode.onSetup = function (opt) {
   var this$1$1 = this;
 
-  var options = xtend(getDefaultOptions(), opt);
+  var options = xtend(getCutDefaultOptions(), opt);
   var highlightColor = options.highlightColor;
   var featureIds = options.featureIds;
 
@@ -6288,7 +6340,6 @@ CutPolygonMode.onSetup = function (opt) {
   this._redoStack = [];
   this._redoType = '';
   this._undoType = '';
-
   this._batchHighlight(features, highlightColor);
   var state = this.originOnSetup({ button: modes$1.CUT_POLYGON });
   window.state = state;
@@ -6310,11 +6361,6 @@ CutPolygonMode.onStop = function (state) {
   });
 };
 
-CutPolygonMode.onKeyUp = function (state, e) {
-  this._cancelCut();
-  this.originOnKeyUp(state, e);
-};
-
 CutPolygonMode.clickOnVertex = function (state) {
   var this$1$1 = this;
 
@@ -6330,22 +6376,6 @@ CutPolygonMode.clickOnVertex = function (state) {
   });
 };
 
-CutPolygonMode.onTrash = function (state) {
-  this.originOnTrash(state);
-  this._cancelCut();
-};
-
-CutPolygonMode.fireUpdate = function (newF) {
-  this.map.fire(events$1.UPDATE, {
-    action: updateActions.CHANGE_COORDINATES,
-    features: newF.toGeoJSON(),
-  });
-};
-
-CutPolygonMode.getWaitCutFeatures = function () {
-  return JSON.parse(JSON.stringify(this._features));
-};
-
 CutPolygonMode.undo = function () {
   var this$1$1 = this;
 
@@ -6358,7 +6388,9 @@ CutPolygonMode.undo = function () {
     var state = this$1$1.getState();
     var redoStack = { geoJson: stack.geoJson };
     stack.collection.forEach(function (item) {
+      // 将features合并为一个feature
       var combine = turf.combine(item.difference);
+      // 将两个feature合并为一个feature
       var nuion = turf.union(item.intersect, combine.features[0]);
       var nuionFeature = this$1$1.newFeature(nuion);
       var ref = item.difference.features;
@@ -6371,6 +6403,20 @@ CutPolygonMode.undo = function () {
       this$1$1._execMeasure(nuionFeature);
       this$1$1._setHighlight(nuionFeature.id, this$1$1._options.highlightColor);
     });
+    stack.lines.forEach(function (ref) {
+      var cuted = ref.cuted;
+      var line = ref.line;
+
+      var ref$1 = cuted.features;
+      var f = ref$1[0];
+      var lineFeature = this$1$1.newFeature(line);
+      cuted.features.forEach(function (v) { return this$1$1.deleteFeature(v.id); });
+      lineFeature.id = f.id;
+      this$1$1.addFeature(lineFeature);
+      this$1$1._execMeasure(lineFeature);
+      this$1$1._setHighlight(lineFeature.id, this$1$1._options.highlightColor);
+    });
+
     state.currentVertexPosition = stack.geoJson.geometry.coordinates[0].length - 1;
     state.polygon.setCoordinates(stack.geoJson.geometry.coordinates);
     this$1$1.redoUndo.setRedoUndoStack(function (ref) {
@@ -6389,34 +6435,10 @@ CutPolygonMode.redo = function () {
   var type = res.type;
   var stack = res.stack;
   if (type !== 'cut') { return; }
-
   this.beforeRender(function () {
     this$1$1._cut(stack.geoJson);
     this$1$1._resetState();
   });
-};
-
-CutPolygonMode._setButtonStatus = function (params) {
-  var p = Object.assign({}, {undo: !this._undoStack.length, redo: !this._redoStack.length}, params);
-  this._ctx.ui.setDisableButtons(function (buttonStatus) {
-    buttonStatus.undo = { disabled: p.undo };
-    buttonStatus.redo = { disabled: p.redo };
-    return buttonStatus;
-  });
-};
-
-CutPolygonMode._execMeasure = function (feature) {
-  var api = this._ctx.api;
-  if (feature && api.options.measureOptions) {
-    feature.measure.setOptions(api.options.measureOptions);
-    feature.execMeasure();
-  }
-};
-
-CutPolygonMode._setHighlight = function (id, color) {
-  var api = this._ctx.api;
-  styles.forEach(function (style) { return api.setFeatureProperty(id, style, color); });
-  api.setFeatureProperty(id, highlightFieldName, color ? true : undefined);
 };
 
 CutPolygonMode._cut = function (cuttingpolygon) {
@@ -6427,20 +6449,21 @@ CutPolygonMode._cut = function (cuttingpolygon) {
   var api = ref.api;
   var ref$1 = this._options;
   var highlightColor = ref$1.highlightColor;
-  var undoStack = { geoJson: cuttingpolygon, collection: [] };
+  var undoStack = { geoJson: cuttingpolygon, collection: [], lines: [] };
+
   this._features.forEach(function (feature) {
     if (geojsonTypes.includes(feature.geometry.type)) {
       store.get(feature.id).measure.delete();
       if (lineTypes.includes(feature.geometry.type)) {
         var splitter = turf.polygonToLine(cuttingpolygon);
         var cuted = turf.lineSplit(feature, splitter);
+        undoStack.lines.push({ cuted: cuted, line: feature });
         cuted.features.sort(function (a, b) { return turf.length(a) - turf.length(b); });
         cuted.features[0].id = feature.id;
-        api.add(cuted).forEach(function (id, i) { return (cuted.features[i].id = id); }, { silent: true });
+        api.add(cuted, { silent: true }).forEach(function (id, i) { return (cuted.features[i].id = id); });
         this$1$1._continuous(function () { return this$1$1._batchHighlight(cuted.features, highlightColor); });
         return;
       }
-
       var afterCut = turf.difference(feature, cuttingpolygon);
       if (!afterCut) { return; }
       var newFeature = this$1$1.newFeature(afterCut);
@@ -6477,53 +6500,1633 @@ CutPolygonMode._cut = function (cuttingpolygon) {
   store.setDirty();
 };
 
-CutPolygonMode._continuous = function (cb) {
-  if (this._options.continuous) {
-    cb();
-    this._updateFeatures();
-  }
-};
-
-CutPolygonMode._updateFeatures = function () {
-  this._features = this._ctx.store
-    .getAll()
-    .filter(function (f) { return f.getProperty(highlightFieldName); })
-    .map(function (f) { return f.toGeoJSON(); });
-};
-
-CutPolygonMode._cancelCut = function () {
-  if (this._features.length) {
-    this._batchHighlight(this._features);
-    this._features = [];
-  }
-};
-
-CutPolygonMode._batchHighlight = function (features, color) {
-  var this$1$1 = this;
-
-  if (features.length) { features.forEach(function (feature) { return this$1$1._setHighlight(feature.id, color); }); }
-};
-
-CutPolygonMode._resetState = function (coord) {
+CutPolygonMode._resetState = function () {
   var state = this.getState();
   state.currentVertexPosition = 0;
   state.polygon.setCoordinates([[]]);
 };
 
-function genCutPolygonMode(modes) {
-  var obj;
-
-  return Object.assign({}, modes,
-    ( obj = {}, obj[modes$1.CUT_POLYGON] = CutPolygonMode, obj ));
+/**
+ * Returns a cloned copy of the passed GeoJSON Object, including possible 'Foreign Members'.
+ * ~3-5x faster than the common JSON.parse + JSON.stringify combo method.
+ *
+ * @name clone
+ * @param {GeoJSON} geojson GeoJSON Object
+ * @returns {GeoJSON} cloned GeoJSON Object
+ * @example
+ * var line = turf.lineString([[-74, 40], [-78, 42], [-82, 35]], {color: 'red'});
+ *
+ * var lineCloned = turf.clone(line);
+ */
+function clone(geojson) {
+    if (!geojson) {
+        throw new Error("geojson is required");
+    }
+    switch (geojson.type) {
+        case "Feature":
+            return cloneFeature(geojson);
+        case "FeatureCollection":
+            return cloneFeatureCollection(geojson);
+        case "Point":
+        case "LineString":
+        case "Polygon":
+        case "MultiPoint":
+        case "MultiLineString":
+        case "MultiPolygon":
+        case "GeometryCollection":
+            return cloneGeometry(geojson);
+        default:
+            throw new Error("unknown GeoJSON type");
+    }
+}
+/**
+ * Clone Feature
+ *
+ * @private
+ * @param {Feature<any>} geojson GeoJSON Feature
+ * @returns {Feature<any>} cloned Feature
+ */
+function cloneFeature(geojson) {
+    var cloned = { type: "Feature" };
+    // Preserve Foreign Members
+    Object.keys(geojson).forEach(function (key) {
+        switch (key) {
+            case "type":
+            case "properties":
+            case "geometry":
+                return;
+            default:
+                cloned[key] = geojson[key];
+        }
+    });
+    // Add properties & geometry last
+    cloned.properties = cloneProperties(geojson.properties);
+    cloned.geometry = cloneGeometry(geojson.geometry);
+    return cloned;
+}
+/**
+ * Clone Properties
+ *
+ * @private
+ * @param {Object} properties GeoJSON Properties
+ * @returns {Object} cloned Properties
+ */
+function cloneProperties(properties) {
+    var cloned = {};
+    if (!properties) {
+        return cloned;
+    }
+    Object.keys(properties).forEach(function (key) {
+        var value = properties[key];
+        if (typeof value === "object") {
+            if (value === null) {
+                // handle null
+                cloned[key] = null;
+            }
+            else if (Array.isArray(value)) {
+                // handle Array
+                cloned[key] = value.map(function (item) {
+                    return item;
+                });
+            }
+            else {
+                // handle generic Object
+                cloned[key] = cloneProperties(value);
+            }
+        }
+        else {
+            cloned[key] = value;
+        }
+    });
+    return cloned;
+}
+/**
+ * Clone Feature Collection
+ *
+ * @private
+ * @param {FeatureCollection<any>} geojson GeoJSON Feature Collection
+ * @returns {FeatureCollection<any>} cloned Feature Collection
+ */
+function cloneFeatureCollection(geojson) {
+    var cloned = { type: "FeatureCollection" };
+    // Preserve Foreign Members
+    Object.keys(geojson).forEach(function (key) {
+        switch (key) {
+            case "type":
+            case "features":
+                return;
+            default:
+                cloned[key] = geojson[key];
+        }
+    });
+    // Add features
+    cloned.features = geojson.features.map(function (feature) {
+        return cloneFeature(feature);
+    });
+    return cloned;
+}
+/**
+ * Clone Geometry
+ *
+ * @private
+ * @param {Geometry<any>} geometry GeoJSON Geometry
+ * @returns {Geometry<any>} cloned Geometry
+ */
+function cloneGeometry(geometry) {
+    var geom = { type: geometry.type };
+    if (geometry.bbox) {
+        geom.bbox = geometry.bbox;
+    }
+    if (geometry.type === "GeometryCollection") {
+        geom.geometries = geometry.geometries.map(function (g) {
+            return cloneGeometry(g);
+        });
+        return geom;
+    }
+    geom.coordinates = deepSlice(geometry.coordinates);
+    return geom;
+}
+/**
+ * Deep Slice coordinates
+ *
+ * @private
+ * @param {Coordinates} coords Coordinates
+ * @returns {Coordinates} all coordinates sliced
+ */
+function deepSlice(coords) {
+    var cloned = coords;
+    if (typeof cloned[0] !== "object") {
+        return cloned.slice();
+    }
+    return cloned.map(function (coord) {
+        return deepSlice(coord);
+    });
 }
 
-var modes = genCutPolygonMode({
+/**
+ * @module helpers
+ */
+/**
+ * Takes one or more {@link Feature|Features} and creates a {@link FeatureCollection}.
+ *
+ * @name featureCollection
+ * @param {Feature[]} features input features
+ * @param {Object} [options={}] Optional Parameters
+ * @param {Array<number>} [options.bbox] Bounding Box Array [west, south, east, north] associated with the Feature
+ * @param {string|number} [options.id] Identifier associated with the Feature
+ * @returns {FeatureCollection} FeatureCollection of Features
+ * @example
+ * var locationA = turf.point([-75.343, 39.984], {name: 'Location A'});
+ * var locationB = turf.point([-75.833, 39.284], {name: 'Location B'});
+ * var locationC = turf.point([-75.534, 39.123], {name: 'Location C'});
+ *
+ * var collection = turf.featureCollection([
+ *   locationA,
+ *   locationB,
+ *   locationC
+ * ]);
+ *
+ * //=collection
+ */
+function featureCollection(features, options) {
+    if (options === void 0) { options = {}; }
+    var fc = { type: "FeatureCollection" };
+    if (options.id) {
+        fc.id = options.id;
+    }
+    if (options.bbox) {
+        fc.bbox = options.bbox;
+    }
+    fc.features = features;
+    return fc;
+}
+/**
+ * isObject
+ *
+ * @param {*} input variable to validate
+ * @returns {boolean} true/false
+ * @example
+ * turf.isObject({elevation: 10})
+ * //=true
+ * turf.isObject('foo')
+ * //=false
+ */
+function isObject(input) {
+    return !!input && input.constructor === Object;
+}
+
+/**
+ * Unwrap coordinates from a Feature, Geometry Object or an Array
+ *
+ * @name getCoords
+ * @param {Array<any>|Geometry|Feature} coords Feature, Geometry Object or an Array
+ * @returns {Array<any>} coordinates
+ * @example
+ * var poly = turf.polygon([[[119.32, -8.7], [119.55, -8.69], [119.51, -8.54], [119.32, -8.7]]]);
+ *
+ * var coords = turf.getCoords(poly);
+ * //= [[[119.32, -8.7], [119.55, -8.69], [119.51, -8.54], [119.32, -8.7]]]
+ */
+function getCoords(coords) {
+    if (Array.isArray(coords)) {
+        return coords;
+    }
+    // Feature
+    if (coords.type === "Feature") {
+        if (coords.geometry !== null) {
+            return coords.geometry.coordinates;
+        }
+    }
+    else {
+        // Geometry
+        if (coords.coordinates) {
+            return coords.coordinates;
+        }
+    }
+    throw new Error("coords must be GeoJSON Feature, Geometry Object or an Array");
+}
+
+/**
+ * Takes a ring and return true or false whether or not the ring is clockwise or counter-clockwise.
+ *
+ * @name booleanClockwise
+ * @param {Feature<LineString>|LineString|Array<Array<number>>} line to be evaluated
+ * @returns {boolean} true/false
+ * @example
+ * var clockwiseRing = turf.lineString([[0,0],[1,1],[1,0],[0,0]]);
+ * var counterClockwiseRing = turf.lineString([[0,0],[1,0],[1,1],[0,0]]);
+ *
+ * turf.booleanClockwise(clockwiseRing)
+ * //=true
+ * turf.booleanClockwise(counterClockwiseRing)
+ * //=false
+ */
+function booleanClockwise(line) {
+    var ring = getCoords(line);
+    var sum = 0;
+    var i = 1;
+    var prev;
+    var cur;
+    while (i < ring.length) {
+        prev = cur || ring[0];
+        cur = ring[i];
+        sum += (cur[0] - prev[0]) * (cur[1] + prev[1]);
+        i++;
+    }
+    return sum > 0;
+}
+
+/**
+ * Callback for featureEach
+ *
+ * @callback featureEachCallback
+ * @param {Feature<any>} currentFeature The current Feature being processed.
+ * @param {number} featureIndex The current index of the Feature being processed.
+ */
+
+/**
+ * Iterate over features in any GeoJSON object, similar to
+ * Array.forEach.
+ *
+ * @name featureEach
+ * @param {FeatureCollection|Feature|Geometry} geojson any GeoJSON object
+ * @param {Function} callback a method that takes (currentFeature, featureIndex)
+ * @returns {void}
+ * @example
+ * var features = turf.featureCollection([
+ *   turf.point([26, 37], {foo: 'bar'}),
+ *   turf.point([36, 53], {hello: 'world'})
+ * ]);
+ *
+ * turf.featureEach(features, function (currentFeature, featureIndex) {
+ *   //=currentFeature
+ *   //=featureIndex
+ * });
+ */
+function featureEach(geojson, callback) {
+  if (geojson.type === "Feature") {
+    callback(geojson, 0);
+  } else if (geojson.type === "FeatureCollection") {
+    for (var i = 0; i < geojson.features.length; i++) {
+      if (callback(geojson.features[i], i) === false) { break; }
+    }
+  }
+}
+
+/**
+ * Callback for geomEach
+ *
+ * @callback geomEachCallback
+ * @param {Geometry} currentGeometry The current Geometry being processed.
+ * @param {number} featureIndex The current index of the Feature being processed.
+ * @param {Object} featureProperties The current Feature Properties being processed.
+ * @param {Array<number>} featureBBox The current Feature BBox being processed.
+ * @param {number|string} featureId The current Feature Id being processed.
+ */
+
+/**
+ * Iterate over each geometry in any GeoJSON object, similar to Array.forEach()
+ *
+ * @name geomEach
+ * @param {FeatureCollection|Feature|Geometry} geojson any GeoJSON object
+ * @param {Function} callback a method that takes (currentGeometry, featureIndex, featureProperties, featureBBox, featureId)
+ * @returns {void}
+ * @example
+ * var features = turf.featureCollection([
+ *     turf.point([26, 37], {foo: 'bar'}),
+ *     turf.point([36, 53], {hello: 'world'})
+ * ]);
+ *
+ * turf.geomEach(features, function (currentGeometry, featureIndex, featureProperties, featureBBox, featureId) {
+ *   //=currentGeometry
+ *   //=featureIndex
+ *   //=featureProperties
+ *   //=featureBBox
+ *   //=featureId
+ * });
+ */
+function geomEach(geojson, callback) {
+  var i,
+    j,
+    g,
+    geometry,
+    stopG,
+    geometryMaybeCollection,
+    isGeometryCollection,
+    featureProperties,
+    featureBBox,
+    featureId,
+    featureIndex = 0,
+    isFeatureCollection = geojson.type === "FeatureCollection",
+    isFeature = geojson.type === "Feature",
+    stop = isFeatureCollection ? geojson.features.length : 1;
+
+  // This logic may look a little weird. The reason why it is that way
+  // is because it's trying to be fast. GeoJSON supports multiple kinds
+  // of objects at its root: FeatureCollection, Features, Geometries.
+  // This function has the responsibility of handling all of them, and that
+  // means that some of the `for` loops you see below actually just don't apply
+  // to certain inputs. For instance, if you give this just a
+  // Point geometry, then both loops are short-circuited and all we do
+  // is gradually rename the input until it's called 'geometry'.
+  //
+  // This also aims to allocate as few resources as possible: just a
+  // few numbers and booleans, rather than any temporary arrays as would
+  // be required with the normalization approach.
+  for (i = 0; i < stop; i++) {
+    geometryMaybeCollection = isFeatureCollection
+      ? geojson.features[i].geometry
+      : isFeature
+      ? geojson.geometry
+      : geojson;
+    featureProperties = isFeatureCollection
+      ? geojson.features[i].properties
+      : isFeature
+      ? geojson.properties
+      : {};
+    featureBBox = isFeatureCollection
+      ? geojson.features[i].bbox
+      : isFeature
+      ? geojson.bbox
+      : undefined;
+    featureId = isFeatureCollection
+      ? geojson.features[i].id
+      : isFeature
+      ? geojson.id
+      : undefined;
+    isGeometryCollection = geometryMaybeCollection
+      ? geometryMaybeCollection.type === "GeometryCollection"
+      : false;
+    stopG = isGeometryCollection
+      ? geometryMaybeCollection.geometries.length
+      : 1;
+
+    for (g = 0; g < stopG; g++) {
+      geometry = isGeometryCollection
+        ? geometryMaybeCollection.geometries[g]
+        : geometryMaybeCollection;
+
+      // Handle null Geometry
+      if (geometry === null) {
+        if (
+          callback(
+            null,
+            featureIndex,
+            featureProperties,
+            featureBBox,
+            featureId
+          ) === false
+        )
+          { return false; }
+        continue;
+      }
+      switch (geometry.type) {
+        case "Point":
+        case "LineString":
+        case "MultiPoint":
+        case "Polygon":
+        case "MultiLineString":
+        case "MultiPolygon": {
+          if (
+            callback(
+              geometry,
+              featureIndex,
+              featureProperties,
+              featureBBox,
+              featureId
+            ) === false
+          )
+            { return false; }
+          break;
+        }
+        case "GeometryCollection": {
+          for (j = 0; j < geometry.geometries.length; j++) {
+            if (
+              callback(
+                geometry.geometries[j],
+                featureIndex,
+                featureProperties,
+                featureBBox,
+                featureId
+              ) === false
+            )
+              { return false; }
+          }
+          break;
+        }
+        default:
+          throw new Error("Unknown Geometry Type");
+      }
+    }
+    // Only increase `featureIndex` per each feature
+    featureIndex++;
+  }
+}
+
+/**
+ * Rewind {@link LineString|(Multi)LineString} or {@link Polygon|(Multi)Polygon} outer ring counterclockwise and inner rings clockwise (Uses {@link http://en.wikipedia.org/wiki/Shoelace_formula|Shoelace Formula}).
+ *
+ * @name rewind
+ * @param {GeoJSON} geojson input GeoJSON Polygon
+ * @param {Object} [options={}] Optional parameters
+ * @param {boolean} [options.reverse=false] enable reverse winding
+ * @param {boolean} [options.mutate=false] allows GeoJSON input to be mutated (significant performance increase if true)
+ * @returns {GeoJSON} rewind Polygon
+ * @example
+ * var polygon = turf.polygon([[[121, -29], [138, -29], [138, -18], [121, -18], [121, -29]]]);
+ *
+ * var rewind = turf.rewind(polygon);
+ *
+ * //addToMap
+ * var addToMap = [rewind];
+ */
+function rewind(geojson, options) {
+  // Optional parameters
+  options = options || {};
+  if (!isObject(options)) { throw new Error("options is invalid"); }
+  var reverse = options.reverse || false;
+  var mutate = options.mutate || false;
+
+  // validation
+  if (!geojson) { throw new Error("<geojson> is required"); }
+  if (typeof reverse !== "boolean")
+    { throw new Error("<reverse> must be a boolean"); }
+  if (typeof mutate !== "boolean")
+    { throw new Error("<mutate> must be a boolean"); }
+
+  // prevent input mutation
+  if (mutate === false) { geojson = clone(geojson); }
+
+  // Support Feature Collection or Geometry Collection
+  var results = [];
+  switch (geojson.type) {
+    case "GeometryCollection":
+      geomEach(geojson, function (geometry) {
+        rewindFeature(geometry, reverse);
+      });
+      return geojson;
+    case "FeatureCollection":
+      featureEach(geojson, function (feature) {
+        featureEach(rewindFeature(feature, reverse), function (result) {
+          results.push(result);
+        });
+      });
+      return featureCollection(results);
+  }
+  // Support Feature or Geometry Objects
+  return rewindFeature(geojson, reverse);
+}
+
+/**
+ * Rewind
+ *
+ * @private
+ * @param {Geometry|Feature<any>} geojson Geometry or Feature
+ * @param {Boolean} [reverse=false] enable reverse winding
+ * @returns {Geometry|Feature<any>} rewind Geometry or Feature
+ */
+function rewindFeature(geojson, reverse) {
+  var type = geojson.type === "Feature" ? geojson.geometry.type : geojson.type;
+
+  // Support all GeoJSON Geometry Objects
+  switch (type) {
+    case "GeometryCollection":
+      geomEach(geojson, function (geometry) {
+        rewindFeature(geometry, reverse);
+      });
+      return geojson;
+    case "LineString":
+      rewindLineString(getCoords(geojson), reverse);
+      return geojson;
+    case "Polygon":
+      rewindPolygon(getCoords(geojson), reverse);
+      return geojson;
+    case "MultiLineString":
+      getCoords(geojson).forEach(function (lineCoords) {
+        rewindLineString(lineCoords, reverse);
+      });
+      return geojson;
+    case "MultiPolygon":
+      getCoords(geojson).forEach(function (lineCoords) {
+        rewindPolygon(lineCoords, reverse);
+      });
+      return geojson;
+    case "Point":
+    case "MultiPoint":
+      return geojson;
+  }
+}
+
+/**
+ * Rewind LineString - outer ring clockwise
+ *
+ * @private
+ * @param {Array<Array<number>>} coords GeoJSON LineString geometry coordinates
+ * @param {Boolean} [reverse=false] enable reverse winding
+ * @returns {void} mutates coordinates
+ */
+function rewindLineString(coords, reverse) {
+  if (booleanClockwise(coords) === reverse) { coords.reverse(); }
+}
+
+/**
+ * Rewind Polygon - outer ring counterclockwise and inner rings clockwise.
+ *
+ * @private
+ * @param {Array<Array<Array<number>>>} coords GeoJSON Polygon geometry coordinates
+ * @param {Boolean} [reverse=false] enable reverse winding
+ * @returns {void} mutates coordinates
+ */
+function rewindPolygon(coords, reverse) {
+  // outer ring
+  if (booleanClockwise(coords[0]) !== reverse) {
+    coords[0].reverse();
+  }
+  // inner rings
+  for (var i = 1; i < coords.length; i++) {
+    if (booleanClockwise(coords[i]) === reverse) {
+      coords[i].reverse();
+    }
+  }
+}
+
+function pointInPolygon(p, polygon) {
+    var i = 0;
+    var ii = 0;
+    var k = 0;
+    var f = 0;
+    var u1 = 0;
+    var v1 = 0;
+    var u2 = 0;
+    var v2 = 0;
+    var currentP = null;
+    var nextP = null;
+
+    var x = p[0];
+    var y = p[1];
+
+    var numContours = polygon.length;
+    for (i; i < numContours; i++) {
+        ii = 0;
+        var contourLen = polygon[i].length - 1;
+        var contour = polygon[i];
+
+        currentP = contour[0];
+        if (currentP[0] !== contour[contourLen][0] &&
+            currentP[1] !== contour[contourLen][1]) {
+            throw new Error('First and last coordinates in a ring must be the same')
+        }
+
+        u1 = currentP[0] - x;
+        v1 = currentP[1] - y;
+
+        for (ii; ii < contourLen; ii++) {
+            nextP = contour[ii + 1];
+
+            v2 = nextP[1] - y;
+
+            if ((v1 < 0 && v2 < 0) || (v1 > 0 && v2 > 0)) {
+                currentP = nextP;
+                v1 = v2;
+                u1 = currentP[0] - x;
+                continue
+            }
+
+            u2 = nextP[0] - p[0];
+
+            if (v2 > 0 && v1 <= 0) {
+                f = (u1 * v2) - (u2 * v1);
+                if (f > 0) { k = k + 1; }
+                else if (f === 0) { return 0 }
+            } else if (v1 > 0 && v2 <= 0) {
+                f = (u1 * v2) - (u2 * v1);
+                if (f < 0) { k = k + 1; }
+                else if (f === 0) { return 0 }
+            } else if (v2 === 0 && v1 < 0) {
+                f = (u1 * v2) - (u2 * v1);
+                if (f === 0) { return 0 }
+            } else if (v1 === 0 && v2 < 0) {
+                f = u1 * v2 - u2 * v1;
+                if (f === 0) { return 0 }
+            } else if (v1 === 0 && v2 === 0) {
+                if (u2 <= 0 && u1 >= 0) {
+                    return 0
+                } else if (u1 <= 0 && u2 >= 0) {
+                    return 0
+                }
+            }
+            currentP = nextP;
+            v1 = v2;
+            u1 = u2;
+        }
+    }
+
+    if (k % 2 === 0) { return false }
+    return true
+}
+
+var epsilon = 1.1102230246251565e-16;
+var splitter = 134217729;
+var resulterrbound = (3 + 8 * epsilon) * epsilon;
+
+// fast_expansion_sum_zeroelim routine from oritinal code
+function sum(elen, e, flen, f, h) {
+    var Q, Qnew, hh, bvirt;
+    var enow = e[0];
+    var fnow = f[0];
+    var eindex = 0;
+    var findex = 0;
+    if ((fnow > enow) === (fnow > -enow)) {
+        Q = enow;
+        enow = e[++eindex];
+    } else {
+        Q = fnow;
+        fnow = f[++findex];
+    }
+    var hindex = 0;
+    if (eindex < elen && findex < flen) {
+        if ((fnow > enow) === (fnow > -enow)) {
+            Qnew = enow + Q;
+            hh = Q - (Qnew - enow);
+            enow = e[++eindex];
+        } else {
+            Qnew = fnow + Q;
+            hh = Q - (Qnew - fnow);
+            fnow = f[++findex];
+        }
+        Q = Qnew;
+        if (hh !== 0) {
+            h[hindex++] = hh;
+        }
+        while (eindex < elen && findex < flen) {
+            if ((fnow > enow) === (fnow > -enow)) {
+                Qnew = Q + enow;
+                bvirt = Qnew - Q;
+                hh = Q - (Qnew - bvirt) + (enow - bvirt);
+                enow = e[++eindex];
+            } else {
+                Qnew = Q + fnow;
+                bvirt = Qnew - Q;
+                hh = Q - (Qnew - bvirt) + (fnow - bvirt);
+                fnow = f[++findex];
+            }
+            Q = Qnew;
+            if (hh !== 0) {
+                h[hindex++] = hh;
+            }
+        }
+    }
+    while (eindex < elen) {
+        Qnew = Q + enow;
+        bvirt = Qnew - Q;
+        hh = Q - (Qnew - bvirt) + (enow - bvirt);
+        enow = e[++eindex];
+        Q = Qnew;
+        if (hh !== 0) {
+            h[hindex++] = hh;
+        }
+    }
+    while (findex < flen) {
+        Qnew = Q + fnow;
+        bvirt = Qnew - Q;
+        hh = Q - (Qnew - bvirt) + (fnow - bvirt);
+        fnow = f[++findex];
+        Q = Qnew;
+        if (hh !== 0) {
+            h[hindex++] = hh;
+        }
+    }
+    if (Q !== 0 || hindex === 0) {
+        h[hindex++] = Q;
+    }
+    return hindex;
+}
+
+function estimate(elen, e) {
+    var Q = e[0];
+    for (var i = 1; i < elen; i++) { Q += e[i]; }
+    return Q;
+}
+
+function vec(n) {
+    return new Float64Array(n);
+}
+
+var ccwerrboundA = (3 + 16 * epsilon) * epsilon;
+var ccwerrboundB = (2 + 12 * epsilon) * epsilon;
+var ccwerrboundC = (9 + 64 * epsilon) * epsilon * epsilon;
+
+var B = vec(4);
+var C1 = vec(8);
+var C2 = vec(12);
+var D = vec(16);
+var u = vec(4);
+
+function orient2dadapt(ax, ay, bx, by, cx, cy, detsum) {
+    var acxtail, acytail, bcxtail, bcytail;
+    var bvirt, c, ahi, alo, bhi, blo, _i, _j, _0, s1, s0, t1, t0, u3;
+
+    var acx = ax - cx;
+    var bcx = bx - cx;
+    var acy = ay - cy;
+    var bcy = by - cy;
+
+    s1 = acx * bcy;
+    c = splitter * acx;
+    ahi = c - (c - acx);
+    alo = acx - ahi;
+    c = splitter * bcy;
+    bhi = c - (c - bcy);
+    blo = bcy - bhi;
+    s0 = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
+    t1 = acy * bcx;
+    c = splitter * acy;
+    ahi = c - (c - acy);
+    alo = acy - ahi;
+    c = splitter * bcx;
+    bhi = c - (c - bcx);
+    blo = bcx - bhi;
+    t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
+    _i = s0 - t0;
+    bvirt = s0 - _i;
+    B[0] = s0 - (_i + bvirt) + (bvirt - t0);
+    _j = s1 + _i;
+    bvirt = _j - s1;
+    _0 = s1 - (_j - bvirt) + (_i - bvirt);
+    _i = _0 - t1;
+    bvirt = _0 - _i;
+    B[1] = _0 - (_i + bvirt) + (bvirt - t1);
+    u3 = _j + _i;
+    bvirt = u3 - _j;
+    B[2] = _j - (u3 - bvirt) + (_i - bvirt);
+    B[3] = u3;
+
+    var det = estimate(4, B);
+    var errbound = ccwerrboundB * detsum;
+    if (det >= errbound || -det >= errbound) {
+        return det;
+    }
+
+    bvirt = ax - acx;
+    acxtail = ax - (acx + bvirt) + (bvirt - cx);
+    bvirt = bx - bcx;
+    bcxtail = bx - (bcx + bvirt) + (bvirt - cx);
+    bvirt = ay - acy;
+    acytail = ay - (acy + bvirt) + (bvirt - cy);
+    bvirt = by - bcy;
+    bcytail = by - (bcy + bvirt) + (bvirt - cy);
+
+    if (acxtail === 0 && acytail === 0 && bcxtail === 0 && bcytail === 0) {
+        return det;
+    }
+
+    errbound = ccwerrboundC * detsum + resulterrbound * Math.abs(det);
+    det += (acx * bcytail + bcy * acxtail) - (acy * bcxtail + bcx * acytail);
+    if (det >= errbound || -det >= errbound) { return det; }
+
+    s1 = acxtail * bcy;
+    c = splitter * acxtail;
+    ahi = c - (c - acxtail);
+    alo = acxtail - ahi;
+    c = splitter * bcy;
+    bhi = c - (c - bcy);
+    blo = bcy - bhi;
+    s0 = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
+    t1 = acytail * bcx;
+    c = splitter * acytail;
+    ahi = c - (c - acytail);
+    alo = acytail - ahi;
+    c = splitter * bcx;
+    bhi = c - (c - bcx);
+    blo = bcx - bhi;
+    t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
+    _i = s0 - t0;
+    bvirt = s0 - _i;
+    u[0] = s0 - (_i + bvirt) + (bvirt - t0);
+    _j = s1 + _i;
+    bvirt = _j - s1;
+    _0 = s1 - (_j - bvirt) + (_i - bvirt);
+    _i = _0 - t1;
+    bvirt = _0 - _i;
+    u[1] = _0 - (_i + bvirt) + (bvirt - t1);
+    u3 = _j + _i;
+    bvirt = u3 - _j;
+    u[2] = _j - (u3 - bvirt) + (_i - bvirt);
+    u[3] = u3;
+    var C1len = sum(4, B, 4, u, C1);
+
+    s1 = acx * bcytail;
+    c = splitter * acx;
+    ahi = c - (c - acx);
+    alo = acx - ahi;
+    c = splitter * bcytail;
+    bhi = c - (c - bcytail);
+    blo = bcytail - bhi;
+    s0 = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
+    t1 = acy * bcxtail;
+    c = splitter * acy;
+    ahi = c - (c - acy);
+    alo = acy - ahi;
+    c = splitter * bcxtail;
+    bhi = c - (c - bcxtail);
+    blo = bcxtail - bhi;
+    t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
+    _i = s0 - t0;
+    bvirt = s0 - _i;
+    u[0] = s0 - (_i + bvirt) + (bvirt - t0);
+    _j = s1 + _i;
+    bvirt = _j - s1;
+    _0 = s1 - (_j - bvirt) + (_i - bvirt);
+    _i = _0 - t1;
+    bvirt = _0 - _i;
+    u[1] = _0 - (_i + bvirt) + (bvirt - t1);
+    u3 = _j + _i;
+    bvirt = u3 - _j;
+    u[2] = _j - (u3 - bvirt) + (_i - bvirt);
+    u[3] = u3;
+    var C2len = sum(C1len, C1, 4, u, C2);
+
+    s1 = acxtail * bcytail;
+    c = splitter * acxtail;
+    ahi = c - (c - acxtail);
+    alo = acxtail - ahi;
+    c = splitter * bcytail;
+    bhi = c - (c - bcytail);
+    blo = bcytail - bhi;
+    s0 = alo * blo - (s1 - ahi * bhi - alo * bhi - ahi * blo);
+    t1 = acytail * bcxtail;
+    c = splitter * acytail;
+    ahi = c - (c - acytail);
+    alo = acytail - ahi;
+    c = splitter * bcxtail;
+    bhi = c - (c - bcxtail);
+    blo = bcxtail - bhi;
+    t0 = alo * blo - (t1 - ahi * bhi - alo * bhi - ahi * blo);
+    _i = s0 - t0;
+    bvirt = s0 - _i;
+    u[0] = s0 - (_i + bvirt) + (bvirt - t0);
+    _j = s1 + _i;
+    bvirt = _j - s1;
+    _0 = s1 - (_j - bvirt) + (_i - bvirt);
+    _i = _0 - t1;
+    bvirt = _0 - _i;
+    u[1] = _0 - (_i + bvirt) + (bvirt - t1);
+    u3 = _j + _i;
+    bvirt = u3 - _j;
+    u[2] = _j - (u3 - bvirt) + (_i - bvirt);
+    u[3] = u3;
+    var Dlen = sum(C2len, C2, 4, u, D);
+
+    return D[Dlen - 1];
+}
+
+function orient2d(ax, ay, bx, by, cx, cy) {
+    var detleft = (ay - cy) * (bx - cx);
+    var detright = (ax - cx) * (by - cy);
+    var det = detleft - detright;
+
+    if (detleft === 0 || detright === 0 || (detleft > 0) !== (detright > 0)) { return det; }
+
+    var detsum = Math.abs(detleft + detright);
+    if (Math.abs(det) >= ccwerrboundA * detsum) { return det; }
+
+    return -orient2dadapt(ax, ay, bx, by, cx, cy, detsum);
+}
+
+var Edge = function Edge(p1, p2, edgeType, index, contourId) {
+  this.p1 = p1;
+  this.p2 = p2;
+  this.edgeType = edgeType;
+  this.originalIndex = index;
+
+  this.polygonContourId = contourId;
+  this.interiorRing = false;
+
+  this.minX = Math.min(p1.p[0], p2.p[0]);
+  this.minY = Math.min(p1.p[1], p2.p[1]);
+
+  this.maxX = Math.max(p1.p[0], p2.p[0]);
+  this.maxY = Math.max(p1.p[1], p2.p[1]);
+
+  this.intersectionPoints = [];
+  this.nextEdge = null;
+};
+
+var Point = function Point(p) {
+  this.p = p;
+};
+
+var Contour = function Contour(contourId, coords) {
+  this.id = contourId;
+  this.rawCoords = coords;
+};
+
+function fillQueue(polygon, line, polyEdges, lineEdges, polylineBbox) {
+  var numberOfRingsInPolygon = 0;
+  var contours = [];
+
+  var linegeom = line.type === 'Feature' ? line.geometry : line;
+  var linecoords = linegeom.type === 'LineString' ? [linegeom.coordinates] : linegeom.coordinates;
+
+  var edgeCount = 0;
+
+  for (var i = 0; i < linecoords.length; i++) {
+
+    var lineLength = linecoords[i].length - 1;
+    var p1 = new Point(linecoords[i][0]);
+    var p2 = null;
+    var prevEdge = {nextEdge: null};
+
+    for (var ii = 0; ii < lineLength; ii++) {
+      p2 = new Point(linecoords[i][ii + 1]);
+      p1.nextPoint = p2;
+      p2.prevPoint = p1;
+      var e = new Edge(p1, p2, 'polyline', edgeCount, null);
+      lineEdges.push(e);
+      prevEdge.nextEdge = e;
+      e.prevEdge = prevEdge;
+      polylineBbox[0] = Math.min(polylineBbox[0], p1.p[0]);
+      polylineBbox[1] = Math.min(polylineBbox[1], p1.p[1]);
+      polylineBbox[2] = Math.max(polylineBbox[2], p1.p[0]);
+      polylineBbox[3] = Math.max(polylineBbox[3], p1.p[1]);
+
+      p1 = p2;
+      edgeCount = edgeCount + 1;
+      prevEdge = e;
+    }
+    polylineBbox[0] = Math.min(polylineBbox[0], linecoords[i][lineLength][0]);
+    polylineBbox[1] = Math.min(polylineBbox[1], linecoords[i][lineLength][1]);
+    polylineBbox[2] = Math.max(polylineBbox[2], linecoords[i][lineLength][0]);
+    polylineBbox[3] = Math.max(polylineBbox[3], linecoords[i][lineLength][1]);
+  }
+
+  var polygeom = polygon.type === 'Feature' ? polygon.geometry : polygon;
+  var polycoords = polygeom.type === 'Polygon' ? [polygeom.coordinates] : polygeom.coordinates;
+
+  var polyLength = polycoords.length;
+
+  for (var i$1 = 0; i$1 < polyLength; i$1++) {
+
+    var polyLenth2 = polycoords[i$1].length;
+
+    for (var ii$1 = 0; ii$1 < polyLenth2; ii$1++) {
+      numberOfRingsInPolygon = numberOfRingsInPolygon + 1;
+
+      var polygonSet = polycoords[i$1][ii$1];
+      var polyLenth3 = polygonSet.length;
+      
+      contours.push(new Contour(numberOfRingsInPolygon, polygonSet));
+
+      var firstPoint = new Point(polygonSet[0]);
+      var p1$1 = firstPoint;
+      var p2$1 = (void 0), e$1 = null;
+      var prevEdge$1 = {nextEdge: null, prevEdge: null};
+      var firstEdge = null;
+
+      for (var iii = 1; iii < polyLenth3; iii++) {
+        p2$1 = new Point(polygonSet[iii]);
+        p1$1.nextPoint = p2$1;
+        p2$1.prevPoint = p1$1;
+
+        e$1 = new Edge(p1$1, p2$1, 'polygon', edgeCount, numberOfRingsInPolygon);
+        prevEdge$1.nextEdge = e$1;
+        e$1.prevEdge = prevEdge$1;
+        if (iii === 1) { firstEdge = e$1; }
+
+        if (ii$1 > 0) { e$1.interiorRing = true; }
+        e$1.intersectPolylineBbox = edgeIntersectsBbox(e$1, polylineBbox);
+        polyEdges.push(e$1);
+
+        p1$1 = p2$1;
+        edgeCount = edgeCount + 1;
+        prevEdge$1 = e$1;
+      }
+
+      e$1.nextEdge = firstEdge;
+      firstEdge.prevEdge = e$1;
+      p2$1.nextPoint = firstPoint.nextPoint;
+      firstPoint.prevPoint = p2$1.prevPoint;
+    }
+  }
+  return contours
+}
+
+function edgeIntersectsBbox(edge, bbox) {
+  if (edge.maxX < bbox[0]) { return false }
+  if (edge.minX > bbox[2]) { return false }
+  if (edge.maxY < bbox[1]) { return false }
+  if (edge.minY > bbox[3]) { return false }
+  return true
+}
+
+var IntersectionPoint = function IntersectionPoint(p, edge1, edge2, isHeadingIn) {
+  this.p = p;
+  this.polylineEdge = edge1;
+  this.polygonEdge = edge2;
+  this.isHeadingIn = isHeadingIn;
+
+  this.distanceFromPolylineEdgeStart = distance(this.polylineEdge.p1.p, this.p);
+  this.distanceFromPolygonEdgeStart = distance(this.polygonEdge.p1.p, this.p);
+
+  this.polygonEdge.intersectionPoints.push(this);
+  this.polylineEdge.intersectionPoints.push(this);
+
+  this.visitCount = 0;
+};
+
+IntersectionPoint.prototype.incrementVisitCount = function incrementVisitCount () {
+  this.visitCount = this.visitCount + 1;
+};
+
+function distance(p1, p2) {
+  var xs = p2[0] - p1[0];
+  var ys = p2[1] - p1[1];
+  xs *= xs;
+  ys *= ys;
+
+  return Math.sqrt(xs + ys)
+}
+
+function findIntersectionPoints(polygonEdges, lineEdges, intersectingPoints) {
+  var i, ii, iii;
+  var count = lineEdges.length;
+  var polyCount = polygonEdges.length;
+  for (i = 0; i < count; i++) {
+    var lineEdge = lineEdges[i];
+
+    for (ii = 0; ii < polyCount; ii++) {
+      var polygonEdge = polygonEdges[ii];
+      if (!polygonEdge.intersectPolylineBbox) { continue }
+
+      if (polygonEdge.maxX < lineEdge.minX || polygonEdge.minX > lineEdge.maxX) { continue }
+      if (polygonEdge.maxY < lineEdge.minY || polygonEdge.minY > lineEdge.maxY) { continue }
+      var intersection = getEdgeIntersection(lineEdge, polygonEdge);
+      if (intersection !== null) {
+        for (iii = 0; iii < intersection.length; iii++) {
+          var isHeadingIn = orient2d(polygonEdge.p1.p[0], polygonEdge.p1.p[1], polygonEdge.p2.p[0], polygonEdge.p2.p[1], lineEdge.p1.p[0], lineEdge.p1.p[1]);
+          var ip = new IntersectionPoint(intersection[iii], lineEdge, polygonEdge, isHeadingIn > 0);
+          intersectingPoints.push(ip);
+        }
+      }
+    }
+  }
+  lineEdges.forEach(function (edge) {
+    edge.intersectionPoints.sort(function (a, b) {
+      return a.distanceFromPolylineEdgeStart - b.distanceFromPolylineEdgeStart
+    });
+  });
+
+  polygonEdges.forEach(function (edge) {
+    edge.intersectionPoints.sort(function (a, b) {
+      return a.distanceFromPolygonEdgeStart - b.distanceFromPolygonEdgeStart
+    });
+  });
+}
+
+var EPSILON = 1e-9;
+
+function crossProduct(a, b) {
+  return (a[0] * b[1]) - (a[1] * b[0])
+}
+
+function dotProduct(a, b) {
+  return (a[0] * b[0]) + (a[1] * b[1])
+}
+
+function toPoint(p, s, d) {
+  return [
+    p[0] + s * d[0],
+    p[1] + s * d[1]
+  ]
+}
+
+function getEdgeIntersection(lineEdge, potentialEdge, noEndpointTouch) {
+  var va = [lineEdge.p2.p[0] - lineEdge.p1.p[0], lineEdge.p2.p[1] - lineEdge.p1.p[1]];
+  var vb = [potentialEdge.p2.p[0] - potentialEdge.p1.p[0], potentialEdge.p2.p[1] - potentialEdge.p1.p[1]];
+
+  var e = [potentialEdge.p1.p[0] - lineEdge.p1.p[0], potentialEdge.p1.p[1] - lineEdge.p1.p[1]];
+  var kross = crossProduct(va, vb);
+  var sqrKross = kross * kross;
+  var sqrLenA  = dotProduct(va, va);
+
+  if (sqrKross > 0) {
+
+    var s = crossProduct(e, vb) / kross;
+    if (s < 0 || s > 1) { return null }
+    var t = crossProduct(e, va) / kross;
+    if (t < 0 || t > 1) { return null }
+    if (s === 0 || s === 1) {
+      // on an endpoint of line segment a
+      return noEndpointTouch ? null : [toPoint(lineEdge.p1.p, s, va)]
+    }
+    if (t === 0 || t === 1) {
+      // on an endpoint of line segment b
+      return noEndpointTouch ? null : [toPoint(potentialEdge.p1.p, t, vb)]
+    }
+    return [toPoint(lineEdge.p1.p, s, va)]
+  }
+
+  var sqrLenE = dotProduct(e, e);
+  kross = crossProduct(e, va);
+  sqrKross = kross * kross;
+
+  if (sqrKross > EPSILON * sqrLenA * sqrLenE) { return null }
+
+  var sa = dotProduct(va, e) / sqrLenA;
+  var sb = sa + dotProduct(va, vb) / sqrLenA;
+  var smin = Math.min(sa, sb);
+  var smax = Math.max(sa, sb);
+
+  if (smin <= 1 && smax >= 0) {
+
+    if (smin === 1) { return noEndpointTouch ? null : [toPoint(lineEdge.p1.p, smin > 0 ? smin : 0, va)] }
+
+    if (smax === 0) { return noEndpointTouch ? null : [toPoint(lineEdge.p1.p, smax < 1 ? smax : 1, va)] }
+
+    if (noEndpointTouch && smin === 0 && smax === 1) { return null }
+
+    return [
+      toPoint(lineEdge.p1.p, smin > 0 ? smin : 0, va),
+      toPoint(lineEdge.p1.p, smax < 1 ? smax : 1, va)
+    ]
+  }
+
+  return null
+}
+
+// import { _debugCandidatePoly, _debugIntersectionPoint, _debugLinePoints, _debugIntersectionPoints, _debugPolyStart } from './debug'
+
+function index (polygon, line) {
+  var poly = rewind(polygon);
+
+  var intersections = [];
+  var polygonEdges = [];
+  var polylineEdges = [];
+  var polylineBbox = [Infinity, Infinity, Infinity, Infinity];
+
+  var contours = fillQueue(poly, line, polygonEdges, polylineEdges, polylineBbox);
+
+  findIntersectionPoints(polygonEdges, polylineEdges, intersections);
+
+  if (intersections.length === 0) {
+    return polygon
+  }
+
+  // Track the number of intersections per contour
+  // This is useful for holes or outerrings that aren't intersected
+  // so that we can manually add them back in at the end
+  var numberIntersectionsByRing = {};
+  contours.forEach(function (c) { return numberIntersectionsByRing[c.id] = 0; }); //eslint-disable-line
+  intersections.forEach(function (i) {
+    var id = i.polygonEdge.polygonContourId;
+    numberIntersectionsByRing[id] = numberIntersectionsByRing[id] + 1;
+  });
+
+
+  var infiniteLoopGuard = 0;
+  var outPolys = [];
+  // _debugIntersectionPoints(intersections)
+  // Start the rewiring of the outputs from the first intersection point along the polyline line
+  // This step makes a difference (eg see the another.geojson harness file)
+  var firstPolyStart = null;
+  for (var index = 0; index < polylineEdges.length; index++) {
+    var pe = polylineEdges[index];
+    if (pe.intersectionPoints.length > 0) {
+      firstPolyStart = pe.intersectionPoints[0];
+      break
+    }
+  }
+
+  var polyStart = firstPolyStart;
+  var nextPolyStart = {visitCount: 1};
+  // Basically we're going to walk our way around the outside of the polygon
+  // to find new output polygons until we get back to the beginning
+  while (firstPolyStart !== nextPolyStart) {
+    if (infiniteLoopGuard > intersections.length * 2) {
+      break
+    }
+    infiniteLoopGuard = infiniteLoopGuard++;
+
+    // If we've already visited this intersection point a couple of times we've
+    // already used it in it's two output polygons
+
+    if (nextPolyStart.visitCount >= 2) {
+      var unvisitedPolyFound = false;
+      for (var index$1 = 0; index$1 < intersections.length; index$1++) {
+        var intersection = intersections[index$1];
+        if (intersection.visitCount < 2) {
+          polyStart = intersection;
+          unvisitedPolyFound = true;
+          break
+        }
+      }
+      if (!unvisitedPolyFound) { break }
+    }
+
+    polyStart.visitCount = polyStart.visitCount + 1;
+    var outPoly = [];
+    outPolys.push(outPoly);
+    outPoly.push(polyStart.p);
+
+    polyStart.visitCount = polyStart.visitCount + 1;
+    var nextIntersection = walkPolygonForwards(polyStart, outPoly);
+    // _debugCandidatePoly(outPolys)
+    // After we've walked the first stretch of the polygon we now have the
+    // starting point for our next output polygon
+    nextPolyStart = nextIntersection;
+
+
+    // Although sometimes we walk all the way around the outside
+    // because our split line goes from outer to inner ring
+    var override = false;
+    if (nextIntersection === nextPolyStart && intersections.length === 2) {
+      for (var index$2 = 0; index$2 < intersections.length; index$2++) {
+        var intersection$1 = intersections[index$2];
+        if (intersection$1.visitCount < 2) {
+          override = true;
+        }
+      }
+    }
+
+    // An ouput polygon has to contain at least 1 stretch from the original polygon
+    // and one stretch from the polyline
+    // However it can contain many stretches of each
+    // So we walk continually from polyline to polygon collecting the output
+    while (nextIntersection !== polyStart || override) {
+      var methodForPolyline = nextIntersection.isHeadingIn ? walkPolylineForwards : walkPolylineBackwards;
+      nextIntersection = methodForPolyline(nextIntersection, outPoly);
+      // _debugCandidatePoly(outPolys)
+
+      if (nextIntersection !== polyStart) {
+        nextIntersection = walkPolygonForwards(nextIntersection, outPoly);
+        // _debugCandidatePoly(outPolys)
+      }
+      override = false;
+    }
+
+    if (nextPolyStart.visitCount >= 2) {
+      var unvisitedPolyFound$1 = false;
+      for (var index$3 = 0; index$3 < intersections.length; index$3++) {
+        var intersection$2 = intersections[index$3];
+        if (intersection$2.visitCount < 2) {
+          polyStart = intersection$2;
+          unvisitedPolyFound$1 = true;
+          break
+        }
+      }
+      if (unvisitedPolyFound$1) {
+        nextPolyStart = polyStart;
+      }
+    }
+
+    // Finally we set the next start point based on what we found earlier
+    polyStart = nextPolyStart;
+  }
+
+  var outCoordinates = outPolys.map(function (poly) { return [poly]; });
+
+  var keys = Object.keys(numberIntersectionsByRing);
+  for (var index$4 = 0; index$4 < keys.length; index$4++) {
+    var key = keys[index$4];
+    var value = numberIntersectionsByRing[key];
+    if (value === 0) {
+      var edge = findFirstPolygonEdge(polygonEdges, parseInt(key));
+      var ring = findRingFromEdge(edge, contours);
+      createAsHoleOrAddAsNewOuterRing(ring, outCoordinates);
+    }
+  }
+
+  return {
+    type: 'Feature',
+    properties: {},
+    geometry: {
+      type: 'MultiPolygon',
+      coordinates: outCoordinates
+    }
+  }
+}
+
+function findFirstPolygonEdge(polygonEdges, contourId) {
+  for (var index = 0; index < polygonEdges.length; index++) {
+    var edge = polygonEdges[index];
+    if (edge.polygonContourId === contourId) { return edge }
+  }
+}
+
+function findRingFromEdge(edge, contours) {
+  var contour = contours.find(function (c) { return c.id === edge.polygonContourId; });
+  return contour.rawCoords
+}
+
+function createAsHoleOrAddAsNewOuterRing(unusedRing, outCoordinates) {
+  for (var index = 0; index < outCoordinates.length; index++) {
+    var existingRing = outCoordinates[index];
+    if (pointInPolygon(unusedRing[0], [existingRing[0]])) {
+      existingRing.push(unusedRing);
+      return
+    }
+  }
+  // If no match is found push it as a new outer ring
+  outCoordinates.push([unusedRing]);
+}
+
+// Walk around the polygon collecting vertices
+function walkPolygonForwards(intersectionPoint, outPoly) {
+  var nextEdge = intersectionPoint.polygonEdge;
+  if (nextEdge.intersectionPoints.length > 1) {
+    // _debugIntersectionPoint(intersectionPoint)
+    var lastPointOnEdge = nextEdge.intersectionPoints[nextEdge.intersectionPoints.length - 1];
+    if (lastPointOnEdge !== intersectionPoint) {
+      var currentIndex = findIndexOfIntersectionPoint(intersectionPoint, nextEdge.intersectionPoints);
+      var nextIp = nextEdge.intersectionPoints[currentIndex + 1];
+      outPoly.push(nextIp.p);
+      nextIp.incrementVisitCount();
+      return nextIp
+    }
+  }
+  var condition = true;
+  while (condition) {
+    outPoly.push(nextEdge.p2.p);
+    nextEdge = nextEdge.nextEdge;
+    if (nextEdge === null) { return intersectionPoint }
+    else if (nextEdge.intersectionPoints.length > 0) { condition = false; }
+  }
+  nextEdge.intersectionPoints[0].incrementVisitCount();
+  outPoly.push(nextEdge.intersectionPoints[0].p);
+  return nextEdge.intersectionPoints[0]
+}
+
+// Given a set of intersections find the next one
+function findIndexOfIntersectionPoint(intersection, intersections) {
+  for (var index = 0; index < intersections.length; index++) {
+    var int = intersections[index];
+    if (int === intersection) { return index }
+  }
+  return null
+}
+
+
+function walkPolylineBackwards(intersectionPoint, outPoly) {
+  var nextEdge = intersectionPoint.polylineEdge;
+  if (nextEdge.intersectionPoints.length === 2) {
+    var lastPointOnEdge = nextEdge.intersectionPoints[nextEdge.intersectionPoints.length - 1];
+    // debugger
+    if (lastPointOnEdge === intersectionPoint) {
+      var nextIntersection = nextEdge.intersectionPoints[0];
+      outPoly.push(nextIntersection.p);
+      nextIntersection.incrementVisitCount();
+      return nextIntersection
+    } else {
+      outPoly.push(lastPointOnEdge.p);
+      lastPointOnEdge.incrementVisitCount();
+      return lastPointOnEdge
+    }
+  } else if (nextEdge.intersectionPoints.length > 2) {
+    // _debugIntersectionPoint(intersectionPoint)
+
+    var lastPointOnEdge$1 = nextEdge.intersectionPoints[0];
+    if (lastPointOnEdge$1 !== intersectionPoint) {
+      var currentIndex = findIndexOfIntersectionPoint(intersectionPoint, nextEdge.intersectionPoints);
+      var nextIntersection$1 = nextEdge.intersectionPoints[currentIndex - 1];
+      outPoly.push(nextIntersection$1.p);
+      nextIntersection$1.incrementVisitCount();
+      return nextIntersection$1
+    }
+  }
+  var condition = true;
+  while (condition) {
+    outPoly.push(nextEdge.p1.p);
+    nextEdge = nextEdge.prevEdge;
+    if (nextEdge.originalIndex === undefined) { return intersectionPoint }
+    else if (nextEdge.intersectionPoints.length > 0) {
+      condition = false;
+    }
+  }
+  if (nextEdge.originalIndex === undefined) { return intersectionPoint }
+  var lastIntersection = nextEdge.intersectionPoints[nextEdge.intersectionPoints.length - 1];
+  lastIntersection.incrementVisitCount();
+  outPoly.push(lastIntersection.p);
+  return lastIntersection
+}
+
+function walkPolylineForwards(intersectionPoint, outPoly) {
+  var nextEdge = intersectionPoint.polylineEdge;
+
+  if (nextEdge.intersectionPoints.length > 1) {
+    // _debugIntersectionPoint(intersectionPoint)
+    var lastPointOnEdge = nextEdge.intersectionPoints[nextEdge.intersectionPoints.length - 1];
+    if (lastPointOnEdge !== intersectionPoint) {
+      var currentIndex = findIndexOfIntersectionPoint(intersectionPoint, nextEdge.intersectionPoints);
+      var nextIp = nextEdge.intersectionPoints[currentIndex + 1];
+      outPoly.push(nextIp.p);
+      nextIp.incrementVisitCount();
+      return nextIp
+    }
+  }
+  var condition = true;
+  while (condition) {
+    outPoly.push(nextEdge.p2.p);
+    nextEdge = nextEdge.nextEdge;
+    if (nextEdge === null) { return intersectionPoint }
+    else if (nextEdge.intersectionPoints.length > 0) { condition = false; }
+  }
+  if (nextEdge === undefined) { return intersectionPoint }
+  var lastIntersection = nextEdge.intersectionPoints[0];
+  lastIntersection.incrementVisitCount();
+  outPoly.push(lastIntersection.p);
+  return lastIntersection
+}
+
+function objectWithoutProperties (obj, exclude) { var target = {}; for (var k in obj) if (Object.prototype.hasOwnProperty.call(obj, k) && exclude.indexOf(k) === -1) target[k] = obj[k]; return target; }
+
+var originOnSetup = DrawLineString.onSetup;
+var originOnMouseMove = DrawLineString.onMouseMove;
+var originClickOnVertex = DrawLineString.clickOnVertex;
+var originOnStop = DrawLineString.onStop;
+var originOnKeyUp = DrawLineString.onKeyUp;
+var rest = objectWithoutProperties( DrawLineString, ["onSetup", "onMouseMove", "clickOnVertex", "onStop", "onKeyUp"] );
+var restOriginMethods = rest;
+var CutLineMode = Object.assign({}, {originOnSetup: originOnSetup, originOnKeyUp: originOnKeyUp, originOnStop: originOnStop, originOnMouseMove: originOnMouseMove, originClickOnVertex: originClickOnVertex}, restOriginMethods, Cut);
+
+CutLineMode.onSetup = function (opt) {
+  var this$1$1 = this;
+
+  var options = xtend(getCutDefaultOptions(), opt);
+  var featureIds = options.featureIds;
+  var highlightColor = options.highlightColor;
+
+  var features = [];
+  if (featureIds.length) {
+    features = featureIds.map(function (id) { return this$1$1.getFeature(id).toGeoJSON(); });
+  } else {
+    features = this.getSelected().map(function (f) { return f.toGeoJSON(); });
+  }
+
+  if (!features.length) {
+    throw new Error('Please select a feature/features (Polygon or MultiPolygon or LineString or MultiLineString) to split!');
+  }
+  this._options = options;
+  this._features = features;
+  var state = this.originOnSetup();
+  this._batchHighlight(features, highlightColor);
+  return this.setState(state);
+};
+
+CutLineMode.clickOnVertex = function (state) {
+  var this$1$1 = this;
+
+  this.originClickOnVertex(state, function () {
+    this$1$1._cut(state);
+    if (this$1$1._options.continuous) {
+      this$1$1._resetState();
+    } else {
+      this$1$1.deleteFeature([state.line.id], { silent: true });
+    }
+  });
+};
+
+CutLineMode._cut = function (state) {
+  var this$1$1 = this;
+
+  var cuttingLineString = state.line.toGeoJSON();
+  var ref = this._options;
+  var lineWidth = ref.lineWidth;
+  var lineWidthUnit = ref.lineWidthUnit;
+  var highlightColor = ref.highlightColor;
+  var ref$1 = this._ctx;
+  var store = ref$1.store;
+  var api = ref$1.api;
+  var endCoord = cuttingLineString.geometry.coordinates[cuttingLineString.geometry.coordinates.length - 1];
+  var startPoint = turf.point(cuttingLineString.geometry.coordinates[0]);
+  var endPoint = turf.point(endCoord);
+  var splitter = turf.polygonToLine(turf.buffer(cuttingLineString, lineWidth, { units: lineWidthUnit }));
+  var oneMeters = turf.convertLength(1, 'meters', lineWidthUnit);
+  this._features.forEach(function (feature) {
+    if (turf.booleanDisjoint(feature, cuttingLineString)) {
+      console.warn(("Line was outside of Polygon " + (feature.id)));
+      return;
+    }
+
+    if (!(turf.booleanDisjoint(feature, startPoint) && turf.booleanDisjoint(feature, endPoint))) {
+      console.warn("The start and end points of the line must be outside of the poly");
+      return;
+    }
+    store.get(feature.id).measure.delete();
+    if (lineTypes.includes(feature.geometry.type)) {
+      if (lineWidth === 0) {
+        var cuted = turf.lineSplit(feature, cuttingLineString);
+        cuted.features.sort(function (a, b) { return turf.length(a) - turf.length(b); });
+        cuted.features[0].id = feature.id;
+        api.add(cuted, { silent: true }).forEach(function (id, i) { return (cuted.features[i].id = id); });
+        this$1$1._continuous(function () { return this$1$1._batchHighlight(cuted.features, highlightColor); });
+      } else {
+        var fc = turf.featureCollection([]);
+        var cuted$1 = turf.lineSplit(feature, splitter);
+        var intersectPoints = turf.lineIntersect(feature.geometry, cuttingLineString.geometry);
+        intersectPoints.features.forEach(function (f) {
+          var ref;
+
+          var buffered = turf.buffer(f, lineWidth + oneMeters, { units: lineWidthUnit });
+          (ref = fc.features).push.apply(ref, cuted$1.features.filter(function (v) { return !turf.booleanContains(buffered, v); }));
+        });
+        fc.features.sort(function (a, b) { return turf.length(a) - turf.length(b); });
+        fc.features[0].id = feature.id;
+        api.add(fc, { silent: true });
+        this$1$1._continuous(function () { return this$1$1._batchHighlight(fc.features, highlightColor); });
+      }
+      return;
+    }
+    var afterCut;
+    if (lineWidth === 0) {
+      afterCut = index(feature.geometry, cuttingLineString.geometry);
+    } else {
+      var intersectPoints$1 = turf.lineIntersect(feature.geometry, cuttingLineString.geometry);
+      var intersectLine = turf.lineString(intersectPoints$1.features.map(function (f) { return f.geometry.coordinates; }));
+      var buffered = turf.buffer(intersectLine, lineWidth, { units: lineWidthUnit });
+      afterCut = turf.difference(feature.geometry, buffered);
+    }
+    var newFeature = this$1$1.newFeature(afterCut);
+    var ref = newFeature.features.sort(function (a, b) { return turf.area(a) - turf.area(b); });
+    var f = ref[0];
+    var rest = ref.slice(1);
+    f.id = feature.id;
+    api.add(turf.featureCollection(rest.map(function (v) { return v.toGeoJSON(); })), { silent: true });
+    this$1$1.addFeature(f);
+    this$1$1._execMeasure(f);
+    this$1$1._continuous(function () { return this$1$1._batchHighlight(newFeature.features, highlightColor); });
+  });
+  store.setDirty();
+};
+
+CutLineMode.onMouseMove = function (state, e) {
+  this.updateUIClasses({ mouse: cursors.ADD });
+  this.originOnMouseMove(state, e);
+};
+
+CutLineMode.onStop = function (state) {
+  var this$1$1 = this;
+
+  this.originOnStop(state, function () {
+    this$1$1._cancelCut();
+    this$1$1.deleteFeature([state.polygon.id], { silent: true });
+  });
+};
+
+CutLineMode._resetState = function () {
+  var state = this.getState();
+  state.currentVertexPosition = 0;
+  state.line.setCoordinates([]);
+};
+
+var modes = {
   simple_select: SimpleSelect,
   direct_select: DirectSelect,
   draw_point: DrawPoint,
   draw_polygon: DrawPolygon,
   draw_line_string: DrawLineString,
-});
+  cut_polygon: CutPolygonMode,
+  cut_line: CutLineMode,
+};
 
 var defaultOptions = {
   defaultMode: modes$1.SIMPLE_SELECT,
@@ -6533,7 +8136,7 @@ var defaultOptions = {
   touchBuffer: 25,
   boxSelect: true,
   displayControlsDefault: true,
-  styles: styles$1,
+  styles: styles,
   modes: modes,
   controls: {},
   userProperties: false,
@@ -8482,7 +10085,7 @@ function stringSetsAreEqual(a, b) {
 var featureTypes = {
   Polygon: Polygon,
   LineString: LineString,
-  Point: Point$2,
+  Point: Point$3,
   MultiPolygon: MultiFeature,
   MultiLineString: MultiFeature,
   MultiPoint: MultiFeature,
@@ -8761,7 +10364,7 @@ moveFeatures: moveFeatures,
 sortFeatures: sortFeatures,
 stringSetsAreEqual: stringSetsAreEqual,
 StringSet: StringSet,
-theme: styles$1,
+theme: styles,
 theme3: theme3,
 toDenseArray: toDenseArray
 });

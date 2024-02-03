@@ -52,7 +52,7 @@ const ModeHandler = function (mode, DrawContext) {
   return {
     render: mode.render,
     stop() {
-      if (mode.stop) mode.stop();
+      if (mode.stop) return mode.stop();
     },
     trash() {
       if (mode.trash) {
