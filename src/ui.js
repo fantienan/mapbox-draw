@@ -308,7 +308,7 @@ export default function (ctx) {
               return prev;
             }, '');
             okBtn.addEventListener('click', () => {
-              resolve({ lineWidth: +(input.value || 0), lineWidthUnit: select.value });
+              resolve({ bufferOptions: { width: +(input.value || 0), unit: select.value } });
               removeLinePopover();
             });
             cancelBtn.addEventListener('click', () => {
@@ -376,13 +376,13 @@ export default function (ctx) {
               return prev;
             }, '');
             okBtn.addEventListener('click', () => {
-              let res;
+              let bufferOptions;
               if (select.value === 'mu') {
-                res = { bufferWidthUnit: 'meters', bufferWidth: (input.value || 0) * 666.666666667 };
+                bufferOptions = { unit: 'meters', width: (input.value || 0) * 666.666666667 };
               } else {
-                res = { bufferWidth: +(input.value || 0), bufferWidthUnit: select.value };
+                bufferOptions = { width: +(input.value || 0), unit: select.value };
               }
-              resolve(res);
+              resolve({ bufferOptions });
               removePolygonPopover();
             });
             cancelBtn.addEventListener('click', () => {
@@ -394,12 +394,10 @@ export default function (ctx) {
             cancelBtn.textContent = 'cancel';
             input.value = '1';
             input.type = 'number';
-            input.min = 0;
             select.value = 'meters';
             popover.className = Constants.classes.CONTROL_POPOVER;
             popover.style.top = `${12 * 29}px`;
             popover.style.left = '-347px';
-
             popover.appendChild(title);
             popover.appendChild(input);
             popover.appendChild(title1);

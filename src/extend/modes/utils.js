@@ -7,7 +7,14 @@ export const lineTypes = [Constants.geojsonTypes.LINE_STRING, Constants.geojsonT
 
 export const geojsonTypes = [...polyTypes, ...lineTypes];
 
-export const getCutDefaultOptions = () => ({ featureIds: [], highlightColor: '#73d13d', continuous: true });
+export const getCutDefaultOptions = () => ({
+  featureIds: [],
+  highlightColor: '#73d13d',
+  continuous: true,
+  bufferOptions: {
+    width: 0,
+  },
+});
 
 export const highlightFieldName = 'wait-cut';
 

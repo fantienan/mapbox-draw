@@ -25,10 +25,20 @@ const CutPolygonMode = {
   ...cut,
 };
 
-CutPolygonMode.onSetup = function (opt) {
-  const options = xtend(getCutDefaultOptions(), opt);
+const defaultOptions = {
+  ...getCutDefaultOptions(),
+  bufferOptions: {
+    width: 0,
+    // steps: 1,
+    // unit: 'meters',
+    // type: 'flat', // flat: 平头，round: 圆头，
+  },
+};
 
-  if (options.bufferWidth > 0 && !options.bufferWidthUnit) {
+CutPolygonMode.onSetup = function (opt) {
+  const options = xtend(defaultOptions, opt);
+
+  if (options.bufferOptions.width > 0 && !options.bufferOptions.unit) {
     throw new Error('Please provide a valid bufferWidthUnit');
   }
 
@@ -136,9 +146,9 @@ CutPolygonMode.redo = function () {
 
 CutPolygonMode._cut = function (cuttingpolygon) {
   const { store, api } = this._ctx;
-  const { highlightColor, bufferWidth, bufferWidthUnit } = this._options;
-  if (bufferWidth) cuttingpolygon = turf.buffer(cuttingpolygon, bufferWidth, { units: bufferWidthUnit });
+  const { highlightColor, bufferOptions } = this._options;
   const undoStack = { geoJson: cuttingpolygon, collection: [], lines: [] };
+  if (bufferOptions.width) cuttingpolygon = turf.buffer(cuttingpolygon, bufferOptions.width, { units: bufferOptions.unit });
   this._features.forEach((feature) => {
     if (geojsonTypes.includes(feature.geometry.type)) {
       store.get(feature.id).measure.delete();

@@ -29,8 +29,8 @@ CutLineMode.onSetup = function (opt) {
   const options = xtend(getCutDefaultOptions(), opt);
   const { featureIds, highlightColor } = options;
 
-  if (options.lineWidth > 0 && !options.lineWidthUnit) {
-    throw new Error('Please provide a valid lineWidthUnit');
+  if (options.bufferOptions.width > 0 && !options.bufferOptions.unit) {
+    throw new Error('Please provide a valid bufferOptions.unit');
   }
 
   let features = [];
@@ -52,7 +52,9 @@ CutLineMode.onSetup = function (opt) {
 
 CutLineMode.clickOnVertex = function (state) {
   this.originClickOnVertex(state, () => {
-    this._cut(state);
+    const cuttingLineString = state.line.toGeoJSON();
+    cuttingLineString.geometry.coordinates[0].splice(state.currentVertexPosition, 1);
+    this._cut(cuttingLineString);
     if (this._options.continuous) {
       this._resetState();
     } else {
@@ -61,15 +63,17 @@ CutLineMode.clickOnVertex = function (state) {
   });
 };
 
-CutLineMode._cut = function (state) {
+CutLineMode._cut = function (cuttingLineString) {
   let splitter;
-  const cuttingLineString = state.line.toGeoJSON();
-  const { lineWidth, lineWidthUnit, highlightColor } = this._options;
+  const { bufferOptions, highlightColor } = this._options;
+  const { width: lineWidth, unit: lineWidthUnit } = bufferOptions;
   const { store, api } = this._ctx;
   const endCoord = cuttingLineString.geometry.coordinates[cuttingLineString.geometry.coordinates.length - 1];
   const startPoint = turf.point(cuttingLineString.geometry.coordinates[0]);
   const endPoint = turf.point(endCoord);
   const oneMeters = turf.convertLength(1, 'meters', lineWidthUnit);
+  const undoStack = { geoJson: cuttingLineString, collection: [], lines: [] };
+
   this._features.forEach((feature) => {
     if (turf.booleanDisjoint(feature, cuttingLineString)) {
       console.warn(`Line was outside of Polygon ${feature.id}`);
@@ -88,6 +92,7 @@ CutLineMode._cut = function (state) {
         cuted.features[0].id = feature.id;
         api.add(cuted, { silent: true }).forEach((id, i) => (cuted.features[i].id = id));
         this._continuous(() => this._batchHighlight(cuted.features, highlightColor));
+        undoStack.collection.push({ cuted });
       } else {
         if (!splitter) splitter = turf.polygonToLine(turf.buffer(cuttingLineString, lineWidth, { units: lineWidthUnit }));
         const intersecting = turf.featureCollection([]);
@@ -104,9 +109,11 @@ CutLineMode._cut = function (state) {
         if (cuted.features.length !== 0) {
           cuted.features[0].id = feature.id;
           api.add(cuted, { silent: true });
+          undoStack.collection.push({ cuted });
           this._continuous(() => this._batchHighlight(cuted.features, highlightColor));
         } else {
           api.delete(feature.id, { silent: true });
+          undoStack.collection.push({ cuted: turf.featureCollection([feature]) });
           this._continuous();
         }
       }
@@ -128,11 +135,15 @@ CutLineMode._cut = function (state) {
       this.addFeature(f);
       this._execMeasure(f);
       this._continuous(() => this._batchHighlight(newFeature.features, highlightColor));
+      undoStack.collection.push({ cuted: turf.featureCollection([f.toGeoJSON(), ...rest.map((v) => v.toGeoJSON())]) });
     } else {
       api.delete(feature.id, { silent: true });
       this._continuous();
+      undoStack.collection.push({ cuted: turf.featureCollection([feature]) });
     }
   });
+
+  this.redoUndo.setRedoUndoStack(({ undoStack: u }) => ({ undoStack: [...u, undoStack] }));
   store.setDirty();
 };
 
@@ -148,6 +159,44 @@ CutLineMode.onStop = function (state) {
     this.deleteFeature([state.line.id], { silent: true });
   });
   return { featureIds };
+};
+
+CutLineMode.undo = function () {
+  const { type, stack } = this.redoUndo.undo() || {};
+
+  if (type !== 'cut') return;
+  this.beforeRender(() => {
+    const state = this.getState();
+    const redoStack = { geoJson: stack.geoJson };
+    stack.collection.forEach((item) => {
+      // 将features合并为一个feature
+      const f = item.cuted.features.shift();
+      this._ctx.store.get(f.id).measure.delete();
+      const combine = turf.combine(item.cuted);
+      // 将两个feature合并为一个feature
+      const nuionFeature = this.newFeature(turf.union(f, combine.features[0]));
+      nuionFeature.id = f.id;
+      item.cuted.features.forEach((v) => this.deleteFeature(v.id));
+      this.addFeature(nuionFeature);
+      this._execMeasure(nuionFeature);
+      this._setHighlight(nuionFeature.id, this._options.highlightColor);
+    });
+
+    state.currentVertexPosition = stack.geoJson.geometry.coordinates.length - 1;
+    state.line.setCoordinates(stack.geoJson.geometry.coordinates);
+    this.redoUndo.setRedoUndoStack(({ redoStack: r }) => ({ redoStack: [...r, redoStack] }));
+    this._updateFeatures();
+  });
+};
+
+CutLineMode.redo = function () {
+  const res = this.redoUndo.redo() || {};
+  const { type, stack } = res;
+  if (type !== 'cut') return;
+  this.beforeRender(() => {
+    this._cut(stack.geoJson);
+    this._resetState();
+  });
 };
 
 CutLineMode._resetState = function () {

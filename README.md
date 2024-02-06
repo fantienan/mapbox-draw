@@ -97,6 +97,11 @@ import '@ttfn/mapbox-gl-draw/dist/mapbox-gl-draw.css';
 - bufferWidth: 分割线的宽度。
 - bufferWidthUnit: 分割线的宽度单位。
 
+### 缓冲
+
+- 线缓冲（单侧、双侧、平头、圆头）
+- 面缓冲（向内、向外、平头、圆头）
+
 ### 挖洞
 
 - 待开发

@@ -761,8 +761,10 @@ declare class MapboxDraw implements IControl {
       featureIds?: string[];
       highlightColor?: string;
       continuous?: boolean;
-      lineWidth?: number;
-      lineWidthUnit?: MapboxDraw.LineUnit;
+      bufferOptions: {
+        width?: number;
+        unit?: MapboxDraw.LineUnit;
+      };
     },
   ): this;
   changeMode(
@@ -771,8 +773,10 @@ declare class MapboxDraw implements IControl {
       featureIds?: string[];
       highlightColor?: string;
       continuous?: boolean;
-      bufferWidth?: number;
-      bufferWidthUnit?: MapboxDraw.AreaUnit;
+      bufferOptions: {
+        width?: number;
+        unit?: MapboxDraw.AreaUnit;
+      };
     },
   ): this;
   changeMode(mode: Exclude<MapboxDraw.DrawMode, 'direct_select' | 'simple_select' | 'draw_line_string' | 'cut_polygon'>): this;

@@ -2,10 +2,10 @@
   "version": 8,
   "glyphs": "https: //www.dilinyun.com/resources/tzdt/vec_style/glyphs/{fontstack}/{range}.pbf",
   "center": [
-    116.812,
-    40.314
+    117.42659100266576,
+    39.593661900850606
   ],
-  "zoom": 7.49,
+  "zoom": 16,
   "fog": {
     "range": [
       2,

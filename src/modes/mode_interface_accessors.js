@@ -286,4 +286,8 @@ ModeInterface.prototype.destroy = function () {
   this.redoUndo.destroy();
 };
 
+ModeInterface.prototype.render = function () {
+  this._ctx.store.render();
+};
+
 // extend end

@@ -25,8 +25,6 @@ export class RedoUndoCut {
     this.redoStack = [];
     const coord = e.data.e.lngLat.toArray();
     this.undoStack.push(coord);
-    if (this.undoStack.length === 1) this.undoStack.push(coord);
-
     this._fireChange({ type: 'add' });
   }
 
@@ -48,17 +46,18 @@ export class RedoUndoCut {
     const { undoStack, redoStack } = cb({ undoStack: this.undoStack, redoStack: this.redoStack });
     if (Array.isArray(undoStack)) this.undoStack = JSON.parse(JSON.stringify(undoStack));
     if (Array.isArray(redoStack)) this.redoStack = JSON.parse(JSON.stringify(redoStack));
-    console.log('setRedoUndoStack', this.undoStack, this.redoStack);
-
     this._fireChangeAndRender({ type: 'cut' });
   }
 
   undo(cb = () => {}) {
     let coord = null;
+
+    debugger;
     const state = this._modeInstance.getState();
     const pos = state.currentVertexPosition - 1;
     const position = Math.max(0, pos);
     const stack = this.undoStack.pop();
+
     if (Array.isArray(stack)) {
       if (state.line) {
         [coord] = state.line.removeCoordinate(`${position}`);
@@ -67,13 +66,11 @@ export class RedoUndoCut {
       }
 
       if (coord) {
-        if (state.currentVertexPosition === 0) return;
-        state.currentVertexPosition--;
+        if (state.currentVertexPosition !== 0) state.currentVertexPosition--;
         this.redoStack.push(coord);
         this._fireChangeAndRender({ type: 'undo', cb });
       }
     }
-
     return this._genStacks([stack])[0];
   }
 
@@ -88,9 +85,8 @@ export class RedoUndoCut {
           state.polygon.updateCoordinate(`0.${state.currentVertexPosition}`, coord[0], coord[1]);
         }
         state.polygon.addCoordinate(`0.${state.currentVertexPosition++}`, coord[0], coord[1]);
-        if (this.undoStack.length === 0) this.undoStack.push(coord);
-        this.undoStack.push(coord);
       }
+      this.undoStack.push(coord);
       this._fireChangeAndRender({ type: 'redo', cb });
     }
     return this._genStacks([coord])[0];
