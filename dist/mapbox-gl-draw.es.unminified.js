@@ -862,8 +862,6 @@ RedoUndoCut.prototype._drawAddPointEvent = function _drawAddPointEvent (e) {
   this.redoStack = [];
   var coord = e.data.e.lngLat.toArray();
   this.undoStack.push(coord);
-  if (this.undoStack.length === 1) { this.undoStack.push(coord); }
-
   this._fireChange({ type: 'add' });
 };
 
@@ -893,8 +891,6 @@ RedoUndoCut.prototype.setRedoUndoStack = function setRedoUndoStack (cb) {
     var redoStack = ref.redoStack;
   if (Array.isArray(undoStack)) { this.undoStack = JSON.parse(JSON.stringify(undoStack)); }
   if (Array.isArray(redoStack)) { this.redoStack = JSON.parse(JSON.stringify(redoStack)); }
-  console.log('setRedoUndoStack', this.undoStack, this.redoStack);
-
   this._fireChangeAndRender({ type: 'cut' });
 };
 
@@ -903,10 +899,13 @@ RedoUndoCut.prototype.undo = function undo (cb) {
 
     if ( cb === void 0 ) cb = function () {};
   var coord = null;
+
+  debugger;
   var state = this._modeInstance.getState();
   var pos = state.currentVertexPosition - 1;
   var position = Math.max(0, pos);
   var stack = this.undoStack.pop();
+
   if (Array.isArray(stack)) {
     if (state.line) {
       (assign = state.line.removeCoordinate(("" + position)), coord = assign[0]);
@@ -915,13 +914,11 @@ RedoUndoCut.prototype.undo = function undo (cb) {
     }
 
     if (coord) {
-      if (state.currentVertexPosition === 0) { return; }
-      state.currentVertexPosition--;
+      if (state.currentVertexPosition !== 0) { state.currentVertexPosition--; }
       this.redoStack.push(coord);
       this._fireChangeAndRender({ type: 'undo', cb: cb });
     }
   }
-
   return this._genStacks([stack])[0];
 };
 
@@ -938,9 +935,8 @@ RedoUndoCut.prototype.redo = function redo (cb) {
         state.polygon.updateCoordinate(("0." + (state.currentVertexPosition)), coord[0], coord[1]);
       }
       state.polygon.addCoordinate(("0." + (state.currentVertexPosition++)), coord[0], coord[1]);
-      if (this.undoStack.length === 0) { this.undoStack.push(coord); }
-      this.undoStack.push(coord);
     }
+    this.undoStack.push(coord);
     this._fireChangeAndRender({ type: 'redo', cb: cb });
   }
   return this._genStacks([coord])[0];
@@ -1989,6 +1985,10 @@ ModeInterface.prototype.setMeasureOptions = function (options) {
 
 ModeInterface.prototype.destroy = function () {
   this.redoUndo.destroy();
+};
+
+ModeInterface.prototype.render = function () {
+  this._ctx.store.render();
 };
 
 // extend end
@@ -3396,7 +3396,7 @@ function ui (ctx) {
               return prev;
             }, '');
             okBtn.addEventListener('click', function () {
-              resolve({ lineWidth: +(input.value || 0), lineWidthUnit: select.value });
+              resolve({ bufferOptions: { width: +(input.value || 0), unit: select.value } });
               removeLinePopover();
             });
             cancelBtn.addEventListener('click', function () {
@@ -3466,13 +3466,13 @@ function ui (ctx) {
               return prev;
             }, '');
             okBtn.addEventListener('click', function () {
-              var res;
+              var bufferOptions;
               if (select.value === 'mu') {
-                res = { bufferWidthUnit: 'meters', bufferWidth: (input.value || 0) * 666.666666667 };
+                bufferOptions = { unit: 'meters', width: (input.value || 0) * 666.666666667 };
               } else {
-                res = { bufferWidth: +(input.value || 0), bufferWidthUnit: select.value };
+                bufferOptions = { width: +(input.value || 0), unit: select.value };
               }
-              resolve(res);
+              resolve({ bufferOptions: bufferOptions });
               removePolygonPopover();
             });
             cancelBtn.addEventListener('click', function () {
@@ -3484,12 +3484,10 @@ function ui (ctx) {
             cancelBtn.textContent = 'cancel';
             input.value = '1';
             input.type = 'number';
-            input.min = 0;
             select.value = 'meters';
             popover.className = classes.CONTROL_POPOVER;
             popover.style.top = (12 * 29) + "px";
             popover.style.left = '-347px';
-
             popover.appendChild(title);
             popover.appendChild(input);
             popover.appendChild(title1);
@@ -6412,7 +6410,14 @@ var lineTypes = [geojsonTypes$1.LINE_STRING, geojsonTypes$1.MULTI_LINE_STRING];
 
 var geojsonTypes = polyTypes.concat( lineTypes);
 
-var getCutDefaultOptions = function () { return ({ featureIds: [], highlightColor: '#73d13d', continuous: true }); };
+var getCutDefaultOptions = function () { return ({
+  featureIds: [],
+  highlightColor: '#73d13d',
+  continuous: true,
+  bufferOptions: {
+    width: 0,
+  },
+}); };
 
 var highlightFieldName = 'wait-cut';
 
@@ -6496,12 +6501,20 @@ var CutPolygonMode = Object.assign({}, {originOnSetup: originOnSetup$1,
   restOriginMethods$1,
   Cut);
 
+var defaultOptions$1 = Object.assign({}, getCutDefaultOptions(),
+  {bufferOptions: {
+    width: 0,
+    // steps: 1,
+    // unit: 'meters',
+    // type: 'flat', // flat: 平头，round: 圆头，
+  }});
+
 CutPolygonMode.onSetup = function (opt) {
   var this$1$1 = this;
 
-  var options = xtend(getCutDefaultOptions(), opt);
+  var options = xtend(defaultOptions$1, opt);
 
-  if (options.bufferWidth > 0 && !options.bufferWidthUnit) {
+  if (options.bufferOptions.width > 0 && !options.bufferOptions.unit) {
     throw new Error('Please provide a valid bufferWidthUnit');
   }
 
@@ -6637,10 +6650,9 @@ CutPolygonMode._cut = function (cuttingpolygon) {
   var api = ref.api;
   var ref$1 = this._options;
   var highlightColor = ref$1.highlightColor;
-  var bufferWidth = ref$1.bufferWidth;
-  var bufferWidthUnit = ref$1.bufferWidthUnit;
-  if (bufferWidth) { cuttingpolygon = turf.buffer(cuttingpolygon, bufferWidth, { units: bufferWidthUnit }); }
+  var bufferOptions = ref$1.bufferOptions;
   var undoStack = { geoJson: cuttingpolygon, collection: [], lines: [] };
+  if (bufferOptions.width) { cuttingpolygon = turf.buffer(cuttingpolygon, bufferOptions.width, { units: bufferOptions.unit }); }
   this._features.forEach(function (feature) {
     if (geojsonTypes.includes(feature.geometry.type)) {
       store.get(feature.id).measure.delete();
@@ -8192,8 +8204,8 @@ CutLineMode.onSetup = function (opt) {
   var featureIds = options.featureIds;
   var highlightColor = options.highlightColor;
 
-  if (options.lineWidth > 0 && !options.lineWidthUnit) {
-    throw new Error('Please provide a valid lineWidthUnit');
+  if (options.bufferOptions.width > 0 && !options.bufferOptions.unit) {
+    throw new Error('Please provide a valid bufferOptions.unit');
   }
 
   var features = [];
@@ -8217,7 +8229,9 @@ CutLineMode.clickOnVertex = function (state) {
   var this$1$1 = this;
 
   this.originClickOnVertex(state, function () {
-    this$1$1._cut(state);
+    var cuttingLineString = state.line.toGeoJSON();
+    cuttingLineString.geometry.coordinates[0].splice(state.currentVertexPosition, 1);
+    this$1$1._cut(cuttingLineString);
     if (this$1$1._options.continuous) {
       this$1$1._resetState();
     } else {
@@ -8226,15 +8240,15 @@ CutLineMode.clickOnVertex = function (state) {
   });
 };
 
-CutLineMode._cut = function (state) {
+CutLineMode._cut = function (cuttingLineString) {
   var this$1$1 = this;
 
   var splitter;
-  var cuttingLineString = state.line.toGeoJSON();
   var ref = this._options;
-  var lineWidth = ref.lineWidth;
-  var lineWidthUnit = ref.lineWidthUnit;
+  var bufferOptions = ref.bufferOptions;
   var highlightColor = ref.highlightColor;
+  var lineWidth = bufferOptions.width;
+  var lineWidthUnit = bufferOptions.unit;
   var ref$1 = this._ctx;
   var store = ref$1.store;
   var api = ref$1.api;
@@ -8242,6 +8256,8 @@ CutLineMode._cut = function (state) {
   var startPoint = turf.point(cuttingLineString.geometry.coordinates[0]);
   var endPoint = turf.point(endCoord);
   var oneMeters = turf.convertLength(1, 'meters', lineWidthUnit);
+  var undoStack = { geoJson: cuttingLineString, collection: [], lines: [] };
+
   this._features.forEach(function (feature) {
     if (turf.booleanDisjoint(feature, cuttingLineString)) {
       console.warn(("Line was outside of Polygon " + (feature.id)));
@@ -8260,6 +8276,7 @@ CutLineMode._cut = function (state) {
         cuted.features[0].id = feature.id;
         api.add(cuted, { silent: true }).forEach(function (id, i) { return (cuted.features[i].id = id); });
         this$1$1._continuous(function () { return this$1$1._batchHighlight(cuted.features, highlightColor); });
+        undoStack.collection.push({ cuted: cuted });
       } else {
         if (!splitter) { splitter = turf.polygonToLine(turf.buffer(cuttingLineString, lineWidth, { units: lineWidthUnit })); }
         var intersecting = turf.featureCollection([]);
@@ -8278,9 +8295,11 @@ CutLineMode._cut = function (state) {
         if (cuted$1.features.length !== 0) {
           cuted$1.features[0].id = feature.id;
           api.add(cuted$1, { silent: true });
+          undoStack.collection.push({ cuted: cuted$1 });
           this$1$1._continuous(function () { return this$1$1._batchHighlight(cuted$1.features, highlightColor); });
         } else {
           api.delete(feature.id, { silent: true });
+          undoStack.collection.push({ cuted: turf.featureCollection([feature]) });
           this$1$1._continuous();
         }
       }
@@ -8304,10 +8323,18 @@ CutLineMode._cut = function (state) {
       this$1$1.addFeature(f);
       this$1$1._execMeasure(f);
       this$1$1._continuous(function () { return this$1$1._batchHighlight(newFeature.features, highlightColor); });
+      undoStack.collection.push({ cuted: turf.featureCollection([f.toGeoJSON() ].concat( rest.map(function (v) { return v.toGeoJSON(); }))) });
     } else {
       api.delete(feature.id, { silent: true });
       this$1$1._continuous();
+      undoStack.collection.push({ cuted: turf.featureCollection([feature]) });
     }
+  });
+
+  this.redoUndo.setRedoUndoStack(function (ref) {
+    var u = ref.undoStack;
+
+    return ({ undoStack: u.concat( [undoStack]) });
   });
   store.setDirty();
 };
@@ -8326,6 +8353,55 @@ CutLineMode.onStop = function (state) {
     this$1$1.deleteFeature([state.line.id], { silent: true });
   });
   return { featureIds: featureIds };
+};
+
+CutLineMode.undo = function () {
+  var this$1$1 = this;
+
+  var ref = this.redoUndo.undo() || {};
+  var type = ref.type;
+  var stack = ref.stack;
+
+  if (type !== 'cut') { return; }
+  this.beforeRender(function () {
+    var state = this$1$1.getState();
+    var redoStack = { geoJson: stack.geoJson };
+    stack.collection.forEach(function (item) {
+      // 将features合并为一个feature
+      var f = item.cuted.features.shift();
+      this$1$1._ctx.store.get(f.id).measure.delete();
+      var combine = turf.combine(item.cuted);
+      // 将两个feature合并为一个feature
+      var nuionFeature = this$1$1.newFeature(turf.union(f, combine.features[0]));
+      nuionFeature.id = f.id;
+      item.cuted.features.forEach(function (v) { return this$1$1.deleteFeature(v.id); });
+      this$1$1.addFeature(nuionFeature);
+      this$1$1._execMeasure(nuionFeature);
+      this$1$1._setHighlight(nuionFeature.id, this$1$1._options.highlightColor);
+    });
+
+    state.currentVertexPosition = stack.geoJson.geometry.coordinates.length - 1;
+    state.line.setCoordinates(stack.geoJson.geometry.coordinates);
+    this$1$1.redoUndo.setRedoUndoStack(function (ref) {
+      var r = ref.redoStack;
+
+      return ({ redoStack: r.concat( [redoStack]) });
+    });
+    this$1$1._updateFeatures();
+  });
+};
+
+CutLineMode.redo = function () {
+  var this$1$1 = this;
+
+  var res = this.redoUndo.redo() || {};
+  var type = res.type;
+  var stack = res.stack;
+  if (type !== 'cut') { return; }
+  this.beforeRender(function () {
+    this$1$1._cut(stack.geoJson);
+    this$1$1._resetState();
+  });
 };
 
 CutLineMode._resetState = function () {

@@ -99,11 +99,12 @@ CutPolygonMode.clickOnVertex = function (state) {
 CutPolygonMode.undo = function () {
   const { type, stack } = this.redoUndo.undo() || {};
   if (type !== 'cut') return;
+  const { store } = this._ctx;
 
   this.beforeRender(() => {
     const state = this.getState();
     const redoStack = { geoJson: stack.geoJson };
-    stack.collection.forEach((item) => {
+    stack.polygons.forEach((item) => {
       // 将features合并为一个feature
       const combine = turf.combine(item.difference);
       // 将两个feature合并为一个feature
@@ -111,21 +112,13 @@ CutPolygonMode.undo = function () {
       const nuionFeature = this.newFeature(nuion);
       const [f, ...rest] = item.difference.features;
       nuionFeature.id = f.id;
-      item.difference.features.forEach((f) => this._ctx.store.get(f.id).measure.delete());
+      item.difference.features.forEach((f) => store.get(f.id).measure.delete());
       rest.forEach((v) => this.deleteFeature(v.id));
       this.addFeature(nuionFeature);
       this._execMeasure(nuionFeature);
       this._setHighlight(nuionFeature.id, this._options.highlightColor);
     });
-    stack.lines.forEach(({ cuted, line }) => {
-      const [f] = cuted.features;
-      const lineFeature = this.newFeature(line);
-      cuted.features.forEach((v) => this.deleteFeature(v.id));
-      lineFeature.id = f.id;
-      this.addFeature(lineFeature);
-      this._execMeasure(lineFeature);
-      this._setHighlight(lineFeature.id, this._options.highlightColor);
-    });
+    this._undoByLines(stack);
 
     state.currentVertexPosition = stack.geoJson.geometry.coordinates[0].length - 1;
     state.polygon.setCoordinates(stack.geoJson.geometry.coordinates);
@@ -147,14 +140,16 @@ CutPolygonMode.redo = function () {
 CutPolygonMode._cut = function (cuttingpolygon) {
   const { store, api } = this._ctx;
   const { highlightColor, bufferOptions } = this._options;
-  const undoStack = { geoJson: cuttingpolygon, collection: [], lines: [] };
+  const undoStack = { geoJson: cuttingpolygon, polygons: [], lines: [] };
   if (bufferOptions.width) cuttingpolygon = turf.buffer(cuttingpolygon, bufferOptions.width, { units: bufferOptions.unit });
+
   this._features.forEach((feature) => {
     if (geojsonTypes.includes(feature.geometry.type)) {
       store.get(feature.id).measure.delete();
       if (lineTypes.includes(feature.geometry.type)) {
         const splitter = turf.polygonToLine(cuttingpolygon);
         const cuted = turf.lineSplit(feature, splitter);
+        // cuted.features = cuted.features.filter((f) => turf.booleanWithin(f, narrow));
         undoStack.lines.push({ cuted, line: feature });
         cuted.features.sort((a, b) => turf.length(a) - turf.length(b));
         cuted.features[0].id = feature.id;
@@ -183,7 +178,7 @@ CutPolygonMode._cut = function (cuttingpolygon) {
         this._continuous(() => this._setHighlight(newFeature.id, highlightColor));
         if (item.intersect) item.difference = turf.featureCollection([newFeature.toGeoJSON()]);
       }
-      if (item.intersect && item.difference) undoStack.collection.push(item);
+      if (item.intersect && item.difference) undoStack.polygons.push(item);
     } else {
       console.info('The feature is not Polygon/MultiPolygon!');
     }

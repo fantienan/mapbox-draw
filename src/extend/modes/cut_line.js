@@ -65,14 +65,14 @@ CutLineMode.clickOnVertex = function (state) {
 
 CutLineMode._cut = function (cuttingLineString) {
   let splitter;
+  let buffered;
   const { bufferOptions, highlightColor } = this._options;
   const { width: lineWidth, unit: lineWidthUnit } = bufferOptions;
   const { store, api } = this._ctx;
   const endCoord = cuttingLineString.geometry.coordinates[cuttingLineString.geometry.coordinates.length - 1];
   const startPoint = turf.point(cuttingLineString.geometry.coordinates[0]);
   const endPoint = turf.point(endCoord);
-  const oneMeters = turf.convertLength(1, 'meters', lineWidthUnit);
-  const undoStack = { geoJson: cuttingLineString, collection: [], lines: [] };
+  const undoStack = { geoJson: cuttingLineString, polygons: [], lines: [] };
 
   this._features.forEach((feature) => {
     if (turf.booleanDisjoint(feature, cuttingLineString)) {
@@ -92,28 +92,33 @@ CutLineMode._cut = function (cuttingLineString) {
         cuted.features[0].id = feature.id;
         api.add(cuted, { silent: true }).forEach((id, i) => (cuted.features[i].id = id));
         this._continuous(() => this._batchHighlight(cuted.features, highlightColor));
-        undoStack.collection.push({ cuted });
+        undoStack.lines.push({ cuted, line: feature });
       } else {
-        if (!splitter) splitter = turf.polygonToLine(turf.buffer(cuttingLineString, lineWidth, { units: lineWidthUnit }));
-        const intersecting = turf.featureCollection([]);
+        if (!splitter) {
+          buffered = turf.buffer(cuttingLineString, lineWidth, { units: lineWidthUnit });
+          splitter = turf.polygonToLine(buffered);
+        }
         let cuted = turf.lineSplit(feature, splitter);
+        // cuted.features = cuted.features.reduce((prev, curr) => {
+        //   if (!turf.booleanWithin(curr, buffered)) prev.push({ ...curr, id: hat() });
+        //   return prev;
+        // }, []);
+        const intersecting = turf.featureCollection([]);
         cuted.features.forEach((v) => (v.id = hat()));
         const intersectPoints = turf.lineIntersect(feature, cuttingLineString);
         intersectPoints.features.forEach((p) => {
-          const buffered = turf.buffer(p, oneMeters / 10, { units: 'meters' });
-          const filtered = cuted.features.filter((f) => !turf.booleanDisjoint(buffered, f));
-          intersecting.features.push(...filtered);
+          const buffered = turf.buffer(p, 0.1, { units: 'meters' });
+          cuted.features = cuted.features.filter((f) => turf.booleanDisjoint(buffered, f));
         });
-        cuted.features = cuted.features.filter((v) => !intersecting.features.some((f) => f.id === v.id));
         cuted.features.sort((a, b) => turf.length(a) - turf.length(b));
         if (cuted.features.length !== 0) {
           cuted.features[0].id = feature.id;
           api.add(cuted, { silent: true });
-          undoStack.collection.push({ cuted });
+          undoStack.lines.push({ cuted, line: feature });
           this._continuous(() => this._batchHighlight(cuted.features, highlightColor));
         } else {
           api.delete(feature.id, { silent: true });
-          undoStack.collection.push({ cuted: turf.featureCollection([feature]) });
+          undoStack.lines.push({ cuted: turf.featureCollection([feature]), line: feature });
           this._continuous();
         }
       }
@@ -121,10 +126,12 @@ CutLineMode._cut = function (cuttingLineString) {
     }
 
     let afterCut;
+    const item = {};
     if (!lineWidth) {
       afterCut = polygonSplitter(feature.geometry, cuttingLineString.geometry);
     } else {
       const buffered = turf.buffer(cuttingLineString, lineWidth, { units: lineWidthUnit });
+      item.intersect = turf.intersect(feature, buffered);
       afterCut = turf.difference(feature.geometry, buffered);
     }
     if (afterCut) {
@@ -135,11 +142,15 @@ CutLineMode._cut = function (cuttingLineString) {
       this.addFeature(f);
       this._execMeasure(f);
       this._continuous(() => this._batchHighlight(newFeature.features, highlightColor));
-      undoStack.collection.push({ cuted: turf.featureCollection([f.toGeoJSON(), ...rest.map((v) => v.toGeoJSON())]) });
+      item.cuted = turf.featureCollection([f.toGeoJSON(), ...rest.map((v) => v.toGeoJSON())]);
     } else {
       api.delete(feature.id, { silent: true });
       this._continuous();
-      undoStack.collection.push({ cuted: turf.featureCollection([feature]) });
+      item.cuted = turf.featureCollection([feature]);
+    }
+    if (item.cuted) {
+      if (item.intersect) item.intersect = turf.featureCollection([item.intersect]);
+      undoStack.polygons.push(item);
     }
   });
 
@@ -165,13 +176,15 @@ CutLineMode.undo = function () {
   const { type, stack } = this.redoUndo.undo() || {};
 
   if (type !== 'cut') return;
+  const { store } = this._ctx;
   this.beforeRender(() => {
     const state = this.getState();
     const redoStack = { geoJson: stack.geoJson };
-    stack.collection.forEach((item) => {
+    stack.polygons.forEach((item) => {
+      if (item.intersect) item.cuted.features.push(...item.intersect.features);
       // 将features合并为一个feature
       const f = item.cuted.features.shift();
-      this._ctx.store.get(f.id).measure.delete();
+      store.get(f.id).measure.delete();
       const combine = turf.combine(item.cuted);
       // 将两个feature合并为一个feature
       const nuionFeature = this.newFeature(turf.union(f, combine.features[0]));
@@ -181,6 +194,7 @@ CutLineMode.undo = function () {
       this._execMeasure(nuionFeature);
       this._setHighlight(nuionFeature.id, this._options.highlightColor);
     });
+    this._undoByLines(stack);
 
     state.currentVertexPosition = stack.geoJson.geometry.coordinates.length - 1;
     state.line.setCoordinates(stack.geoJson.geometry.coordinates);

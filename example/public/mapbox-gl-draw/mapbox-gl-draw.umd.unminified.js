@@ -968,7 +968,6 @@ RedoUndoCut.prototype.redo = function redo (cb) {
         state.polygon.updateCoordinate(("0." + (state.currentVertexPosition)), coord[0], coord[1]);
       }
       state.polygon.addCoordinate(("0." + (state.currentVertexPosition++)), coord[0], coord[1]);
-      // if (this.undoStack.length === 0) this.undoStack.push(coord);
     }
     this.undoStack.push(coord);
     this._fireChangeAndRender({ type: 'redo', cb: cb });
@@ -6984,6 +6983,26 @@ Cut._batchHighlight = function (features, color) {
   if (features.length) { features.forEach(function (feature) { return this$1$1._setHighlight(feature.id, color); }); }
 };
 
+Cut._undoByLines = function (stack) {
+  var this$1$1 = this;
+
+  stack.lines.forEach(function (ref) {
+    var cuted = ref.cuted;
+    var line = ref.line;
+
+    var ref$1 = cuted.features;
+    var f = ref$1[0];
+    var rest = ref$1.slice(1);
+    var lineFeature = this$1$1.newFeature(line);
+    rest.forEach(function (v) { return this$1$1.deleteFeature(v.id); });
+    this$1$1._ctx.store.get(f.id).measure.delete();
+    lineFeature.id = f.id;
+    this$1$1.addFeature(lineFeature);
+    this$1$1._execMeasure(lineFeature);
+    this$1$1._setHighlight(lineFeature.id, this$1$1._options.highlightColor);
+  });
+};
+
 Cut.getWaitCutFeatures = function () {
   return JSON.parse(JSON.stringify(this._features));
 };
@@ -7101,11 +7120,13 @@ CutPolygonMode.undo = function () {
   var type = ref.type;
   var stack = ref.stack;
   if (type !== 'cut') { return; }
+  var ref$1 = this._ctx;
+  var store = ref$1.store;
 
   this.beforeRender(function () {
     var state = this$1$1.getState();
     var redoStack = { geoJson: stack.geoJson };
-    stack.collection.forEach(function (item) {
+    stack.polygons.forEach(function (item) {
       // 将features合并为一个feature
       var combine = turf__namespace.combine(item.difference);
       // 将两个feature合并为一个feature
@@ -7115,25 +7136,13 @@ CutPolygonMode.undo = function () {
       var f = ref[0];
       var rest = ref.slice(1);
       nuionFeature.id = f.id;
-      item.difference.features.forEach(function (f) { return this$1$1._ctx.store.get(f.id).measure.delete(); });
+      item.difference.features.forEach(function (f) { return store.get(f.id).measure.delete(); });
       rest.forEach(function (v) { return this$1$1.deleteFeature(v.id); });
       this$1$1.addFeature(nuionFeature);
       this$1$1._execMeasure(nuionFeature);
       this$1$1._setHighlight(nuionFeature.id, this$1$1._options.highlightColor);
     });
-    stack.lines.forEach(function (ref) {
-      var cuted = ref.cuted;
-      var line = ref.line;
-
-      var ref$1 = cuted.features;
-      var f = ref$1[0];
-      var lineFeature = this$1$1.newFeature(line);
-      cuted.features.forEach(function (v) { return this$1$1.deleteFeature(v.id); });
-      lineFeature.id = f.id;
-      this$1$1.addFeature(lineFeature);
-      this$1$1._execMeasure(lineFeature);
-      this$1$1._setHighlight(lineFeature.id, this$1$1._options.highlightColor);
-    });
+    this$1$1._undoByLines(stack);
 
     state.currentVertexPosition = stack.geoJson.geometry.coordinates[0].length - 1;
     state.polygon.setCoordinates(stack.geoJson.geometry.coordinates);
@@ -7168,14 +7177,17 @@ CutPolygonMode._cut = function (cuttingpolygon) {
   var ref$1 = this._options;
   var highlightColor = ref$1.highlightColor;
   var bufferOptions = ref$1.bufferOptions;
-  var undoStack = { geoJson: cuttingpolygon, collection: [], lines: [] };
+  var undoStack = { geoJson: cuttingpolygon, polygons: [], lines: [] };
   if (bufferOptions.width) { cuttingpolygon = turf__namespace.buffer(cuttingpolygon, bufferOptions.width, { units: bufferOptions.unit }); }
+  var narrow = turf__namespace.transformScale(cuttingpolygon, 0.01);
+
   this._features.forEach(function (feature) {
     if (geojsonTypes.includes(feature.geometry.type)) {
       store.get(feature.id).measure.delete();
       if (lineTypes.includes(feature.geometry.type)) {
         var splitter = turf__namespace.polygonToLine(cuttingpolygon);
         var cuted = turf__namespace.lineSplit(feature, splitter);
+        cuted.features = cuted.features.filter(function (f) { return turf__namespace.booleanWithin(f, narrow); });
         undoStack.lines.push({ cuted: cuted, line: feature });
         cuted.features.sort(function (a, b) { return turf__namespace.length(a) - turf__namespace.length(b); });
         cuted.features[0].id = feature.id;
@@ -7206,7 +7218,7 @@ CutPolygonMode._cut = function (cuttingpolygon) {
         this$1$1._continuous(function () { return this$1$1._setHighlight(newFeature.id, highlightColor); });
         if (item.intersect) { item.difference = turf__namespace.featureCollection([newFeature.toGeoJSON()]); }
       }
-      if (item.intersect && item.difference) { undoStack.collection.push(item); }
+      if (item.intersect && item.difference) { undoStack.polygons.push(item); }
     } else {
       console.info('The feature is not Polygon/MultiPolygon!');
     }
@@ -12861,6 +12873,7 @@ CutLineMode._cut = function (cuttingLineString) {
   var this$1$1 = this;
 
   var splitter;
+  var buffered;
   var ref = this._options;
   var bufferOptions = ref.bufferOptions;
   var highlightColor = ref.highlightColor;
@@ -12872,8 +12885,7 @@ CutLineMode._cut = function (cuttingLineString) {
   var endCoord = cuttingLineString.geometry.coordinates[cuttingLineString.geometry.coordinates.length - 1];
   var startPoint = turf__namespace.point(cuttingLineString.geometry.coordinates[0]);
   var endPoint = turf__namespace.point(endCoord);
-  var oneMeters = turf__namespace.convertLength(1, 'meters', lineWidthUnit);
-  var undoStack = { geoJson: cuttingLineString, collection: [], lines: [] };
+  var undoStack = { geoJson: cuttingLineString, polygons: [], lines: [] };
 
   this._features.forEach(function (feature) {
     if (turf__namespace.booleanDisjoint(feature, cuttingLineString)) {
@@ -12893,30 +12905,33 @@ CutLineMode._cut = function (cuttingLineString) {
         cuted.features[0].id = feature.id;
         api.add(cuted, { silent: true }).forEach(function (id, i) { return (cuted.features[i].id = id); });
         this$1$1._continuous(function () { return this$1$1._batchHighlight(cuted.features, highlightColor); });
-        undoStack.collection.push({ cuted: cuted });
+        undoStack.lines.push({ cuted: cuted, line: feature });
       } else {
-        if (!splitter) { splitter = turf__namespace.polygonToLine(turf__namespace.buffer(cuttingLineString, lineWidth, { units: lineWidthUnit })); }
-        var intersecting = turf__namespace.featureCollection([]);
+        if (!splitter) {
+          buffered = turf__namespace.buffer(cuttingLineString, lineWidth, { units: lineWidthUnit });
+          splitter = turf__namespace.polygonToLine(buffered);
+        }
         var cuted$1 = turf__namespace.lineSplit(feature, splitter);
+        // cuted.features = cuted.features.reduce((prev, curr) => {
+        //   if (!turf.booleanWithin(curr, buffered)) prev.push({ ...curr, id: hat() });
+        //   return prev;
+        // }, []);
+        var intersecting = turf__namespace.featureCollection([]);
         cuted$1.features.forEach(function (v) { return (v.id = hat$1()); });
         var intersectPoints = turf__namespace.lineIntersect(feature, cuttingLineString);
         intersectPoints.features.forEach(function (p) {
-          var ref;
-
-          var buffered = turf__namespace.buffer(p, oneMeters / 10, { units: 'meters' });
-          var filtered = cuted$1.features.filter(function (f) { return !turf__namespace.booleanDisjoint(buffered, f); });
-          (ref = intersecting.features).push.apply(ref, filtered);
+          var buffered = turf__namespace.buffer(p, 0.1, { units: 'meters' });
+          cuted$1.features = cuted$1.features.filter(function (f) { return turf__namespace.booleanDisjoint(buffered, f); });
         });
-        cuted$1.features = cuted$1.features.filter(function (v) { return !intersecting.features.some(function (f) { return f.id === v.id; }); });
         cuted$1.features.sort(function (a, b) { return turf__namespace.length(a) - turf__namespace.length(b); });
         if (cuted$1.features.length !== 0) {
           cuted$1.features[0].id = feature.id;
           api.add(cuted$1, { silent: true });
-          undoStack.collection.push({ cuted: cuted$1 });
+          undoStack.lines.push({ cuted: cuted$1, line: feature });
           this$1$1._continuous(function () { return this$1$1._batchHighlight(cuted$1.features, highlightColor); });
         } else {
           api.delete(feature.id, { silent: true });
-          undoStack.collection.push({ cuted: turf__namespace.featureCollection([feature]) });
+          undoStack.lines.push({ cuted: turf__namespace.featureCollection([feature]), line: feature });
           this$1$1._continuous();
         }
       }
@@ -12924,11 +12939,13 @@ CutLineMode._cut = function (cuttingLineString) {
     }
 
     var afterCut;
+    var item = {};
     if (!lineWidth) {
       afterCut = index(feature.geometry, cuttingLineString.geometry);
     } else {
-      var buffered = turf__namespace.buffer(cuttingLineString, lineWidth, { units: lineWidthUnit });
-      afterCut = turf__namespace.difference(feature.geometry, buffered);
+      var buffered$1 = turf__namespace.buffer(cuttingLineString, lineWidth, { units: lineWidthUnit });
+      item.intersect = turf__namespace.intersect(feature, buffered$1);
+      afterCut = turf__namespace.difference(feature.geometry, buffered$1);
     }
     if (afterCut) {
       var newFeature = this$1$1.newFeature(afterCut);
@@ -12940,11 +12957,15 @@ CutLineMode._cut = function (cuttingLineString) {
       this$1$1.addFeature(f);
       this$1$1._execMeasure(f);
       this$1$1._continuous(function () { return this$1$1._batchHighlight(newFeature.features, highlightColor); });
-      undoStack.collection.push({ cuted: turf__namespace.featureCollection([f.toGeoJSON() ].concat( rest.map(function (v) { return v.toGeoJSON(); }))) });
+      item.cuted = turf__namespace.featureCollection([f.toGeoJSON() ].concat( rest.map(function (v) { return v.toGeoJSON(); })));
     } else {
       api.delete(feature.id, { silent: true });
       this$1$1._continuous();
-      undoStack.collection.push({ cuted: turf__namespace.featureCollection([feature]) });
+      item.cuted = turf__namespace.featureCollection([feature]);
+    }
+    if (item.cuted) {
+      if (item.intersect) { item.intersect = turf__namespace.featureCollection([item.intersect]); }
+      undoStack.polygons.push(item);
     }
   });
 
@@ -12980,13 +13001,18 @@ CutLineMode.undo = function () {
   var stack = ref.stack;
 
   if (type !== 'cut') { return; }
+  var ref$1 = this._ctx;
+  var store = ref$1.store;
   this.beforeRender(function () {
     var state = this$1$1.getState();
     var redoStack = { geoJson: stack.geoJson };
-    stack.collection.forEach(function (item) {
+    stack.polygons.forEach(function (item) {
+      var ref;
+
+      if (item.intersect) { (ref = item.cuted.features).push.apply(ref, item.intersect.features); }
       // 将features合并为一个feature
       var f = item.cuted.features.shift();
-      this$1$1._ctx.store.get(f.id).measure.delete();
+      store.get(f.id).measure.delete();
       var combine = turf__namespace.combine(item.cuted);
       // 将两个feature合并为一个feature
       var nuionFeature = this$1$1.newFeature(turf__namespace.union(f, combine.features[0]));
@@ -12996,6 +13022,7 @@ CutLineMode.undo = function () {
       this$1$1._execMeasure(nuionFeature);
       this$1$1._setHighlight(nuionFeature.id, this$1$1._options.highlightColor);
     });
+    this$1$1._undoByLines(stack);
 
     state.currentVertexPosition = stack.geoJson.geometry.coordinates.length - 1;
     state.line.setCoordinates(stack.geoJson.geometry.coordinates);

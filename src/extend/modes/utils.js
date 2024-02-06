@@ -62,6 +62,19 @@ Cut._batchHighlight = function (features, color) {
   if (features.length) features.forEach((feature) => this._setHighlight(feature.id, color));
 };
 
+Cut._undoByLines = function (stack) {
+  stack.lines.forEach(({ cuted, line }) => {
+    const [f, ...rest] = cuted.features;
+    const lineFeature = this.newFeature(line);
+    rest.forEach((v) => this.deleteFeature(v.id));
+    this._ctx.store.get(f.id).measure.delete();
+    lineFeature.id = f.id;
+    this.addFeature(lineFeature);
+    this._execMeasure(lineFeature);
+    this._setHighlight(lineFeature.id, this._options.highlightColor);
+  });
+};
+
 Cut.getWaitCutFeatures = function () {
   return JSON.parse(JSON.stringify(this._features));
 };
