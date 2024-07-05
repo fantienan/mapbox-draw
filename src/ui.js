@@ -165,7 +165,7 @@ export default function (ctx) {
   function addButtons() {
     const controls = ctx.options.controls;
     const controlGroup = document.createElement('div');
-    controlGroup.className = `${Constants.classes.CONTROL_GROUP} ${Constants.classes.CONTROL_BASE}`;
+    controlGroup.className = `${Constants.classes.CONTROL} ${Constants.classes.CONTROL_GROUP} ${Constants.classes.CONTROL_BASE}`;
 
     if (!controls) return controlGroup;
 

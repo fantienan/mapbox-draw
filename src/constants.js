@@ -22,6 +22,7 @@ export const classes = {
   CONTROL_BUTTON_CUT_LINE: 'mapbox-gl-draw_cut-line',
   CONTROL_BUTTON_CUT_POLYGON: 'mapbox-gl-draw_cut-polygon',
   CONTROL_POPOVER: 'mapbox-gl-draw-popover',
+  CONTROL: 'mapbox-gl-draw-ctrl',
   /** extend end */
 };
 

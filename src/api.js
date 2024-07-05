@@ -266,6 +266,9 @@ export default function (ctx, api) {
     ctx.events.setMeasureOptions(options);
     return api;
   };
+  api.getCtx = function () {
+    return ctx;
+  };
   // extend end
   return api;
 }
