@@ -8,6 +8,7 @@ import { installRedoUndo } from '../extend';
 
 export default function ModeInterface(ctx) {
   this.map = ctx.map;
+  delete ctx.options.map;
   this.drawConfig = JSON.parse(JSON.stringify(ctx.options || {}));
   this._ctx = ctx;
   // extend start

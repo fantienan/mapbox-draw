@@ -398,6 +398,7 @@ declare namespace MapboxDraw {
       MEASURE_MARKER: 'mapbox-gl-draw-measure';
       CONTROL_BUTTON_LINE_CUT: 'line_cut';
       CONTROL_BUTTON_POLYGON_CUT: 'polygon_cut';
+      CONTROL: 'mapbox-gl-draw-ctrl';
       /** extend end */
     };
 

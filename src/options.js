@@ -49,10 +49,10 @@ const hideControls = {
   /** extend start */
   undo: false,
   redo: false,
-  cancel: true,
-  draw_center: true,
-  cut_line: true,
-  cut_polygon: true,
+  cancel: false,
+  draw_center: false,
+  cut_line: false,
+  cut_polygon: false,
   /** extend end */
 };
 

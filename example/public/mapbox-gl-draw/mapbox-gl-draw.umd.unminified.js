@@ -1716,6 +1716,7 @@ MultiFeature.prototype.execMeasure = function() {};
 
 function ModeInterface(ctx) {
   this.map = ctx.map;
+  delete ctx.options.map;
   this.drawConfig = JSON.parse(JSON.stringify(ctx.options || {}));
   this._ctx = ctx;
   // extend start
@@ -8490,7 +8491,6 @@ var defaultOptions = {
   measureOptions: {
     enable: true,
   },
-  defaultShowUi: true,
 };
 
 var showControls = {
@@ -8521,10 +8521,10 @@ var hideControls = {
   /** extend start */
   undo: false,
   redo: false,
-  cancel: true,
-  draw_center: true,
-  cut_line: true,
-  cut_polygon: true,
+  cancel: false,
+  draw_center: false,
+  cut_line: false,
+  cut_polygon: false,
   /** extend end */
 };
 
