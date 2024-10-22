@@ -166,12 +166,17 @@ DirectSelect.onSetup = function (opts) {
   doubleClickZoom.disable(this);
   this.setActionableState({ trash: true });
   // extend start
+  this.feature = feature;
   return this.setState(state);
   // extend end
 };
 
-DirectSelect.onStop = function () {
+DirectSelect.onStop = function (state) {
   doubleClickZoom.enable(this);
+  if (state.feature.isValid()) {
+    const geoJson = state.feature.toGeoJSON();
+    this.afterRender(() => this.map.fire(Constants.events.CREATE, { features: [geoJson] }));
+  }
   this.clearSelectedCoordinates();
   this.destroy();
 };

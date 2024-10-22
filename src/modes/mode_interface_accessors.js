@@ -268,7 +268,8 @@ ModeInterface.prototype.cancel = function (mode = Constants.modes.SIMPLE_SELECT)
 };
 
 ModeInterface.prototype.isDrawing = function () {
-  return this._ctx.api.getMode().startsWith('draw');
+  const mode = this._ctx.api.getMode();
+  return mode.startsWith('draw') || mode === Constants.modes.DIRECT_SELECT;
 };
 
 ModeInterface.prototype.afterRender = function (cb, render) {

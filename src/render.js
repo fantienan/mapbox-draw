@@ -64,13 +64,13 @@ export default function render(e) {
     const isDirectSelectMode = mode === Constants.modes.DIRECT_SELECT;
     const isCutMode = mode.includes('cut');
     const disabledCut = isSimpleSelectMode ? !store.getSelected().length : isCutMode ? modeInstance.getWaitCutFeatures().length : true;
-    const disableFinish = isSimpleSelectMode || isDirectSelectMode || !modeInstance.feature.isValid();
+    const disableFinish = isSimpleSelectMode || !modeInstance.feature.isValid();
     store.ctx.ui.setDisableButtons((buttonStatus) => {
       buttonStatus.cut_polygon = { disabled: disabledCut };
       buttonStatus.cut_line = { disabled: disabledCut };
       buttonStatus.draw_center = { disabled: isSimpleSelectMode };
       buttonStatus.finish = { disabled: disableFinish };
-      buttonStatus.cancel = { disabled: isSimpleSelectMode || isDirectSelectMode };
+      buttonStatus.cancel = { disabled: isSimpleSelectMode };
       buttonStatus.undo = { disabled: modeInstance.redoUndo.undoStack.length === 0 };
       buttonStatus.redo = { disabled: modeInstance.redoUndo.redoStack.length === 0 };
       return buttonStatus;

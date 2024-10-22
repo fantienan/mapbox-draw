@@ -1970,7 +1970,8 @@ ModeInterface.prototype.cancel = function (mode) {
 };
 
 ModeInterface.prototype.isDrawing = function () {
-  return this._ctx.api.getMode().startsWith('draw');
+  var mode = this._ctx.api.getMode();
+  return mode.startsWith('draw') || mode === modes$1.DIRECT_SELECT;
 };
 
 ModeInterface.prototype.afterRender = function (cb, render) {
@@ -2634,16 +2635,16 @@ function render(e) {
   if (store._emitSelectionChange || !e || e.type !== 'mousemove') {
     var modeInstance = store.ctx.events.getModeInstance();
     var isSimpleSelectMode = mode === modes$1.SIMPLE_SELECT;
-    var isDirectSelectMode = mode === modes$1.DIRECT_SELECT;
+    mode === modes$1.DIRECT_SELECT;
     var isCutMode = mode.includes('cut');
     var disabledCut = isSimpleSelectMode ? !store.getSelected().length : isCutMode ? modeInstance.getWaitCutFeatures().length : true;
-    var disableFinish = isSimpleSelectMode || isDirectSelectMode || !modeInstance.feature.isValid();
+    var disableFinish = isSimpleSelectMode || !modeInstance.feature.isValid();
     store.ctx.ui.setDisableButtons(function (buttonStatus) {
       buttonStatus.cut_polygon = { disabled: disabledCut };
       buttonStatus.cut_line = { disabled: disabledCut };
       buttonStatus.draw_center = { disabled: isSimpleSelectMode };
       buttonStatus.finish = { disabled: disableFinish };
-      buttonStatus.cancel = { disabled: isSimpleSelectMode || isDirectSelectMode };
+      buttonStatus.cancel = { disabled: isSimpleSelectMode };
       buttonStatus.undo = { disabled: modeInstance.redoUndo.undoStack.length === 0 };
       buttonStatus.redo = { disabled: modeInstance.redoUndo.redoStack.length === 0 };
       return buttonStatus;
@@ -5737,12 +5738,19 @@ DirectSelect.onSetup = function (opts) {
   doubleClickZoom.disable(this);
   this.setActionableState({ trash: true });
   // extend start
+  this.feature = feature;
   return this.setState(state);
   // extend end
 };
 
-DirectSelect.onStop = function () {
+DirectSelect.onStop = function (state) {
+  var this$1$1 = this;
+
   doubleClickZoom.enable(this);
+  if (state.feature.isValid()) {
+    var geoJson = state.feature.toGeoJSON();
+    this.afterRender(function () { return this$1$1.map.fire(events$1.CREATE, { features: [geoJson] }); });
+  }
   this.clearSelectedCoordinates();
   this.destroy();
 };
