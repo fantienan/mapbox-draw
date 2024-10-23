@@ -793,7 +793,7 @@ declare class MapboxDraw implements IControl {
 
   // extend start
   undo: () => this;
-  redodo: () => this;
+  redo: () => this;
   finish: () => this;
   cancel: () => this;
   drawByCenter: () => this;

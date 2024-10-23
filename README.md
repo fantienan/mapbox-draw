@@ -47,7 +47,7 @@ import '@ttfn/mapbox-gl-draw/dist/mapbox-gl-draw.css';
 
 - 描述：撤销
 
-### redodo: () => this
+### redo: () => this
 
 - 描述：重做
 
