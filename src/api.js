@@ -11,6 +11,7 @@ import LineString from './feature_types/line_string';
 import Point from './feature_types/point';
 import MultiFeature from './feature_types/multi_feature';
 import { genStyles } from './options';
+import { mapFireOnDeleteAll } from './extend';
 
 const featureTypes = {
   Polygon,
@@ -154,6 +155,8 @@ export default function (ctx, api) {
       ctx.store.render();
     }
 
+    const modeInstance = ctx.events.getModeInstance();
+    modeInstance.afterRender(() => mapFireOnDeleteAll(modeInstance, {}));
     return api;
   };
 

@@ -73,6 +73,7 @@ export const modes = {
 export const events = {
   CREATE: 'draw.create',
   DELETE: 'draw.delete',
+  DELETE_ALL: 'draw.deleteAll',
   UPDATE: 'draw.update',
   SELECTION_CHANGE: 'draw.selectionchange',
   MODE_CHANGE: 'draw.modechange',

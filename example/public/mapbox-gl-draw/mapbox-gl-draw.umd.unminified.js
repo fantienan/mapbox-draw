@@ -364,6 +364,7 @@ var modes$1 = {
 var events$1 = {
   CREATE: 'draw.create',
   DELETE: 'draw.delete',
+  DELETE_ALL: 'draw.deleteAll',
   UPDATE: 'draw.update',
   SELECTION_CHANGE: 'draw.selectionchange',
   MODE_CHANGE: 'draw.modechange',
@@ -596,6 +597,10 @@ function getEventData(modeInstance, eventData) {
 
 function mapFireOnAdd(modeInstance, eventData) {
   modeInstance.map.fire(events$1.ADD, getEventData(modeInstance, eventData));
+}
+
+function mapFireOnDeleteAll(modeInstance, eventData) {
+  modeInstance.map.fire(events$1.DELETE_ALL, getEventData(modeInstance, eventData));
 }
 
 function mapFireRedoUndo(modeInstance, eventData) {
@@ -10582,6 +10587,8 @@ function setupAPI (ctx, api) {
       ctx.store.render();
     }
 
+    var modeInstance = ctx.events.getModeInstance();
+    modeInstance.afterRender(function () { return mapFireOnDeleteAll(modeInstance, {}); });
     return api;
   };
 

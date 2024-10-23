@@ -11,6 +11,10 @@ export function mapFireOnAdd(modeInstance, eventData) {
   modeInstance.map.fire(Constants.events.ADD, getEventData(modeInstance, eventData));
 }
 
+export function mapFireOnDeleteAll(modeInstance, eventData) {
+  modeInstance.map.fire(Constants.events.DELETE_ALL, getEventData(modeInstance, eventData));
+}
+
 export function mapFireRedoUndo(modeInstance, eventData) {
   modeInstance.map.fire(Constants.events.REDO_UNDO, getEventData(modeInstance, eventData));
 }

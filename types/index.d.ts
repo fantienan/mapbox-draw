@@ -42,6 +42,7 @@ declare namespace MapboxDraw {
     | 'draw.drag'
     | 'draw.clearSelectedCoordinates'
     | 'draw.addPoint'
+    | 'draw.deleteAll'
     | 'draw.onAdd';
   // extend end
 
@@ -251,7 +252,7 @@ declare namespace MapboxDraw {
     type: 'draw.clickOrTab';
   }
 
-  interface DrawDragEventData extends DrawExtendEventDate {
+  interface DrawDragEventData extends DrawExtendEventData {
     type: 'dragVertex' | 'dragFeature' | 'null';
   }
 
@@ -263,6 +264,11 @@ declare namespace MapboxDraw {
   interface DrawClearSelectedCoordinatesEvent extends DrawEvent {
     data: DrawExtendEventData;
     type: 'draw.clearSelectedCoordinates';
+  }
+
+  interface DrawDeleteAllEvent extends DrawEvent {
+    data: DrawExtendEventData;
+    type: 'draw.deleteAll';
   }
 
   interface DrawAddPointEvent extends DrawEvent {
@@ -686,6 +692,8 @@ declare namespace MapboxDraw {
     modes?: { [modeKey: string]: DrawCustomMode } | undefined;
     defaultMode?: string | undefined;
     userProperties?: boolean | undefined;
+    /** 点击地图未命中feature时什么也不做 */
+    clickOnMissAndDoNothing?: boolean;
     /** 双击落点或者落点与其它节点重合时是否禁止完成绘制 */
     disabledClickOnVertex?: boolean;
     /** 受否忽略双击落点或者落点与其它节点重合的检测 */
