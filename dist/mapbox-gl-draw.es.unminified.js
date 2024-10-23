@@ -5784,6 +5784,10 @@ DirectSelect.toDisplayFeatures = function (state, geojson, push) {
 DirectSelect.onTrash = function (state) {
   // Uses number-aware sorting to make sure '9' < '10'. Comparison is reversed because we want them
   // in reverse order so that we can remove by index safely.
+
+  // extend start
+  this._reodUndoAdd({ selectedCoordPaths: state.selectedCoordPaths });
+  // extend end
   state.selectedCoordPaths.sort(function (a, b) { return b.localeCompare(a, 'en', { numeric: true }); }).forEach(function (id) { return state.feature.removeCoordinate(id); });
   this.fireUpdate();
   state.selectedCoordPaths = [];
@@ -6096,10 +6100,13 @@ DrawPolygon.clickAnywhere = function (state, e) {
   // extend end
 };
 
-DrawPolygon.clickOnVertex = function (state, cb) {
+DrawPolygon.clickOnVertex = function (state, e) {
+  var this$1$1 = this;
+
   // extend start
   if (isDisabledClickOnVertexWithCtx(this._ctx)) { return; }
-  if (typeof cb === 'function') { return cb(); }
+  if (typeof e === 'function') { return e(); }
+  this.afterRender(function () { return mapFireByClickOnVertex(this$1$1, { e: e }); });
   // extend end
   return this.changeMode(modes$1.SIMPLE_SELECT, { featureIds: [state.polygon.id] });
 };
@@ -6326,10 +6333,13 @@ DrawLineString.clickAnywhere = function (state, e) {
   // extend end
 };
 
-DrawLineString.clickOnVertex = function (state, cb) {
+DrawLineString.clickOnVertex = function (state, e) {
+  var this$1$1 = this;
+
   // extend start
   if (isDisabledClickOnVertexWithCtx(this._ctx)) { return; }
-  if (typeof cb === 'function') { return cb(); }
+  if (typeof e === 'function') { return e(); }
+  this.afterRender(function () { return mapFireByClickOnVertex(this$1$1, { e: e }); });
   // extend end
   return this.changeMode(modes$1.SIMPLE_SELECT, { featureIds: [state.line.id] });
 };
