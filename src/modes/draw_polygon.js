@@ -3,7 +3,13 @@ import doubleClickZoom from '../lib/double_click_zoom';
 import * as Constants from '../constants';
 import isEventAtCoordinates from '../lib/is_event_at_coordinates';
 import createVertex from '../lib/create_vertex';
-import { createLastOrSecondToLastPoint, isDisabledClickOnVertexWithCtx, isIgnoreClickOnVertexWithCtx, mapFireAddPoint } from '../extend';
+import {
+  createLastOrSecondToLastPoint,
+  isDisabledClickOnVertexWithCtx,
+  isIgnoreClickOnVertexWithCtx,
+  mapFireAddPoint,
+  mapFireByClickOnVertex,
+} from '../extend';
 
 const DrawPolygon = {};
 
@@ -49,10 +55,11 @@ DrawPolygon.clickAnywhere = function (state, e) {
   // extend end
 };
 
-DrawPolygon.clickOnVertex = function (state, cb) {
+DrawPolygon.clickOnVertex = function (state, e) {
   // extend start
   if (isDisabledClickOnVertexWithCtx(this._ctx)) return;
-  if (typeof cb === 'function') return cb();
+  if (typeof e === 'function') return e();
+  this.afterRender(() => mapFireByClickOnVertex(this, { e }));
   // extend end
   return this.changeMode(Constants.modes.SIMPLE_SELECT, { featureIds: [state.polygon.id] });
 };

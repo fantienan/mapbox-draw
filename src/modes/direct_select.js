@@ -205,6 +205,10 @@ DirectSelect.toDisplayFeatures = function (state, geojson, push) {
 DirectSelect.onTrash = function (state) {
   // Uses number-aware sorting to make sure '9' < '10'. Comparison is reversed because we want them
   // in reverse order so that we can remove by index safely.
+
+  // extend start
+  this._reodUndoAdd({ selectedCoordPaths: state.selectedCoordPaths });
+  // extend end
   state.selectedCoordPaths.sort((a, b) => b.localeCompare(a, 'en', { numeric: true })).forEach((id) => state.feature.removeCoordinate(id));
   this.fireUpdate();
   state.selectedCoordPaths = [];
