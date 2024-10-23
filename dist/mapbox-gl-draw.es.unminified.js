@@ -10614,6 +10614,7 @@ function setupAPI (ctx, api) {
   api.getFeatureTypeById = function (id) {
     return ctx.store.get(id);
   };
+
   // extend start
   api.undo = function () {
     ctx.events.undo();
