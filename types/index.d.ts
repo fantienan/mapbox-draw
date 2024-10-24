@@ -17,6 +17,7 @@ import {
   MapTouchEvent as MapboxMapTouchEvent,
 } from 'mapbox-gl';
 
+type ControlPosition = 'top-left' | 'top' | 'top-right' | 'right' | 'bottom-right' | 'bottom' | 'bottom-left' | 'left';
 export = MapboxDraw;
 export as namespace MapboxDraw;
 
@@ -213,38 +214,38 @@ declare namespace MapboxDraw {
   }
 
   // extend start
-  interface DrawExtendEventData {
-    draw: MapboxDraw;
-    mode: Modes;
+  interface DrawExtendEventData<T extends MapboxDraw = MapboxDraw, M extends Modes = Modes> {
+    draw: T;
+    mode: M;
     state: Record<string, any>;
     e: MapMouseEvent | MapTouchEvent;
   }
 
-  interface DrawAddEventData extends DrawExtendEventData {
+  interface DrawAddEventData<T extends MapboxDraw = MapboxDraw, M extends Modes = Modes> extends DrawExtendEventData<T, M> {
     controlContainer: HTMLElement;
   }
 
-  interface DrawOnAddEvent extends DrawEvent {
-    data: DrawAddEventData;
+  interface DrawOnAddEvent<T extends MapboxDraw = MapboxDraw, M extends Modes = Modes> extends DrawEvent {
+    data: DrawAddEventData<T, M>;
     type: 'draw.onAdd';
   }
 
-  interface DrawClickOnVertexEvent extends DrawEvent {
-    data: DrawExtendEventData;
+  interface DrawClickOnVertexEvent<T extends MapboxDraw = MapboxDraw, M extends Modes = Modes> extends DrawEvent {
+    data: DrawExtendEventData<T, M>;
     type: 'draw.clickOnVertex';
   }
 
-  interface DrawOnMidpointEvent extends DrawEvent {
-    data: DrawExtendEventData;
+  interface DrawOnMidpointEvent<T extends MapboxDraw = MapboxDraw, M extends Modes = Modes> extends DrawEvent {
+    data: DrawExtendEventData<T, M>;
     type: 'draw.onMidpoint';
   }
 
-  interface DrawDragVertexEvent extends DrawEvent {
-    data: DrawExtendEventData;
+  interface DrawDragVertexEvent<T extends MapboxDraw = MapboxDraw, M extends Modes = Modes> extends DrawEvent {
+    data: DrawExtendEventData<T, M>;
     type: 'draw.dragVertex';
   }
 
-  interface DrawClickOrTabEventData extends DrawExtendEventData {
+  interface DrawClickOrTabEventData<T extends MapboxDraw = MapboxDraw, M extends Modes = Modes> extends DrawExtendEventData<T, M> {
     type: 'clickNoTarget' | 'clickInactiveFeature' | 'clickActiveFeature' | 'null';
   }
   interface DrawClickOrTabEvent extends DrawEvent {
@@ -252,38 +253,38 @@ declare namespace MapboxDraw {
     type: 'draw.clickOrTab';
   }
 
-  interface DrawDragEventData extends DrawExtendEventData {
+  interface DrawDragEventData<T extends MapboxDraw = MapboxDraw, M extends Modes = Modes> extends DrawExtendEventData<T, M> {
     type: 'dragVertex' | 'dragFeature' | 'null';
   }
 
-  interface DrawDragEvent extends DrawEvent {
-    data: DrawExtendEventData;
+  interface DrawDragEvent<T extends MapboxDraw = MapboxDraw, M extends Modes = Modes> extends DrawEvent {
+    data: DrawExtendEventData<T, M>;
     type: 'draw.drag';
   }
 
-  interface DrawClearSelectedCoordinatesEvent extends DrawEvent {
-    data: DrawExtendEventData;
+  interface DrawClearSelectedCoordinatesEvent<T extends MapboxDraw = MapboxDraw, M extends Modes = Modes> extends DrawEvent {
+    data: DrawExtendEventData<T, M>;
     type: 'draw.clearSelectedCoordinates';
   }
 
-  interface DrawDeleteAllEvent extends DrawEvent {
-    data: DrawExtendEventData;
+  interface DrawDeleteAllEvent<T extends MapboxDraw = MapboxDraw, M extends Modes = Modes> extends DrawEvent {
+    data: DrawExtendEventData<T, M>;
     type: 'draw.deleteAll';
   }
 
-  interface DrawAddPointEvent extends DrawEvent {
-    data: DrawExtendEventData;
+  interface DrawAddPointEvent<T extends MapboxDraw = MapboxDraw, M extends Modes = Modes> extends DrawEvent {
+    data: DrawExtendEventData<T, M>;
     type: 'draw.addPoint';
   }
 
-  interface DrawRedoUndoEventData extends Omit<DrawExtendEventData, 'e'> {
+  interface DrawRedoUndoEventData<T extends MapboxDraw = MapboxDraw, M extends Modes = Modes> extends Omit<DrawExtendEventData<T, M>, 'e'> {
     type: 'redo' | 'undo';
     redoStack: number[][];
     undoStack: number[][];
   }
 
-  interface DrawUndoEvent extends DrawEvent {
-    data: DrawRedoUndoEventData;
+  interface DrawUndoEvent<T extends MapboxDraw = MapboxDraw, M extends Modes = Modes> extends DrawEvent {
+    data: DrawRedoUndoEventData<T, M>;
     type: 'draw.redoUndo';
   }
 
@@ -728,7 +729,7 @@ declare class MapboxDraw implements IControl {
 
   modes: MapboxDraw.DrawModes;
 
-  getDefaultPosition: () => string;
+  getDefaultPosition: () => ControlPosition;
 
   constructor(options?: MapboxDraw.MapboxDrawOptions);
 
