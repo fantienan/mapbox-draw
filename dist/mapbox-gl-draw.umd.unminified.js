@@ -2680,6 +2680,7 @@ function render(e) {
       buttonStatus.cancel = { disabled: isSimpleSelectMode };
       buttonStatus.undo = { disabled: modeInstance.redoUndo.undoStack.length === 0 };
       buttonStatus.redo = { disabled: modeInstance.redoUndo.redoStack.length === 0 };
+      buttonStatus.trash = { disabled: !store.getSelected().length };
       mapFireButtonStatusChange(modeInstance, { buttonStatus: JSON.parse(JSON.stringify(buttonStatus)) });
       return buttonStatus;
     });
