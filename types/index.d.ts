@@ -44,7 +44,8 @@ declare namespace MapboxDraw {
     | 'draw.clearSelectedCoordinates'
     | 'draw.addPoint'
     | 'draw.deleteAll'
-    | 'draw.onAdd';
+    | 'draw.onAdd'
+    | 'draw.buttonStatusChange';
   // extend end
 
   interface DrawModes {
@@ -292,8 +293,7 @@ declare namespace MapboxDraw {
     type: 'draw.redoUndo';
   }
 
-  interface DrawButtonStatusChangeEventData<T extends MapboxDraw = MapboxDraw, M extends Modes = Modes>
-    extends Omit<DrawExtendEventData<T, M>> {
+  interface DrawButtonStatusChangeEventData<T extends MapboxDraw = MapboxDraw, M extends Modes = Modes> extends DrawExtendEventData<T, M> {
     buttonStatus: Record<'cut_polygon' | 'cut_line' | 'draw_center' | 'finish' | 'cancel' | 'undo' | 'redo', { disabled: boolean }>;
   }
 
