@@ -1,4 +1,5 @@
 import * as Constants from './constants';
+import { mapFireButtonStatusChange } from './extend';
 
 export default function render(e) {
   // eslint-disable-next-line no-invalid-this
@@ -73,6 +74,7 @@ export default function render(e) {
       buttonStatus.cancel = { disabled: isSimpleSelectMode };
       buttonStatus.undo = { disabled: modeInstance.redoUndo.undoStack.length === 0 };
       buttonStatus.redo = { disabled: modeInstance.redoUndo.redoStack.length === 0 };
+      mapFireButtonStatusChange(modeInstance, { buttonStatus: JSON.parse(JSON.stringify(buttonStatus)) });
       return buttonStatus;
     });
   }

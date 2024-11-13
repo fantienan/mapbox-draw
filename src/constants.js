@@ -92,6 +92,7 @@ export const events = {
   ADD_POINT: 'draw.addPoint',
   ADD: 'draw.onAdd',
   POLYTON_CUT_CREATE: 'draw.polygonCutCreate',
+  BUTTON_STATUS_CHANGE: 'draw.buttonStatusChange',
   // extend end
 };
 

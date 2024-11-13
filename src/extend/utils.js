@@ -47,6 +47,10 @@ export function mapFireAddPoint(modeInstance, eventData) {
   modeInstance.map.fire(Constants.events.ADD_POINT, getEventData(modeInstance, eventData));
 }
 
+export function mapFireButtonStatusChange(modeInstance, eventData) {
+  modeInstance.map.fire(Constants.events.BUTTON_STATUS_CHANGE, getEventData(modeInstance, eventData));
+}
+
 /**
  * Returns GeoJSON for a Point representing the
  * vertex of another feature.

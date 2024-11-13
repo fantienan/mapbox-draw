@@ -360,6 +360,7 @@ var events$1 = {
   ADD_POINT: 'draw.addPoint',
   ADD: 'draw.onAdd',
   POLYTON_CUT_CREATE: 'draw.polygonCutCreate',
+  BUTTON_STATUS_CHANGE: 'draw.buttonStatusChange',
   // extend end
 };
 
@@ -610,6 +611,10 @@ function mapClearSelectedCoordinates(modeInstance) {
 
 function mapFireAddPoint(modeInstance, eventData) {
   modeInstance.map.fire(events$1.ADD_POINT, getEventData(modeInstance, eventData));
+}
+
+function mapFireButtonStatusChange(modeInstance, eventData) {
+  modeInstance.map.fire(events$1.BUTTON_STATUS_CHANGE, getEventData(modeInstance, eventData));
 }
 
 /**
@@ -2652,6 +2657,7 @@ function render(e) {
       buttonStatus.cancel = { disabled: isSimpleSelectMode };
       buttonStatus.undo = { disabled: modeInstance.redoUndo.undoStack.length === 0 };
       buttonStatus.redo = { disabled: modeInstance.redoUndo.redoStack.length === 0 };
+      mapFireButtonStatusChange(modeInstance, { buttonStatus: JSON.parse(JSON.stringify(buttonStatus)) });
       return buttonStatus;
     });
   }

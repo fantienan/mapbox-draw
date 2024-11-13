@@ -214,10 +214,14 @@ declare namespace MapboxDraw {
   }
 
   // extend start
-  interface DrawExtendEventData<T extends MapboxDraw = MapboxDraw, M extends Modes = Modes> {
+  interface DrawExtendEventData<
+    T extends MapboxDraw = MapboxDraw,
+    M extends Modes = Modes,
+    S extends Record<string, any> = Record<string, any>,
+  > {
     draw: T;
     mode: M;
-    state: Record<string, any>;
+    state: S;
     e: MapMouseEvent | MapTouchEvent;
   }
 
@@ -286,6 +290,16 @@ declare namespace MapboxDraw {
   interface DrawUndoEvent<T extends MapboxDraw = MapboxDraw, M extends Modes = Modes> extends DrawEvent {
     data: DrawRedoUndoEventData<T, M>;
     type: 'draw.redoUndo';
+  }
+
+  interface DrawButtonStatusChangeEventData<T extends MapboxDraw = MapboxDraw, M extends Modes = Modes>
+    extends Omit<DrawExtendEventData<T, M>> {
+    buttonStatus: Record<'cut_polygon' | 'cut_line' | 'draw_center' | 'finish' | 'cancel' | 'undo' | 'redo', { disabled: boolean }>;
+  }
+
+  interface DrawButtonStatusChange<T extends MapboxDraw = MapboxDraw, M extends Modes = Modes> extends DrawEvent {
+    data: DrawButtonStatusChangeEventData<T, M>;
+    type: 'draw.buttonStatusChange';
   }
 
   // extend end
