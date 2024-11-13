@@ -297,7 +297,7 @@ declare namespace MapboxDraw {
     buttonStatus: Record<'cut_polygon' | 'cut_line' | 'draw_center' | 'finish' | 'cancel' | 'undo' | 'redo', { disabled: boolean }>;
   }
 
-  interface DrawButtonStatusChange<T extends MapboxDraw = MapboxDraw, M extends Modes = Modes> extends DrawEvent {
+  interface DrawButtonStatusChangeEvent<T extends MapboxDraw = MapboxDraw, M extends Modes = Modes> extends DrawEvent {
     data: DrawButtonStatusChangeEventData<T, M>;
     type: 'draw.buttonStatusChange';
   }
